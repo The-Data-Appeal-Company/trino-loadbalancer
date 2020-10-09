@@ -1,0 +1,52 @@
+proxy:
+  port: 8998
+
+routing:
+  rule: round-robin
+
+clusters:
+  sync:
+    delay: 10s
+  statistics:
+    enabled: true
+    delay: 5s
+  healthcheck:
+    enabled: true
+    delay: 5s
+
+persistence:
+  postgres:
+    db: 'postgres'
+    host: '127.0.0.1'
+    port: 5432
+    username: 'prestohub'
+    password: 'presto'
+    ssl_mode: 'disable'
+
+discovery:
+  enabled: false
+  type: aws-emr
+  aws:
+    access_key_id: ''
+    secret_key: ''
+    region: 'eu-west-1'
+
+session:
+  store:
+    redis:
+      opts:
+        prefix: 'presto::'
+        max_ttl: 24h
+
+      standalone:
+        enabled: true
+        host: '127.0.0.1:6379'
+        password: ''
+        db: 0
+
+      sentinel:
+        enabled: false
+        master: 'mymaster'
+        hosts: [ '','' ]
+        password: ''
+        db: 0

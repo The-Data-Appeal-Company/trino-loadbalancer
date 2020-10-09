@@ -1,0 +1,25 @@
+package routing
+
+import (
+	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+)
+
+type RunningQueriesRouter struct {
+}
+
+func LessRunningQueries() RunningQueriesRouter {
+	return RunningQueriesRouter{}
+}
+
+func (r RunningQueriesRouter) Route(request Request) (models.Coordinator, error) {
+	var selected = request.Coordinators[0]
+
+	for i := 1; i < len(request.Coordinators); i++ {
+		current := request.Coordinators
+		if current[i].Statistics.RunningQueries < selected.Statistics.RunningQueries {
+			selected = request.Coordinators[i]
+		}
+	}
+
+	return selected.Coordinator, nil
+}

@@ -1,0 +1,148 @@
+<div class="row">
+  <div class="col-lg-3 col-md-6 col-sm-6">
+    <div class="card card-stats">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5 col-md-4">
+            <div class="icon-big text-center icon-warning">
+              <i class="nc-icon nc-globe text-warning"></i>
+            </div>
+          </div>
+          <div class="col-7 col-md-8">
+            <div class="numbers">
+              <p class="card-category">Clusters</p>
+              <p class="card-title">{{ clusterState?.length }}</p>
+              <p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6 col-sm-6">
+    <div class="card card-stats">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5 col-md-4">
+            <div class="icon-big text-center icon-warning">
+              <i class="nc-icon nc-settings-gear-65 text-primary"></i>
+            </div>
+          </div>
+          <div class="col-7 col-md-8">
+            <div class="numbers">
+              <p class="card-category">Workers</p>
+              <p class="card-title"> {{ prestoStatistics.total_workers }}
+              <p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 col-sm-6">
+    <div class="card card-stats">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5 col-md-4">
+            <div class="icon-big text-center icon-warning">
+              <i class="nc-icon nc-user-run text-success"></i>
+            </div>
+          </div>
+          <div class="col-7 col-md-8">
+            <div class="numbers">
+              <p class="card-category">Running Queries</p>
+              <p class="card-title">{{ prestoStatistics.running_queries }}
+              <p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6 col-sm-6">
+    <div class="card card-stats">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5 col-md-4">
+            <div class="icon-big text-center icon-warning">
+              <i class="nc-icon nc-button-pause text-danger"></i>
+            </div>
+          </div>
+          <div class="col-7 col-md-8">
+            <div class="numbers">
+              <p class="card-category">Blocked Queries</p>
+              <p class="card-title">{{ prestoStatistics.blocked_queries }}
+              <p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Queries</h5>
+        <p class="card-category">Running queries</p>
+      </div>
+
+      <div class="card-body ">
+        <canvas id=chartHours width="400" height="100"></canvas>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="card">
+  <div class="card-header"><h4 class="card-title">Clusters</h4></div>
+  <div class="card-body">
+    <ul class="list-unstyled team-members">
+      <li *ngFor="let cluster of clusterState">
+
+        <div class="row">
+          <div class="col-md-2 col-2">
+            <img src="assets/img/presto.png" alt="Circle Image"
+                 class="avatar">
+          </div>
+          <div class="col-md-8 col-8"> {{cluster.name}}
+            <a href="{{cluster.host}}" target="_blank"><i class="nc-icon nc-share-66 nc-bold"></i></a> <br>
+
+            <span class="{{ cluster.available ? 'text-success' : 'text-danger' }}">
+            <strong>{{ cluster.available ? 'Available' : 'Offline' }}</strong>
+          </span></div>
+          <div class="col-md-2 col-2 text-right">
+            Enabled
+            <mat-slide-toggle [checked]="cluster.enabled"
+                              (change)="toggleClusterStatus($event, cluster)"></mat-slide-toggle>
+          </div>
+        </div>
+
+      </li>
+
+    </ul>
+  </div>
+
+  <div class="col-6">
+    <button type="submit" class="btn btn-primary btn-round" (click)="openDialog()">
+      <span>
+      <i class="nc-icon nc-simple-add"></i>  Register cluster
+        </span>
+    </button>
+
+    <button type="submit" class="btn btn-success btn-round" (click)="launchDiscovery()">
+      <span>
+        <i class="nc-icon nc-refresh-69"></i>  Discovery
+        </span>
+    </button>
+
+  </div>
+</div>
+
