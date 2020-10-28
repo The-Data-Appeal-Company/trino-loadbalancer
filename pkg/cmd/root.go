@@ -27,8 +27,20 @@ var (
 	sessionStorage     session.Storage
 	clusterStats       statistics.Retriever
 	clusterHealthCheck healthcheck.HealthCheck
-	discover           discovery.Discovery
+	discover           []discovery.Discovery
 )
+
+type DiscoveryConf struct {
+	provider string            `json:"provider"`
+	enabled  bool              `json:"enabled"`
+	aws      AwsProviderParams `json:"aws"`
+}
+
+type AwsProviderParams struct {
+	accessKeyId string `json:"access_key_id"`
+	secretKey   string `json:"secret_key"`
+	region      string `json:"region"`
+}
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file path")
@@ -123,15 +135,14 @@ func init() {
 			log.Fatal(err)
 		}
 
-		discover, err = factory.CreateDiscovery(factory.DiscoveryConfiguration{
-			Enabled: viper.GetBool("discovery.enabled"),
-			Type:    viper.GetString("discovery.type"),
-			Aws: factory.AwsDiscoveryConfiguration{
-				AwsAccessKeyID: viper.GetString("discovery.aws.access_key_id"),
-				AwsSecretKey:   viper.GetString("discovery.aws.secret_key"),
-				AwsRegion:      viper.GetString("discovery.aws.region"),
-			},
-		})
+		var discoveryConfs []factory.DiscoveryConfiguration
+		err = viper.UnmarshalKey("discovery.providers", discoveryConfs)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		discover, err = factory.CreateDiscoveryProviders(discoveryConfs,rootCmd.Context())
 
 		if err != nil {
 			log.Fatal(err)

@@ -3,11 +3,12 @@ module github.com/The-Data-Appeal-Company/presto-loadbalancer
 go 1.15
 
 require (
-	github.com/allegro/bigcache v1.2.1
+	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aws/aws-sdk-go v1.34.30
 	github.com/docker/go-connections v0.4.0
 	github.com/go-redis/redis/v8 v8.2.2
 	github.com/gorilla/mux v1.6.2
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/prestodb/presto-go-client v0.0.0-20200302111820-5ec09431be26
 	github.com/rs/cors v1.7.0
@@ -19,4 +20,8 @@ require (
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	k8s.io/api v0.19.3 // indirect
+	k8s.io/client-go v0.19.3
+	k8s.io/klog v1.0.0 // indirect
+	k8s.io/utils v0.0.0-20201027101359-01387209bb0d // indirect
 )

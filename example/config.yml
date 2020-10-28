@@ -24,12 +24,23 @@ persistence:
     ssl_mode: 'disable'
 
 discovery:
-  enabled: false
-  type: aws-emr
-  aws:
-    access_key_id: ''
-    secret_key: ''
-    region: 'eu-west-1'
+  providers:
+    - provider: aws-emr
+      enabled: false
+      aws:
+        access_key_id: ''
+        secret_key: ''
+        region: 'eu-west-1'
+    - provider: k8s
+      enabled: false
+      k8s:
+        kube_config: 'tdac-test'
+        cluster_domain: 'cluster.local'
+        selector_tags:
+          component: 'coordinator'
+          deployment: 'presto'
+          presto.distribution: 'prestosql'
+
 
 session:
   store:
