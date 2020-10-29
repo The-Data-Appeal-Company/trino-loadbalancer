@@ -14,8 +14,8 @@ persistence:
     db: 'reviews_prod'
     host: 'reviews-prod-02.clbp5affktnp.eu-west-1.rds.amazonaws.com'
     port: 5432
-    username: 'prestolb'
-    password: 'pr3st0pr3st0!'
+    username: ''
+    password: ''
     ssl_mode: 'disable'
 session:
   store:
