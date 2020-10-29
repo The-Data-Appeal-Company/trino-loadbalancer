@@ -142,7 +142,7 @@ func init() {
 			log.Fatal(err)
 		}
 
-		discover, err = factory.CreateCrossProviderDiscovery(discoveryConfs,rootCmd.Context())
+		discover, err = factory.CreateCrossProviderDiscovery(discoveryConfs, rootCmd.Context())
 
 		if err != nil {
 			log.Fatal(err)
