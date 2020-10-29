@@ -2,3 +2,4 @@
 presto-loadbalancer
 node_modules
 example/prod.yml
+vendor/
