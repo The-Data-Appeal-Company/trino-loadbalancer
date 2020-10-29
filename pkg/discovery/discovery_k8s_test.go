@@ -126,17 +126,17 @@ func (mn mockNamespace) List(ctx context.Context, opts metav1.ListOptions) (*v1.
 		Items: []v1.Namespace{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "default",
+					Name: "default",
 				},
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "ns-1",
+					Name: "ns-1",
 				},
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "ns-2",
+					Name: "ns-2",
 				},
 			},
 		},
@@ -248,7 +248,6 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 			k := &K8sClusterProvider{
 				k8sClient:     tt.fields.k8sClient,
 				SelectorTags:  tt.fields.SelectorTags,
-				ctx:           tt.fields.ctx,
 				clusterDomain: tt.fields.clusterDomain,
 			}
 			got, err := k.Discover()

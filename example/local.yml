@@ -30,7 +30,6 @@ session:
         enabled: false
 discovery:
   providers:
-
     aws_eu_west_1:
       provider: aws-emr
       enabled: false
@@ -38,14 +37,11 @@ discovery:
         access_key_id: ''
         secret_key: ''
         region: 'eu-west-1'
-
     kube_local:
       provider: k8s
-      enabled: false
+      enabled: true
       k8s:
-        kube_config: 'tdac-test'
         cluster_domain: 'cluster.local'
         selector_tags:
-          component: 'coordinator'
-          deployment: 'presto'
+          app: 'presto'
           presto.distribution: 'prestosql'

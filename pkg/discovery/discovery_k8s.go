@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	k8s "k8s.io/client-go/kubernetes"
 	"net/url"
 )
@@ -31,10 +32,8 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 
 	for _, ns := range namespaces.Items {
 
-		labelSelector := v1.LabelSelector{MatchLabels: k.SelectorTags}
-
-		services, err := k.k8sClient.CoreV1().Services(ns.Namespace).List(ctx, v1.ListOptions{
-			LabelSelector: labelSelector.String(),
+		services, err := k.k8sClient.CoreV1().Services(ns.Name).List(ctx, v1.ListOptions{
+			LabelSelector: labels.FormatLabels(k.SelectorTags),
 		})
 
 		if err != nil {
@@ -42,7 +41,7 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 		}
 
 		for _, svc := range services.Items {
-			svcUrl, err := url.Parse(fmt.Sprintf("%s.%s.%s", svc.Name, svc.Namespace, k.clusterDomain))
+			svcUrl, err := url.Parse(fmt.Sprintf("http://%s.%s.svc.%s", svc.Name, svc.Namespace, k.clusterDomain))
 			if err != nil {
 				return nil, err
 			}

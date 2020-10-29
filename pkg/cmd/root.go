@@ -146,7 +146,7 @@ func parseProvidersConfig(conf map[string]interface{}) []factory.DiscoveryConfig
 		log.Fatal(err)
 	}
 
-	configuration := make([]factory.DiscoveryConfiguration, len(results))
+	configuration := make([]factory.DiscoveryConfiguration, 0)
 	for _, val := range results {
 		configuration = append(configuration, val)
 	}
