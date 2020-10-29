@@ -21,6 +21,7 @@ require (
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	k8s.io/api v0.19.3 // indirect
+	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v0.19.3
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20201027101359-01387209bb0d // indirect

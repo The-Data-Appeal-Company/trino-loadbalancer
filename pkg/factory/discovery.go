@@ -54,21 +54,22 @@ const (
 	DiscoveryK8s     = "k8s"
 )
 
-func CreateDiscoveryProviders(configs []DiscoveryConfiguration, context context.Context) ([]discovery.Discovery, error) {
+func CreateCrossProviderDiscovery(configs []DiscoveryConfiguration, context context.Context) (discovery.Discovery, error) {
 
 	discoveryProviders := make([]discovery.Discovery, 0)
 
 	for _, config := range configs {
+		if config.Enabled {
+			discoveryProvider, err := CreateDiscoveryProvider(config, context)
 
-		discoveryProvider, err := CreateDiscoveryProvider(config, context)
-
-		if err != nil {
-			return nil, err
+			if err != nil {
+				return nil, err
+			}
+			discoveryProviders = append(discoveryProviders, discoveryProvider)
 		}
-		discoveryProviders = append(discoveryProviders, discoveryProvider)
 	}
 
-	return discoveryProviders, nil
+	return discovery.NewCrossProviderDiscovery(discoveryProviders), nil
 }
 
 func CreateDiscoveryProvider(conf DiscoveryConfiguration, ctx context.Context) (discovery.Discovery, error) {
@@ -91,7 +92,7 @@ func CreateDiscoveryProvider(conf DiscoveryConfiguration, ctx context.Context) (
 			return nil, err
 		}
 
-		return discovery.NewK8sClusterProvider(*client, conf.K8s.SelectorTags, ctx, conf.K8s.ClusterDomain), nil
+		return discovery.NewK8sClusterProvider(client, conf.K8s.SelectorTags, ctx, conf.K8s.ClusterDomain), nil
 	}
 
 	return nil, fmt.Errorf("no discovery for type: %s", conf.Provider)

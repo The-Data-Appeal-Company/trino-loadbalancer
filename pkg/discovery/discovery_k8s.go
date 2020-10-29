@@ -10,13 +10,13 @@ import (
 )
 
 type K8sClusterProvider struct {
-	k8sClient     k8s.Clientset
+	k8sClient     k8s.Interface
 	SelectorTags  map[string]string
 	ctx           context.Context
 	clusterDomain string
 }
 
-func NewK8sClusterProvider(k8sClient k8s.Clientset, selectorTags map[string]string, ctx context.Context, clusterDomain string) *K8sClusterProvider {
+func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]string, ctx context.Context, clusterDomain string) *K8sClusterProvider {
 	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, ctx: ctx, clusterDomain: clusterDomain}
 }
 
@@ -33,7 +33,7 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 
 		labelSelector := v1.LabelSelector{MatchLabels: k.SelectorTags}
 
-		services, err := k.k8sClient.CoreV1().Services(ns.Name).List(k.ctx, v1.ListOptions{
+		services, err := k.k8sClient.CoreV1().Services(ns.Namespace).List(k.ctx, v1.ListOptions{
 			LabelSelector: labelSelector.String(),
 		})
 

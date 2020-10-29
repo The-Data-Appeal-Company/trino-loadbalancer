@@ -27,7 +27,7 @@ var (
 	sessionStorage     session.Storage
 	clusterStats       statistics.Retriever
 	clusterHealthCheck healthcheck.HealthCheck
-	discover           []discovery.Discovery
+	discover           discovery.Discovery
 )
 
 type DiscoveryConf struct {
@@ -142,7 +142,7 @@ func init() {
 			log.Fatal(err)
 		}
 
-		discover, err = factory.CreateDiscoveryProviders(discoveryConfs,rootCmd.Context())
+		discover, err = factory.CreateCrossProviderDiscovery(discoveryConfs,rootCmd.Context())
 
 		if err != nil {
 			log.Fatal(err)

@@ -23,7 +23,7 @@ func newConfiguration(kubeConfig *string) (*rest.Config, error) {
 	return clientcmd.BuildConfigFromFlags("", *kubeConfig)
 }
 
-func NewClient(kubeConfig *string) (*k8s.Clientset, error) {
+func NewClient(kubeConfig *string) (k8s.Interface, error) {
 	kubeConf, err := newConfiguration(kubeConfig)
 	if err != nil {
 		return nil, err
