@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/factory"
@@ -123,20 +124,34 @@ func init() {
 			log.Fatal(err)
 		}
 
-		var discoveryConfs []factory.DiscoveryConfiguration
-		err = viper.UnmarshalKey("discovery.providers", &discoveryConfs)
+		conf := parseProvidersConfig(viper.GetStringMap("discovery.providers"))
 
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		discover, err = factory.CreateCrossProviderDiscovery(discoveryConfs, rootCmd.Context())
-
+		discover, err = factory.CreateCrossProviderDiscovery(conf)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	})
+}
+
+func parseProvidersConfig(conf map[string]interface{}) []factory.DiscoveryConfiguration {
+	data, err := json.Marshal(conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results map[string]factory.DiscoveryConfiguration
+
+	if err := json.Unmarshal(data, &results); err != nil {
+		log.Fatal(err)
+	}
+
+	configuration := make([]factory.DiscoveryConfiguration, len(results))
+	for _, val := range results {
+		configuration = append(configuration, val)
+	}
+
+	return configuration
 }
 
 func Execute() {

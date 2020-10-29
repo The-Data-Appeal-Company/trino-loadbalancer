@@ -12,18 +12,18 @@ import (
 type K8sClusterProvider struct {
 	k8sClient     k8s.Interface
 	SelectorTags  map[string]string
-	ctx           context.Context
 	clusterDomain string
 }
 
-func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]string, ctx context.Context, clusterDomain string) *K8sClusterProvider {
-	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, ctx: ctx, clusterDomain: clusterDomain}
+func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]string, clusterDomain string) *K8sClusterProvider {
+	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, clusterDomain: clusterDomain}
 }
 
 func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 
+	ctx := context.TODO()
 	coordinators := make([]models.Coordinator, 0)
-	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(k.ctx, v1.ListOptions{})
+	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx , v1.ListOptions{})
 
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 
 		labelSelector := v1.LabelSelector{MatchLabels: k.SelectorTags}
 
-		services, err := k.k8sClient.CoreV1().Services(ns.Namespace).List(k.ctx, v1.ListOptions{
+		services, err := k.k8sClient.CoreV1().Services(ns.Namespace).List(ctx, v1.ListOptions{
 			LabelSelector: labelSelector.String(),
 		})
 

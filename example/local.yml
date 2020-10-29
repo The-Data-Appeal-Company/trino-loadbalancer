@@ -30,13 +30,17 @@ session:
         enabled: false
 discovery:
   providers:
-    - provider: aws-emr
+
+    aws_eu_west_1:
+      provider: aws-emr
       enabled: false
       aws:
         access_key_id: ''
         secret_key: ''
         region: 'eu-west-1'
-    - provider: k8s
+
+    kube_local:
+      provider: k8s
       enabled: false
       k8s:
         kube_config: 'tdac-test'
