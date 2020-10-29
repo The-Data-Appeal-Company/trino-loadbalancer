@@ -30,18 +30,6 @@ var (
 	discover           discovery.Discovery
 )
 
-type DiscoveryConf struct {
-	provider string            `json:"provider"`
-	enabled  bool              `json:"enabled"`
-	aws      AwsProviderParams `json:"aws"`
-}
-
-type AwsProviderParams struct {
-	accessKeyId string `json:"access_key_id"`
-	secretKey   string `json:"secret_key"`
-	region      string `json:"region"`
-}
-
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file path")
 
@@ -136,7 +124,7 @@ func init() {
 		}
 
 		var discoveryConfs []factory.DiscoveryConfiguration
-		err = viper.UnmarshalKey("discovery.providers", discoveryConfs)
+		err = viper.UnmarshalKey("discovery.providers", &discoveryConfs)
 
 		if err != nil {
 			log.Fatal(err)

@@ -1,0 +1,47 @@
+routing:
+  rule: round-robin
+clusters:
+  sync:
+    delay: 60s
+  statistics:
+    enabled: true
+    delay: 10s
+  healthcheck:
+    enabled: true
+    delay: 10s
+persistence:
+  postgres:
+    db: 'reviews_prod'
+    host: 'reviews-prod-02.clbp5affktnp.eu-west-1.rds.amazonaws.com'
+    port: 5432
+    username: 'prestolb'
+    password: 'pr3st0pr3st0!'
+    ssl_mode: 'disable'
+session:
+  store:
+    redis:
+      opts:
+        prefix: 'presto::'
+        max_ttl: 24h
+      standalone:
+        host: '127.0.0.1:6379'
+        enabled: true
+      sentinel:
+        enabled: false
+discovery:
+  providers:
+    - provider: aws-emr
+      enabled: false
+      aws:
+        access_key_id: ''
+        secret_key: ''
+        region: 'eu-west-1'
+    - provider: k8s
+      enabled: false
+      k8s:
+        kube_config: 'tdac-test'
+        cluster_domain: 'cluster.local'
+        selector_tags:
+          component: 'coordinator'
+          deployment: 'presto'
+          presto.distribution: 'prestosql'
