@@ -68,7 +68,7 @@ func (ms mockServiceDefault) List(ctx context.Context, opts metav1.ListOptions) 
 
 func (ms mockServiceNs1) List(ctx context.Context, opts metav1.ListOptions) (*v1.ServiceList, error) {
 
-	if strings.Contains(opts.LabelSelector, "presto.distribution: prestosql") {
+	if strings.Contains(opts.LabelSelector, "presto.distribution=prestosql") {
 
 		return &v1.ServiceList{
 			TypeMeta: metav1.TypeMeta{},
@@ -101,7 +101,7 @@ func (ms mockServiceNs1) List(ctx context.Context, opts metav1.ListOptions) (*v1
 
 func (ms mockServiceNs2) List(ctx context.Context, opts metav1.ListOptions) (*v1.ServiceList, error) {
 
-	if strings.Contains(opts.LabelSelector, "presto.distribution: prestosql") {
+	if strings.Contains(opts.LabelSelector, "presto.distribution=prestosql") {
 		return &v1.ServiceList{
 			TypeMeta: metav1.TypeMeta{},
 			ListMeta: metav1.ListMeta{},
@@ -148,15 +148,14 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 	clientset := fake.NewSimpleClientset()
 	client := k8sClient{clientset}
 
-	prestoUrl1, _ := url.Parse("prestosql-1.ns-1.cluster.test")
-	prestoDbUrl1, _ := url.Parse("prestodb-1.ns-1.cluster.test")
-	prestoUrl2, _ := url.Parse("prestosql-2.ns-2.cluster.test")
-	prestoUrl12, _ := url.Parse("prestosql-12.ns-1.cluster.test")
+	prestoUrl1, _ := url.Parse("http://prestosql-1.ns-1.svc.cluster.test")
+	prestoDbUrl1, _ := url.Parse("http://prestodb-1.ns-1.svc.cluster.test")
+	prestoUrl2, _ := url.Parse("http://prestosql-2.ns-2.svc.cluster.test")
+	prestoUrl12, _ := url.Parse("http://prestosql-12.ns-1.svc.cluster.test")
 
 	type fields struct {
 		k8sClient     kubernetes.Interface
 		SelectorTags  map[string]string
-		ctx           context.Context
 		clusterDomain string
 	}
 	tests := []struct {
@@ -172,7 +171,6 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				SelectorTags: map[string]string{
 					"presto.distribution": "prestosql",
 				},
-				ctx:           context.TODO(),
 				clusterDomain: "cluster.test",
 			},
 			want: []models.Coordinator{
@@ -213,7 +211,6 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				SelectorTags: map[string]string{
 					"presto.distribution": "prestodb",
 				},
-				ctx:           context.TODO(),
 				clusterDomain: "cluster.test",
 			},
 			want: []models.Coordinator{
@@ -236,7 +233,6 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				SelectorTags: map[string]string{
 					"presto.distribution": "lentodb",
 				},
-				ctx:           context.TODO(),
 				clusterDomain: "cluster.test",
 			},
 			want:    nil,
@@ -250,7 +246,7 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				SelectorTags:  tt.fields.SelectorTags,
 				clusterDomain: tt.fields.clusterDomain,
 			}
-			got, err := k.Discover()
+			got, err := k.Discover(context.TODO())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Discover() error = %v, wantErr %v", err, tt.wantErr)
 				return

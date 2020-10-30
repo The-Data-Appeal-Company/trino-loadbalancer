@@ -20,11 +20,10 @@ func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]stri
 	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, clusterDomain: clusterDomain}
 }
 
-func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
+func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
 
-	ctx := context.TODO()
 	coordinators := make([]models.Coordinator, 0)
-	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx , v1.ListOptions{})
+	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx, v1.ListOptions{})
 
 	if err != nil {
 		return nil, err

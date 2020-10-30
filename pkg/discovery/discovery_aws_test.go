@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
 	"github.com/aws/aws-sdk-go/aws"
@@ -196,7 +197,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 				emrClient:  tt.fields.emrClient,
 				SelectTags: tt.fields.SelectTags,
 			}
-			got, err := c.Discover()
+			got, err := c.Discover(context.TODO())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Discover() error = %v, wantErr %v", err, tt.wantErr)
 				return
