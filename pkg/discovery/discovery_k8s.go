@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	k8s "k8s.io/client-go/kubernetes"
@@ -31,6 +32,8 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 
 	for _, ns := range namespaces.Items {
 
+		logrus.Infof("namespace %s", ns.Name)
+
 		services, err := k.k8sClient.CoreV1().Services(ns.Name).List(ctx, v1.ListOptions{
 			LabelSelector: labels.FormatLabels(k.SelectorTags),
 		})
@@ -40,6 +43,9 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 		}
 
 		for _, svc := range services.Items {
+
+			logrus.Infof("service %s", svc.Name)
+
 			svcUrl, err := url.Parse(fmt.Sprintf("http://%s.%s.svc.%s", svc.Name, svc.Namespace, k.clusterDomain))
 			if err != nil {
 				return nil, err

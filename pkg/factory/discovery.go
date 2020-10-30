@@ -68,7 +68,9 @@ func CreateCrossProviderDiscovery(configs []DiscoveryConfiguration) (discovery.D
 		}
 	}
 
-	return discovery.NewCrossProviderDiscovery(discoveryProviders), nil
+	providerDiscovery := discovery.NewCrossProviderDiscovery(discoveryProviders)
+
+	return providerDiscovery, nil
 }
 
 func CreateDiscoveryProvider(conf DiscoveryConfiguration) (discovery.Discovery, error) {
