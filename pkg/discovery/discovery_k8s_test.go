@@ -58,7 +58,6 @@ func (mc mockCoreV1) Services(namespace string) corev1.ServiceInterface {
 }
 
 func (ms mockServiceDefault) List(ctx context.Context, opts metav1.ListOptions) (*v1.ServiceList, error) {
-
 	return &v1.ServiceList{
 		TypeMeta: metav1.TypeMeta{},
 		ListMeta: metav1.ListMeta{},
@@ -77,11 +76,30 @@ func (ms mockServiceNs1) List(ctx context.Context, opts metav1.ListOptions) (*v1
 				{ObjectMeta: metav1.ObjectMeta{
 					Name:      "prestosql-1",
 					Namespace: "ns-1",
-				}},
+				},
+					Spec: v1.ServiceSpec{
+						Ports: []v1.ServicePort{
+							{
+								Name:     svcPortName,
+								Protocol: "TCP",
+								Port:     8888,
+							},
+						},
+					}},
 				{ObjectMeta: metav1.ObjectMeta{
 					Name:      "prestosql-12",
 					Namespace: "ns-1",
-				}},
+				},
+					Spec: v1.ServiceSpec{
+						Ports: []v1.ServicePort{
+							{
+								Name:     svcPortName,
+								Protocol: "TCP",
+								Port:     8888,
+							},
+						},
+					},
+				},
 			},
 		}, nil
 	}
@@ -93,6 +111,14 @@ func (ms mockServiceNs1) List(ctx context.Context, opts metav1.ListOptions) (*v1
 			{ObjectMeta: metav1.ObjectMeta{
 				Name:      "prestodb-1",
 				Namespace: "ns-1",
+			}, Spec: v1.ServiceSpec{
+				Ports: []v1.ServicePort{
+					{
+						Name:     svcPortName,
+						Protocol: "TCP",
+						Port:     8888,
+					},
+				},
 			}},
 		},
 	}, nil
@@ -109,6 +135,14 @@ func (ms mockServiceNs2) List(ctx context.Context, opts metav1.ListOptions) (*v1
 				{ObjectMeta: metav1.ObjectMeta{
 					Name:      "prestosql-2",
 					Namespace: "ns-2",
+				}, Spec: v1.ServiceSpec{
+					Ports: []v1.ServicePort{
+						{
+							Name:     svcPortName,
+							Protocol: "TCP",
+							Port:     8888,
+						},
+					},
 				}},
 			},
 		}, nil
@@ -148,10 +182,10 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 	clientset := fake.NewSimpleClientset()
 	client := k8sClient{clientset}
 
-	prestoUrl1, _ := url.Parse("http://prestosql-1.ns-1.svc.cluster.test")
-	prestoDbUrl1, _ := url.Parse("http://prestodb-1.ns-1.svc.cluster.test")
-	prestoUrl2, _ := url.Parse("http://prestosql-2.ns-2.svc.cluster.test")
-	prestoUrl12, _ := url.Parse("http://prestosql-12.ns-1.svc.cluster.test")
+	prestoUrl1, _ := url.Parse("http://prestosql-1.ns-1.svc.cluster.test:8888")
+	prestoDbUrl1, _ := url.Parse("http://prestodb-1.ns-1.svc.cluster.test:8888")
+	prestoUrl2, _ := url.Parse("http://prestosql-2.ns-2.svc.cluster.test:8888")
+	prestoUrl12, _ := url.Parse("http://prestosql-12.ns-1.svc.cluster.test:8888")
 
 	type fields struct {
 		k8sClient     kubernetes.Interface

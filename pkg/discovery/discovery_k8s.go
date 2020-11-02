@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
 	"github.com/sirupsen/logrus"
+	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	k8s "k8s.io/client-go/kubernetes"
 	"net/url"
+)
+
+const (
+	svcPortName = "http-coord"
 )
 
 type K8sClusterProvider struct {
@@ -46,7 +51,12 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 
 			logrus.Infof("service %s", svc.Name)
 
-			svcUrl, err := url.Parse(fmt.Sprintf("http://%s.%s.svc.%s", svc.Name, svc.Namespace, k.clusterDomain))
+			servicePort, err := portByName(svc.Spec.Ports, svcPortName)
+			if err != nil {
+				return nil, err
+			}
+
+			svcUrl, err := url.Parse(fmt.Sprintf("http://%s.%s.svc.%s:%d", svc.Name, svc.Namespace, k.clusterDomain, servicePort.Port))
 			if err != nil {
 				return nil, err
 			}
@@ -69,4 +79,14 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 
 	return coordinators, nil
 
+}
+
+func portByName(ports []v12.ServicePort, name string) (v12.ServicePort, error) {
+	for _, port := range ports {
+		if port.Name == name {
+			return port, nil
+		}
+	}
+
+	return v12.ServicePort{}, fmt.Errorf("no port with name %s found", name)
 }
