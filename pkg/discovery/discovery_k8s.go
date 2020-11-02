@@ -36,9 +36,6 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 	}
 
 	for _, ns := range namespaces.Items {
-
-		logrus.Infof("namespace %s", ns.Name)
-
 		services, err := k.k8sClient.CoreV1().Services(ns.Name).List(ctx, v1.ListOptions{
 			LabelSelector: labels.FormatLabels(k.SelectorTags),
 		})
@@ -68,7 +65,7 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 			}
 
 			coordinators = append(coordinators, models.Coordinator{
-				Name:         svc.Name,
+				Name:         fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
 				URL:          svcUrl,
 				Tags:         k.SelectorTags,
 				Enabled:      true,
