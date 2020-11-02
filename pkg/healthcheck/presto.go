@@ -3,20 +3,36 @@ package healthcheck
 import (
 	"database/sql"
 	"fmt"
+	"github.com/prestodb/presto-go-client/presto"
 	_ "github.com/prestodb/presto-go-client/presto"
+	"net/http"
 	"net/url"
 	"time"
 )
 
 type PrestoClusterHealth struct {
+	client *http.Client
 }
 
 func NewPrestoHealth() PrestoClusterHealth {
-	return PrestoClusterHealth{}
+	return PrestoClusterHealth{
+		client: &http.Client{
+			Transport: &http.Transport{
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   10 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+			Timeout: 10 * time.Second,
+		},
+	}
 }
 
 func (p PrestoClusterHealth) Check(u *url.URL) (Health, error) {
-	urlWithName := fmt.Sprintf("%s://hc@%s", u.Scheme, u.Host)
+	if err := presto.RegisterCustomClient("hc", p.client); err != nil {
+		return Health{}, err
+	}
+
+	urlWithName := fmt.Sprintf("%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
 	db, err := sql.Open("presto", urlWithName)
 	if err != nil {
 		return Health{

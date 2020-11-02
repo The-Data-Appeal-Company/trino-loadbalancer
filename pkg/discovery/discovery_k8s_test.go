@@ -248,7 +248,6 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 			k := &K8sClusterProvider{
 				k8sClient:     tt.fields.k8sClient,
 				SelectorTags:  tt.fields.SelectorTags,
-				ctx:           tt.fields.ctx,
 				clusterDomain: tt.fields.clusterDomain,
 			}
 			got, err := k.Discover()
