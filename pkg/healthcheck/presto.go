@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/prestodb/presto-go-client/presto"
 	_ "github.com/prestodb/presto-go-client/presto"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -18,9 +19,13 @@ func NewPrestoHealth() PrestoClusterHealth {
 	return PrestoClusterHealth{
 		client: &http.Client{
 			Transport: &http.Transport{
-				IdleConnTimeout:       90 * time.Second,
+				IdleConnTimeout:       15 * time.Second,
 				TLSHandshakeTimeout:   10 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
+				DialContext: (&net.Dialer{
+					Timeout:   15 * time.Second,
+					KeepAlive: 15 * time.Second,
+				}).DialContext,
 			},
 			Timeout: 10 * time.Second,
 		},
@@ -50,6 +55,8 @@ func (p PrestoClusterHealth) Check(u *url.URL) (Health, error) {
 			Timestamp: time.Now(),
 		}, nil
 	}
+
+	defer row.Close()
 
 	row.Next()
 
