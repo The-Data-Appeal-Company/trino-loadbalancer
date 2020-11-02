@@ -1,9 +1,12 @@
 package discovery
 
-import "github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+import (
+	"context"
+	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+)
 
 type Discovery interface {
-	Discover() ([]models.Coordinator, error)
+	Discover(ctx context.Context) ([]models.Coordinator, error)
 }
 
 type CrossProviderDiscovery struct {
@@ -14,12 +17,12 @@ func NewCrossProviderDiscovery(discoveryProviders []Discovery) *CrossProviderDis
 	return &CrossProviderDiscovery{discoveryProviders: discoveryProviders}
 }
 
-func (c *CrossProviderDiscovery) Discover() ([]models.Coordinator, error) {
+func (c *CrossProviderDiscovery) Discover(ctx context.Context) ([]models.Coordinator, error) {
 
 	coordinators := make([]models.Coordinator, 0)
 
 	for _, dProvider := range c.discoveryProviders {
-		currentProviderCoordinators, err := dProvider.Discover()
+		currentProviderCoordinators, err := dProvider.Discover(ctx)
 
 		if err != nil {
 			return nil, err

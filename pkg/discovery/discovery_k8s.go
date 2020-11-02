@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	k8s "k8s.io/client-go/kubernetes"
 	"net/url"
 )
@@ -19,11 +21,10 @@ func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]stri
 	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, clusterDomain: clusterDomain}
 }
 
-func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
+func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
 
-	ctx := context.TODO()
 	coordinators := make([]models.Coordinator, 0)
-	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx , v1.ListOptions{})
+	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx, v1.ListOptions{})
 
 	if err != nil {
 		return nil, err
@@ -31,10 +32,10 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 
 	for _, ns := range namespaces.Items {
 
-		labelSelector := v1.LabelSelector{MatchLabels: k.SelectorTags}
+		logrus.Infof("namespace %s", ns.Name)
 
-		services, err := k.k8sClient.CoreV1().Services(ns.Namespace).List(ctx, v1.ListOptions{
-			LabelSelector: labelSelector.String(),
+		services, err := k.k8sClient.CoreV1().Services(ns.Name).List(ctx, v1.ListOptions{
+			LabelSelector: labels.FormatLabels(k.SelectorTags),
 		})
 
 		if err != nil {
@@ -42,7 +43,10 @@ func (k *K8sClusterProvider) Discover() ([]models.Coordinator, error) {
 		}
 
 		for _, svc := range services.Items {
-			svcUrl, err := url.Parse(fmt.Sprintf("%s.%s.%s", svc.Name, svc.Namespace, k.clusterDomain))
+
+			logrus.Infof("service %s", svc.Name)
+
+			svcUrl, err := url.Parse(fmt.Sprintf("http://%s.%s.svc.%s", svc.Name, svc.Namespace, k.clusterDomain))
 			if err != nil {
 				return nil, err
 			}

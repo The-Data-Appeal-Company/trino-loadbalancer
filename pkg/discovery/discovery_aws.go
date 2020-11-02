@@ -46,8 +46,8 @@ func AwsEmrDiscovery(cred AwsCredentials) *ClusterProvider {
 	}
 }
 
-func (c *ClusterProvider) Discover() ([]models.Coordinator, error) {
-	masters, err := c.listTargetMasters(context.Background())
+func (c *ClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
+	masters, err := c.listTargetMasters(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -15,7 +15,7 @@ func newConfiguration(kubeConfig *string) (*rest.Config, error) {
 	}
 
 	// we are not in the k8s cluster, try to use local NewConfiguration
-	if kubeConfig == nil {
+	if kubeConfig == nil || *kubeConfig == "" {
 		homeKubeConf := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		kubeConfig = &homeKubeConf
 	}
