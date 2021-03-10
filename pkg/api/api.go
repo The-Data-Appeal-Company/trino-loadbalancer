@@ -27,7 +27,6 @@ func NewApi(statsRetriever statistics.Retriever, discover discovery.Discovery, d
 func (a *Api) Router() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/health", healthProbe)
-
 	r.HandleFunc("/api/stats", a.statistics)
 	r.Methods(http.MethodGet).Path("/api/clusters").HandlerFunc(a.clustersList)
 	r.Methods(http.MethodPatch).Path("/api/cluster/{name}").HandlerFunc(a.updateCluster)

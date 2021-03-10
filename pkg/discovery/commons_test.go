@@ -7,29 +7,29 @@ import (
 
 func TestContains(t *testing.T) {
 
-	require.True(t, containsAllTags(map[string]string{}, map[string]string{}))
+	require.True(t, containsAll(map[string]string{}, map[string]string{}))
 
-	require.True(t, containsAllTags(map[string]string{
+	require.True(t, containsAll(map[string]string{
 		"a": "a",
 	}, map[string]string{
 		"a": "a",
 	}))
 
-	require.True(t, containsAllTags(map[string]string{
+	require.True(t, containsAll(map[string]string{
 		"a": "a",
 		"b": "a",
 	}, map[string]string{
 		"a": "a",
 	}))
 
-	require.False(t, containsAllTags(map[string]string{
+	require.False(t, containsAll(map[string]string{
 		"a": "a",
 	}, map[string]string{
 		"a": "a",
 		"b": "a",
 	}))
 
-	require.True(t, containsAllTags(map[string]string{
+	require.True(t, containsAll(map[string]string{
 		"a": "a",
 	}, map[string]string{}))
 }

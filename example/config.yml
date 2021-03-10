@@ -19,8 +19,8 @@ persistence:
     db: 'postgres'
     host: '127.0.0.1'
     port: 5432
-    username: 'prestohub'
-    password: 'presto'
+    username: 'trinohub'
+    password: 'trino'
     ssl_mode: 'disable'
 
 discovery:
@@ -35,7 +35,7 @@ session:
   store:
     redis:
       opts:
-        prefix: 'presto::'
+        prefix: 'trino::'
         max_ttl: 24h
 
       standalone:

@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
 	"github.com/gorilla/mux"
@@ -134,18 +133,10 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dist, err := a.distFromRequest(req)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	err = a.discoveryStorage.Add(ctx, models.Coordinator{
 		Name:         req.Name,
 		URL:          parsedUrl,
 		Enabled:      req.Enabled,
-		Distribution: dist,
 	})
 
 	if err != nil {
@@ -174,15 +165,4 @@ func (a Api) launchDiscover(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func (a Api) distFromRequest(req ClusterAddRequest) (models.PrestoDist, error) {
-	switch req.Distribution {
-	case string(models.PrestoDistSql):
-		return models.PrestoDistSql, nil
-	case string(models.PrestoDistDb):
-		return models.PrestoDistDb, nil
-	default:
-		return "", fmt.Errorf("unknown distribution %s", req.Distribution)
-	}
 }

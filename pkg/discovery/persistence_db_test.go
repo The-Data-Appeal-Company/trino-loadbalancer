@@ -27,7 +27,6 @@ func TestDbPersistence(t *testing.T) {
 			"test": "true",
 		},
 		Enabled:      true,
-		Distribution: models.PrestoDistSql,
 	}
 	err = storage.Add(ctx, coord0)
 	require.NoError(t, err)
@@ -39,7 +38,6 @@ func TestDbPersistence(t *testing.T) {
 	require.Equal(t, coord0.URL.String(), backends[0].URL.String())
 	require.Equal(t, coord0.Enabled, backends[0].Enabled)
 	require.Equal(t, coord0.Tags, backends[0].Tags)
-	require.Equal(t, coord0.Distribution, backends[0].Distribution)
 
 	backend, err := storage.Get(ctx, coord0.Name)
 	require.NoError(t, err)
@@ -48,7 +46,6 @@ func TestDbPersistence(t *testing.T) {
 	require.Equal(t, coord0.URL.String(), backend.URL.String())
 	require.Equal(t, coord0.Enabled, backend.Enabled)
 	require.Equal(t, coord0.Tags, backend.Tags)
-	require.Equal(t, coord0.Distribution, backend.Distribution)
 
 	err = storage.Remove(ctx, coord0.Name)
 	require.NoError(t, err)

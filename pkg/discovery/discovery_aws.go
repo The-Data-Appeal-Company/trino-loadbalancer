@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	PrestoEmrDefaultPort     = 8889
-	PrestoEmrDefaultProtocol = "http"
+	TrinoEmrDefaultPort     = 8889
+	TrinoEmrDefaultProtocol = "http"
 )
 
 type AwsCredentials struct {
@@ -50,7 +50,7 @@ func (c *ClusterProvider) Discover() ([]models.Coordinator, error) {
 
 	filtered := make([]models.Coordinator, 0)
 	for _, m := range masters {
-		if containsAllTags(m.Tags, c.SelectTags) {
+		if containsAll(m.Tags, c.SelectTags) {
 			filtered = append(filtered, m)
 		}
 	}
@@ -75,19 +75,15 @@ func (c *ClusterProvider) listTargetMasters(ctx context.Context) ([]models.Coord
 			return nil, err
 		}
 
-		masterUrl, err := url.Parse(fmt.Sprintf("%s://%s:%d", PrestoEmrDefaultProtocol, master, PrestoEmrDefaultPort))
+		masterUrl, err := url.Parse(fmt.Sprintf("%s://%s:%d", TrinoEmrDefaultProtocol, master, TrinoEmrDefaultPort))
 		if err != nil {
 			return nil, err
 		}
-
-		prestoDist, _ := checkPrestoDistribution(cluster)
-
 		coordinators = append(coordinators, models.Coordinator{
-			Name:         *cluster.Cluster.Id,
-			URL:          masterUrl,
-			Tags:         tagsToMap(cluster.Cluster.Tags),
-			Enabled:      true,
-			Distribution: prestoDist,
+			Name:    *cluster.Cluster.Id,
+			URL:     masterUrl,
+			Tags:    tagsToMap(cluster.Cluster.Tags),
+			Enabled: true,
 		})
 	}
 
@@ -122,8 +118,7 @@ func (c *ClusterProvider) listTargetClusters(ctx context.Context) ([]*emr.Descri
 				ClusterId: cluster.Id,
 			})
 
-			_, hasPresto := checkPrestoDistribution(descr)
-			if !hasPresto {
+			if !hasTrinoInstallation(descr) {
 				continue
 			}
 
@@ -199,13 +194,11 @@ func (c *ClusterProvider) getMasterInstanceForNodeGroup(cluster *emr.DescribeClu
 	return "", fmt.Errorf("no master instance found for cluster %s", *cluster.Cluster.Id)
 }
 
-func checkPrestoDistribution(descr *emr.DescribeClusterOutput) (models.PrestoDist, bool) {
+func hasTrinoInstallation(descr *emr.DescribeClusterOutput) bool {
 	for _, application := range descr.Cluster.Applications {
-		if strings.ToLower(*application.Name) == "presto" {
-			return models.PrestoDistDb, true
-		} else if strings.ToLower(*application.Name) == "prestosql" {
-			return models.PrestoDistSql, true
+		if strings.Contains(strings.ToLower(*application.Name), "trino") {
+			return true
 		}
 	}
-	return models.PrestoDistSql, false
+	return false
 }

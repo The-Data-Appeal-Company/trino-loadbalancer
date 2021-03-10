@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DefaultDatabaseTableName = "presto_clusters"
+	DefaultDatabaseTableName = "trino_clusters"
 )
 
 type DatabaseStorage struct {
@@ -43,7 +43,7 @@ ON CONFLICT (name) DO UPDATE
 		return fmt.Errorf("error serializing tags: %w", err)
 	}
 
-	_, err = d.db.ExecContext(ctx, query, coordinator.Name, coordinator.URL.String(), tags, coordinator.Enabled, coordinator.Distribution)
+	_, err = d.db.ExecContext(ctx, query, coordinator.Name, coordinator.URL.String(), tags, coordinator.Enabled)
 
 	return err
 }
@@ -103,9 +103,8 @@ func coordinatorFromRow(rows *sql.Rows) (models.Coordinator, error) {
 	var urlRaw string
 	var tagsRaw string
 	var enabled bool
-	var distribution string
 
-	if err := rows.Scan(&name, &urlRaw, &tagsRaw, &enabled, &distribution); err != nil {
+	if err := rows.Scan(&name, &urlRaw, &tagsRaw, &enabled); err != nil {
 		return models.Coordinator{}, err
 	}
 
@@ -124,7 +123,6 @@ func coordinatorFromRow(rows *sql.Rows) (models.Coordinator, error) {
 		URL:          uri,
 		Tags:         tags,
 		Enabled:      enabled,
-		Distribution: models.PrestoDist(distribution),
 	}
 
 	return coordinator, nil
