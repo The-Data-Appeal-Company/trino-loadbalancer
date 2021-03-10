@@ -41,8 +41,8 @@ func TestExtractQueryInfoFromRequest(t *testing.T) {
 
 	for _, u := range urls {
 		headers := http.Header{}
-		headers.Add(PrestoHeaderUser, "test-user")
-		headers.Add(PrestoHeaderTransaction, "test-tx")
+		headers.Add(TrinoHeaderUser, "test-user")
+		headers.Add(TrinoHeaderTransaction, "test-tx")
 
 		queryInfo, err := QueryInfoFromRequest(&http.Request{
 			Method: "POST",
@@ -61,8 +61,8 @@ func TestExtractQueryInfoFromResponse(t *testing.T) {
 	body := `{"id":"20200924_095706_01798_yi2gi","infoUri":"http://localhost:8080/ui/query.html?20200924_095706_01798_yi2gi","nextUri":"http://localhost:8080/v1/statement/20200924_095706_01798_yi2gi/1?slug=xc7951ca2b9124141a6baa68448edb219","stats":{"state":"QUEUED","queued":true,"scheduled":false,"nodes":0,"totalSplits":0,"queuedSplits":0,"runningSplits":0,"completedSplits":0,"cpuTimeMillis":0,"wallTimeMillis":0,"queuedTimeMillis":0,"elapsedTimeMillis":0,"processedRows":0,"processedBytes":0,"peakMemoryBytes":0,"spilledBytes":0},"warnings":[]}`
 
 	headers := http.Header{}
-	headers.Add(PrestoHeaderUser, "test-user")
-	headers.Add(PrestoHeaderTransaction, "test-tx")
+	headers.Add(TrinoHeaderUser, "test-user")
+	headers.Add(TrinoHeaderTransaction, "test-tx")
 
 	req := &http.Request{
 		Method: "POST",

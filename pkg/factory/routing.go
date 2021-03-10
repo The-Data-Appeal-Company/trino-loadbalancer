@@ -2,7 +2,7 @@ package factory
 
 import (
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
 )
 
 type QueryRouterConfiguration struct {

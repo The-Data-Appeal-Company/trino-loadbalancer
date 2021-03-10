@@ -2,11 +2,11 @@ package lb
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

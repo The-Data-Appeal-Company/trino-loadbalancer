@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"

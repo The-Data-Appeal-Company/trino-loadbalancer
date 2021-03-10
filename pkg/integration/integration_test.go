@@ -3,15 +3,15 @@ package integration
 import (
 	"context"
 	"database/sql"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/lb"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/lb"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
@@ -40,7 +40,7 @@ func TestIntegration(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.NewPrestoClusterApi()
 
 	router := routing.New(routing.RoundRobin())

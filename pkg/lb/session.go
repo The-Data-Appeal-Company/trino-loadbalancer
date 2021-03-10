@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -13,14 +13,14 @@ import (
 )
 
 const (
-	PrestoHeaderUser               = "X-Presto-User"
-	PrestoHeaderTransaction        = "X-Presto-Transaction-Id"
-	PrestoHeaderTransactionStarted = "X-Presto-Started-Transaction-Id"
+	TrinoHeaderUser               = "X-Trino-User"
+	TrinoHeaderTransaction        = "X-Trino-Transaction-Id"
+	TrinoHeaderTransactionStarted = "X-Trino-Started-Transaction-Id"
 )
 
 const (
-	PrestoDefaultTransactionID = "NONE"
-	PrestoQueryStatusFinished  = "FINISHED"
+	TrinoDefaultTransactionID = "NONE"
+	TrinoQueryStatusFinished  = "FINISHED"
 )
 
 type QueryClusterLinker struct {
@@ -48,6 +48,7 @@ func (q QueryClusterLinker) Handle(request *http.Request, response *http.Respons
 		return q.storage.Link(request.Context(), queryInfo, q.coordinatorName)
 	}
 
+	// todo we can simplify this nested if with a fail fast
 	if isStatementRequest(request.URL) && request.Method == http.MethodGet {
 		state, err := queryStateFromResponse(response)
 		if err != nil {
@@ -60,7 +61,7 @@ func (q QueryClusterLinker) Handle(request *http.Request, response *http.Respons
 				return err
 			}
 
-			if state.Stats.State == PrestoQueryStatusFinished {
+			if state.Stats.State == TrinoQueryStatusFinished {
 				err = q.storage.Unlink(request.Context(), queryInfo)
 				return err
 			}
@@ -72,11 +73,11 @@ func (q QueryClusterLinker) Handle(request *http.Request, response *http.Respons
 }
 
 func QueryInfoFromResponse(req *http.Request, res *http.Response) (models.QueryInfo, error) {
-	user := req.Header.Get(PrestoHeaderUser)
-	tx := req.Header.Get(PrestoHeaderTransaction)
+	user := req.Header.Get(TrinoHeaderUser)
+	tx := req.Header.Get(TrinoHeaderTransaction)
 
 	if len(tx) == 0 {
-		tx = PrestoDefaultTransactionID
+		tx = TrinoDefaultTransactionID
 	}
 
 	queryState, err := queryStateFromResponse(res)
@@ -91,25 +92,25 @@ func QueryInfoFromResponse(req *http.Request, res *http.Response) (models.QueryI
 	}, nil
 }
 
-func queryStateFromResponse(res *http.Response) (models.PrestoQueryState, error) {
+func queryStateFromResponse(res *http.Response) (models.TrinoQueryState, error) {
 	resp, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return models.PrestoQueryState{}, err
+		return models.TrinoQueryState{}, err
 	}
 
 	var jsonBody = resp
 	if isGzip(jsonBody) {
 		reader, err := gzip.NewReader(bytes.NewBuffer(jsonBody))
 		if err != nil {
-			return models.PrestoQueryState{}, err
+			return models.TrinoQueryState{}, err
 		}
 
 		jsonBody, err = ioutil.ReadAll(reader)
 	}
 
-	var queryState models.PrestoQueryState
+	var queryState models.TrinoQueryState
 	if err := json.Unmarshal(jsonBody, &queryState); err != nil {
-		return models.PrestoQueryState{}, err
+		return models.TrinoQueryState{}, err
 	}
 
 	// Reset response Body ReadCloser to be read again, this should be transparent but we may need
@@ -119,11 +120,11 @@ func queryStateFromResponse(res *http.Response) (models.PrestoQueryState, error)
 }
 
 func QueryInfoFromRequest(req *http.Request) (models.QueryInfo, error) {
-	user := req.Header.Get(PrestoHeaderUser)
-	tx := req.Header.Get(PrestoHeaderTransaction)
+	user := req.Header.Get(TrinoHeaderUser)
+	tx := req.Header.Get(TrinoHeaderTransaction)
 
 	if len(tx) == 0 {
-		tx = PrestoDefaultTransactionID
+		tx = TrinoDefaultTransactionID
 	}
 
 	path := strings.Split(req.URL.Path, "/")

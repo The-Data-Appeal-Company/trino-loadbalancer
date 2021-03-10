@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 )
 
 type Discovery interface {

@@ -1,9 +1,8 @@
-module github.com/The-Data-Appeal-Company/presto-loadbalancer
+module github.com/The-Data-Appeal-Company/trino-loadbalancer
 
 go 1.15
 
 require (
-	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aws/aws-sdk-go v1.34.30
 	github.com/docker/go-connections v0.4.0
 	github.com/go-redis/redis/v8 v8.2.2
@@ -23,6 +22,5 @@ require (
 	k8s.io/api v0.19.3
 	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v0.19.3
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20201027101359-01387209bb0d // indirect
 )

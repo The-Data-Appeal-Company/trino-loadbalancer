@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"

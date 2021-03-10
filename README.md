@@ -1,9 +1,9 @@
 # Presto Hub
 
-# presto-loadbalancer 
-[![Go Report Card](https://goreportcard.com/badge/github.com/The-Data-Appeal-Company/presto-loadbalancer)](https://goreportcard.com/report/github.com/The-Data-Appeal-Company/presto-loadbalancer)
-![Docker](https://github.com/The-Data-Appeal-Company/presto-loadbalancer/workflows/Docker/badge.svg)
-![Tests](https://github.com/The-Data-Appeal-Company/presto-loadbalancer/workflows/Tests/badge.svg)
+# trino-loadbalancer 
+[![Go Report Card](https://goreportcard.com/badge/github.com/The-Data-Appeal-Company/trino-loadbalancer)](https://goreportcard.com/report/github.com/The-Data-Appeal-Company/trino-loadbalancer)
+![Docker](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Docker/badge.svg)
+![Tests](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Tests/badge.svg)
 
 Fast, high available load balancer for presto with smart routing rules
 

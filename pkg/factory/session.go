@@ -3,7 +3,7 @@ package factory
 import (
 	"context"
 	"errors"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
 	"github.com/go-redis/redis/v8"
 	"time"
 )

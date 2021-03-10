@@ -2,8 +2,8 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -14,7 +14,7 @@ func TestMemoryStorage_Add(t *testing.T) {
 
 	coord0 := models.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://presto.local:8080"),
+		URL:     tests.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -36,7 +36,7 @@ func TestMemoryStorage_AddRemove(t *testing.T) {
 
 	coord0 := models.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://presto.local:8080"),
+		URL:     tests.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -62,7 +62,7 @@ func TestMemoryStorage_AddGet(t *testing.T) {
 
 	coord0 := models.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://presto.local:8080"),
+		URL:     tests.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}

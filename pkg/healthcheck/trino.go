@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-type PrestoClusterHealth struct {
+type ClusterHealth struct {
 	client *http.Client
 }
 
-func NewPrestoHealth() PrestoClusterHealth {
-	return PrestoClusterHealth{
+func NewHttpHealth() ClusterHealth {
+	return ClusterHealth{
 		client: &http.Client{
 			Transport: &http.Transport{
 				IdleConnTimeout:       15 * time.Second,
@@ -32,12 +32,12 @@ func NewPrestoHealth() PrestoClusterHealth {
 	}
 }
 
-func (p PrestoClusterHealth) Check(u *url.URL) (Health, error) {
+func (p ClusterHealth) Check(u *url.URL) (Health, error) {
 	if err := presto.RegisterCustomClient("hc", p.client); err != nil {
 		return Health{}, err
 	}
 
-	urlWithName := fmt.Sprintf("%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
+	urlWithName := fmt.Sprintf(	"%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
 	db, err := sql.Open("presto", urlWithName)
 	if err != nil {
 		return Health{

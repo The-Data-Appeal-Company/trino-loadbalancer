@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"errors"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 )
 
 var ErrClusterNotFound = errors.New("cluster not found")

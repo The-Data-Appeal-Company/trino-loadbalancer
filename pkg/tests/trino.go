@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	prestoImage = "prestosql/presto:329"
+	prestoImage = "trinodb/trino:353"
 	prestoPort  = 8080
 )
 

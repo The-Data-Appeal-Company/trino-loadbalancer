@@ -1,13 +1,13 @@
 package lb
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -104,7 +104,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 func TestProxyWithUnhealthyBackend(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})
@@ -163,7 +163,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})
@@ -188,7 +188,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})

@@ -3,12 +3,12 @@ package lb
 import (
 	"errors"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/proxy"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"sync"
 	"time"
 )
@@ -119,7 +119,6 @@ func (p *Pool) Update(name string, state models.Coordinator) error {
 
 	target.Backend.Tags = state.Tags
 	target.Backend.Enabled = state.Enabled
-	target.Backend.Distribution = state.Distribution // this is very unlikely
 
 	p.rwLock.Unlock()
 	return nil

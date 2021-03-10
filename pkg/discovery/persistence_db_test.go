@@ -2,8 +2,8 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

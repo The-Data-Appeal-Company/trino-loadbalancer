@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"github.com/gorilla/mux"
 	"net/http"
 )

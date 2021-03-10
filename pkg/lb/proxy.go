@@ -2,10 +2,10 @@ package lb
 
 import (
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -167,7 +167,7 @@ func routingRequest(backends []*CoordinatorConnection, req *http.Request) routin
 
 	return routing.Request{
 		Coordinators: coordinatorsWithStatistics,
-		User:         req.Header.Get(PrestoHeaderUser),
+		User:         req.Header.Get(TrinoHeaderUser),
 	}
 }
 

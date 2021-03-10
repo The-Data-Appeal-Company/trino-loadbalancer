@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,18 +58,11 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 				return nil, err
 			}
 
-			dist, err := models.ParsePrestoDist(k.SelectorTags["presto.distribution"])
-
-			if err != nil {
-				return nil, err
-			}
-
 			coordinators = append(coordinators, models.Coordinator{
 				Name:         fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
 				URL:          svcUrl,
 				Tags:         k.SelectorTags,
 				Enabled:      true,
-				Distribution: dist,
 			})
 		}
 	}

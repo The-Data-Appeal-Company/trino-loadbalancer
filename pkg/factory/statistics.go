@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 )
 
 type StatisticsConfiguration struct {

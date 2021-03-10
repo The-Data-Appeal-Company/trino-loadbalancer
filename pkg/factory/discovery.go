@@ -3,8 +3,8 @@ package factory
 import (
 	"database/sql"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery/kubernetes"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery/kubernetes"
 	_ "github.com/lib/pq"
 	"net/url"
 )

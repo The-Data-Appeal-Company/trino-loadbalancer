@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/api"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/factory"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/lb"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/ui"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/factory"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/lb"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/ui"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"

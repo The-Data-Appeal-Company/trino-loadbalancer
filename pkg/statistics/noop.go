@@ -1,7 +1,7 @@
 package statistics
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 )
 
 func Noop() NoOp {
