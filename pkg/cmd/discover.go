@@ -21,7 +21,7 @@ var discoverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		for {
-			clusters, err := discover.Discover()
+			clusters, err := discover.Discover(cmd.Context())
 			if err != nil {
 				log.Fatal(err)
 			}

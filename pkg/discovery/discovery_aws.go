@@ -6,8 +6,8 @@ import (
 	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/emr"
 	"net/url"
 	"strings"
@@ -18,6 +18,12 @@ const (
 	TrinoEmrDefaultProtocol = "http"
 )
 
+type ElasticMapReduce interface {
+	ListClustersPagesWithContext(ctx aws.Context, input *emr.ListClustersInput, fn func(*emr.ListClustersOutput, bool) bool, opts ...request.Option) error
+	DescribeCluster(input *emr.DescribeClusterInput) (*emr.DescribeClusterOutput, error)
+	ListInstances(input *emr.ListInstancesInput) (*emr.ListInstancesOutput, error)
+}
+
 type AwsCredentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
@@ -25,8 +31,7 @@ type AwsCredentials struct {
 }
 
 type ClusterProvider struct {
-	emrClient  *emr.EMR
-	ec2Client  *ec2.EC2
+	emrClient  ElasticMapReduce
 	SelectTags map[string]string
 }
 
@@ -38,12 +43,11 @@ func AwsEmrDiscovery(cred AwsCredentials) *ClusterProvider {
 
 	return &ClusterProvider{
 		emrClient: emr.New(sess),
-		ec2Client: ec2.New(sess),
 	}
 }
 
-func (c *ClusterProvider) Discover() ([]models.Coordinator, error) {
-	masters, err := c.listTargetMasters(context.Background())
+func (c *ClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
+	masters, err := c.listTargetMasters(ctx)
 	if err != nil {
 		return nil, err
 	}

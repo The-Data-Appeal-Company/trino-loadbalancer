@@ -151,7 +151,7 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 func (a Api) launchDiscover(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	clusters, err := a.discover.Discover()
+	clusters, err := a.discover.Discover(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
