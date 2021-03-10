@@ -58,9 +58,10 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
 				Id: input.ClusterId,
+				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceGroup),
 				Applications: []*emr.Application{
 					{
-						Name: aws.String("no_presto"),
+						Name: aws.String("no_trino"),
 					},
 				},
 			},
@@ -71,7 +72,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				Id: input.ClusterId,
 				Applications: []*emr.Application{
 					{
-						Name: aws.String("prestosql"),
+						Name: aws.String("trino"),
 					},
 				},
 				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceGroup),
@@ -89,10 +90,10 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				Id: input.ClusterId,
 				Applications: []*emr.Application{
 					{
-						Name: aws.String("presto"),
+						Name: aws.String("trino"),
 					},
 				},
-				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceFleet),
+				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceGroup),
 				Tags: []*emr.Tag{
 					{
 						Key:   aws.String("component"),
@@ -107,10 +108,10 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				Id: input.ClusterId,
 				Applications: []*emr.Application{
 					{
-						Name: aws.String("presto"),
+						Name: aws.String("trino"),
 					},
 				},
-				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceFleet),
+				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceGroup),
 			},
 		}, nil
 	}
@@ -145,8 +146,17 @@ func (E *EMRMock) ListInstances(input *emr.ListInstancesInput) (*emr.ListInstanc
 				},
 			},
 		}, nil
+	} else if *input.ClusterId == "waiting_no_presto" {
+		return &emr.ListInstancesOutput{
+			Instances: []*emr.Instance{
+				{
+					Id:               aws.String("id_4"),
+					PrivateIpAddress: aws.String("10.13.14.15"),
+				},
+			},
+		}, nil
 	}
-	return nil, fmt.Errorf("invalid instance")
+	return nil, fmt.Errorf("invalid instance %s", *input.ClusterId)
 }
 
 func TestClusterProvider_Discover(t *testing.T) {
@@ -176,7 +186,6 @@ func TestClusterProvider_Discover(t *testing.T) {
 						"component": "coordinator",
 					},
 					Enabled:      true,
-					Distribution: "prestosql",
 				},
 				{
 					Name: "running_prestodb",
@@ -185,7 +194,6 @@ func TestClusterProvider_Discover(t *testing.T) {
 						"component": "coordinator",
 					},
 					Enabled:      true,
-					Distribution: "prestodb",
 				},
 			},
 			wantErr: false,

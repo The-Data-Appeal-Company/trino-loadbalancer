@@ -106,6 +106,9 @@ func queryStateFromResponse(res *http.Response) (models.TrinoQueryState, error) 
 		}
 
 		jsonBody, err = ioutil.ReadAll(reader)
+		if err != nil {
+			return models.TrinoQueryState{}, err
+		}
 	}
 
 	var queryState models.TrinoQueryState

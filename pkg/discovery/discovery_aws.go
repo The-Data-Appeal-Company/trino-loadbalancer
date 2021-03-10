@@ -136,7 +136,6 @@ func (c *ClusterProvider) listTargetClusters(ctx context.Context) ([]*emr.Descri
 }
 
 func (c *ClusterProvider) getClusterMasterInstance(cluster *emr.DescribeClusterOutput) (string, error) {
-
 	instanceCollectionType := cluster.Cluster.InstanceCollectionType
 
 	if *instanceCollectionType == emr.InstanceCollectionTypeInstanceGroup {
@@ -149,7 +148,6 @@ func (c *ClusterProvider) getClusterMasterInstance(cluster *emr.DescribeClusterO
 }
 
 func (c *ClusterProvider) getMasterInstanceForFleet(cluster *emr.DescribeClusterOutput) (string, error) {
-
 	instances, err := c.emrClient.ListInstances(&emr.ListInstancesInput{
 		ClusterId:         cluster.Cluster.Id,
 		InstanceFleetType: aws.String(emr.InstanceFleetTypeMaster),
@@ -167,7 +165,6 @@ func (c *ClusterProvider) getMasterInstanceForFleet(cluster *emr.DescribeCluster
 }
 
 func (c *ClusterProvider) getMasterInstanceForNodeGroup(cluster *emr.DescribeClusterOutput) (string, error) {
-
 	instanceGroups, err := c.emrClient.ListInstances(&emr.ListInstancesInput{
 		ClusterId:          cluster.Cluster.Id,
 		InstanceGroupTypes: []*string{aws.String(emr.InstanceGroupTypeMaster)},

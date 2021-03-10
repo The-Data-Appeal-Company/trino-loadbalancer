@@ -92,8 +92,8 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 	require.Len(t, backends, 1)
 
 	_, err = pool.AvailableBackends()
-	require.Error(t, ErrNoBackendsAvailable)
-
+	require.Error(t, err)
+	require.Equal(t, err, ErrNoBackendsAvailable)
 }
 
 func TestPool_RemoveBackend(t *testing.T) {

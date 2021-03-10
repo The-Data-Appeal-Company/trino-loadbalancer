@@ -105,7 +105,6 @@ func (a Api) clustersList(writer http.ResponseWriter, request *http.Request) {
 type ClusterAddRequest struct {
 	Name         string `json:"name"`
 	Url          string `json:"url"`
-	Distribution string `json:"distribution"`
 	Enabled      bool   `json:"enabled"`
 }
 

@@ -42,7 +42,6 @@ func TestApiRetrieverPrestoDB(t *testing.T) {
 		Name:         "test",
 		URL:          tests.MustUrl(apiSrv.URL),
 		Enabled:      true,
-		Distribution: models.PrestoDistDb,
 	})
 	require.NoError(t, err)
 
@@ -110,7 +109,6 @@ func TestApiRetrieverPrestoSQL(t *testing.T) {
 		Name:         "test",
 		URL:          tests.MustUrl(apiSrv.URL),
 		Enabled:      true,
-		Distribution: models.PrestoDistSql,
 	})
 	require.NoError(t, err)
 
@@ -137,7 +135,6 @@ func TestApiRetrieverFailOn404(t *testing.T) {
 		Name:         "test",
 		URL:          tests.MustUrl(apiSrv.URL),
 		Enabled:      true,
-		Distribution: models.PrestoDistDb,
 	})
 	require.Error(t, err)
 }
@@ -165,7 +162,6 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 		Name:         "test",
 		URL:          tests.MustUrl(apiSrv.URL),
 		Enabled:      true,
-		Distribution: models.PrestoDistDb,
 	})
 
 	require.Error(t, err)

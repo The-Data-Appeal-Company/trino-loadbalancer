@@ -70,6 +70,7 @@ func TestMemoryStorage_AddGet(t *testing.T) {
 	require.NoError(t, err)
 
 	coord, err := storage.Get(ctx, coord0.Name)
+	require.NoError(t, err)
 	require.Equal(t, coord0.Name, coord.Name)
 	require.Equal(t, coord0.URL.String(), coord.URL.String())
 	require.Equal(t, coord0.Enabled, coord.Enabled)

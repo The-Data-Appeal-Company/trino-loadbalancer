@@ -33,9 +33,9 @@ func (d DatabaseStorage) Remove(ctx context.Context, name string) error {
 
 func (d DatabaseStorage) Add(ctx context.Context, coordinator models.Coordinator) error {
 	query := fmt.Sprintf(`
-INSERT INTO %s (name, url, tags, enabled, distribution) VALUES ($1, $2, $3, $4, $5) 
+INSERT INTO %s (name, url, tags, enabled) VALUES ($1, $2, $3, $4) 
 ON CONFLICT (name) DO UPDATE 
-	SET tags = excluded.tags, distribution = excluded.distribution, enabled = excluded.enabled 
+	SET tags = excluded.tags, enabled = excluded.enabled 
 `, d.table)
 
 	tags, err := json.Marshal(coordinator.Tags)
@@ -49,7 +49,7 @@ ON CONFLICT (name) DO UPDATE
 }
 
 func (d DatabaseStorage) Get(ctx context.Context, name string) (models.Coordinator, error) {
-	query := fmt.Sprintf("SELECT name, url, tags, enabled, distribution FROM %s WHERE name = $1", d.table)
+	query := fmt.Sprintf("SELECT name, url, tags, enabled FROM %s WHERE name = $1", d.table)
 	rows, err := d.db.QueryContext(ctx, query, name)
 	if err != nil {
 		return models.Coordinator{}, err
@@ -78,7 +78,7 @@ func (d DatabaseStorage) Get(ctx context.Context, name string) (models.Coordinat
 }
 
 func (d DatabaseStorage) All(ctx context.Context) ([]models.Coordinator, error) {
-	query := fmt.Sprintf("SELECT name, url, tags, enabled, distribution FROM %s", d.table)
+	query := fmt.Sprintf("SELECT name, url, tags, enabled FROM %s", d.table)
 	rows, err := d.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err

@@ -209,31 +209,28 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 			},
 			want: []models.Coordinator{
 				{
-					Name: "prestosql-1",
+					Name: "ns-1-prestosql-1",
 					URL:  prestoUrl1,
 					Tags: map[string]string{
 						"presto.distribution": "prestosql",
 					},
 					Enabled:      true,
-					Distribution: "prestosql",
 				},
 				{
-					Name: "prestosql-12",
+					Name: "ns-1-prestosql-12",
 					URL:  prestoUrl12,
 					Tags: map[string]string{
 						"presto.distribution": "prestosql",
 					},
 					Enabled:      true,
-					Distribution: "prestosql",
 				},
 				{
-					Name: "prestosql-2",
+					Name: "ns-2-prestosql-2",
 					URL:  prestoUrl2,
 					Tags: map[string]string{
 						"presto.distribution": "prestosql",
 					},
 					Enabled:      true,
-					Distribution: "prestosql",
 				},
 			},
 			wantErr: false,
@@ -249,28 +246,15 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 			},
 			want: []models.Coordinator{
 				{
-					Name: "prestodb-1",
+					Name: "ns-1-prestodb-1",
 					URL:  prestoDbUrl1,
 					Tags: map[string]string{
 						"presto.distribution": "prestodb",
 					},
 					Enabled:      true,
-					Distribution: "prestodb",
 				},
 			},
 			wantErr: false,
-		},
-		{
-			name: "shouldErrorWhenUnknownDistributionType",
-			fields: fields{
-				k8sClient: client,
-				SelectorTags: map[string]string{
-					"presto.distribution": "lentodb",
-				},
-				clusterDomain: "cluster.test",
-			},
-			want:    nil,
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
