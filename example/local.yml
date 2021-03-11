@@ -44,4 +44,3 @@ discovery:
         cluster_domain: 'cluster.local'
         selector_tags:
           app: 'presto'
-          presto.distribution: 'prestosql'

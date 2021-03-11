@@ -35,7 +35,7 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -77,7 +77,7 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -112,7 +112,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 	err := pool.Add(models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -120,7 +120,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 	err = pool.Add(models.Coordinator{
 		Name:    "coord-1",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -177,7 +177,7 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	err := pool.Add(models.Coordinator{
 		Name:    "coord-1",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -206,7 +206,7 @@ func TestPool_UpdateBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}

@@ -12,15 +12,15 @@ import (
 
 func TestIsStatementRequest(t *testing.T) {
 	valid := []string{
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi",
 	}
 
 	invalid := []string{
-		"http://presto.cluster:8889/v1/cluster",
-		"http://presto.cluster:8889/v2/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.cluster:8889/v1/info",
+		"http://trino.cluster:8889/v1/cluster",
+		"http://trino.cluster:8889/v2/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.cluster:8889/v1/info",
 	}
 
 	for _, u := range valid {
@@ -34,9 +34,9 @@ func TestIsStatementRequest(t *testing.T) {
 func TestExtractQueryInfoFromRequest(t *testing.T) {
 
 	urls := []string{
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi",
 	}
 
 	for _, u := range urls {

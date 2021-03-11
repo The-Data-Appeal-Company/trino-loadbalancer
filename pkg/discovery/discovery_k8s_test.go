@@ -66,74 +66,49 @@ func (ms mockServiceDefault) List(ctx context.Context, opts metav1.ListOptions) 
 }
 
 func (ms mockServiceNs1) List(ctx context.Context, opts metav1.ListOptions) (*v1.ServiceList, error) {
-
-	if strings.Contains(opts.LabelSelector, "presto.distribution=prestosql") {
-
-		return &v1.ServiceList{
-			TypeMeta: metav1.TypeMeta{},
-			ListMeta: metav1.ListMeta{},
-			Items: []v1.Service{
-				{ObjectMeta: metav1.ObjectMeta{
-					Name:      "prestosql-1",
-					Namespace: "ns-1",
-				},
-					Spec: v1.ServiceSpec{
-						Ports: []v1.ServicePort{
-							{
-								Name:     svcPortName,
-								Protocol: "TCP",
-								Port:     8888,
-							},
-						},
-					}},
-				{ObjectMeta: metav1.ObjectMeta{
-					Name:      "prestosql-12",
-					Namespace: "ns-1",
-				},
-					Spec: v1.ServiceSpec{
-						Ports: []v1.ServicePort{
-							{
-								Name:     svcPortName,
-								Protocol: "TCP",
-								Port:     8888,
-							},
-						},
-					},
-				},
-			},
-		}, nil
-	}
-
 	return &v1.ServiceList{
 		TypeMeta: metav1.TypeMeta{},
 		ListMeta: metav1.ListMeta{},
 		Items: []v1.Service{
 			{ObjectMeta: metav1.ObjectMeta{
-				Name:      "prestodb-1",
+				Name:      "trino-1",
 				Namespace: "ns-1",
-			}, Spec: v1.ServiceSpec{
-				Ports: []v1.ServicePort{
-					{
-						Name:     svcPortName,
-						Protocol: "TCP",
-						Port:     8888,
+			},
+				Spec: v1.ServiceSpec{
+					Ports: []v1.ServicePort{
+						{
+							Name:     svcPortName,
+							Protocol: "TCP",
+							Port:     8888,
+						},
+					},
+				}},
+			{ObjectMeta: metav1.ObjectMeta{
+				Name:      "trino-12",
+				Namespace: "ns-1",
+			},
+				Spec: v1.ServiceSpec{
+					Ports: []v1.ServicePort{
+						{
+							Name:     svcPortName,
+							Protocol: "TCP",
+							Port:     8888,
+						},
 					},
 				},
-			}},
+			},
 		},
 	}, nil
-
 }
 
 func (ms mockServiceNs2) List(ctx context.Context, opts metav1.ListOptions) (*v1.ServiceList, error) {
-
-	if strings.Contains(opts.LabelSelector, "presto.distribution=prestosql") {
+	if strings.Contains(opts.LabelSelector, "test=trino") {
 		return &v1.ServiceList{
 			TypeMeta: metav1.TypeMeta{},
 			ListMeta: metav1.ListMeta{},
 			Items: []v1.Service{
 				{ObjectMeta: metav1.ObjectMeta{
-					Name:      "prestosql-2",
+					Name:      "trino-2",
 					Namespace: "ns-2",
 				}, Spec: v1.ServiceSpec{
 					Ports: []v1.ServicePort{
@@ -182,10 +157,10 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 	clientset := fake.NewSimpleClientset()
 	client := k8sClient{clientset}
 
-	prestoUrl1, _ := url.Parse("http://prestosql-1.ns-1.svc.cluster.test:8888")
-	prestoDbUrl1, _ := url.Parse("http://prestodb-1.ns-1.svc.cluster.test:8888")
-	prestoUrl2, _ := url.Parse("http://prestosql-2.ns-2.svc.cluster.test:8888")
-	prestoUrl12, _ := url.Parse("http://prestosql-12.ns-1.svc.cluster.test:8888")
+	trinoUrl1, _ := url.Parse("http://trino-1.ns-1.svc.cluster.test:8888")
+	trinoDbUrl1, _ := url.Parse("http://trino-1.ns-1.svc.cluster.test:8888")
+	trinoUrl2, _ := url.Parse("http://trino-2.ns-2.svc.cluster.test:8888")
+	trinoUrl12, _ := url.Parse("http://trino-12.ns-1.svc.cluster.test:8888")
 
 	type fields struct {
 		k8sClient     kubernetes.Interface
@@ -199,59 +174,75 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "shouldDiscoverPrestoSqlInK8sCluster",
+			name: "shouldDiscoverTrinoSqlInK8sCluster",
 			fields: fields{
 				k8sClient: client,
 				SelectorTags: map[string]string{
-					"presto.distribution": "prestosql",
+					"test": "trino",
 				},
 				clusterDomain: "cluster.test",
 			},
 			want: []models.Coordinator{
 				{
-					Name: "ns-1-prestosql-1",
-					URL:  prestoUrl1,
+					Name: "ns-1-trino-1",
+					URL:  trinoUrl1,
 					Tags: map[string]string{
-						"presto.distribution": "prestosql",
+						"test": "trino",
 					},
-					Enabled:      true,
+					Enabled: true,
 				},
 				{
-					Name: "ns-1-prestosql-12",
-					URL:  prestoUrl12,
+					Name: "ns-1-trino-12",
+					URL:  trinoUrl12,
 					Tags: map[string]string{
-						"presto.distribution": "prestosql",
+						"test": "trino",
 					},
-					Enabled:      true,
+					Enabled: true,
 				},
 				{
-					Name: "ns-2-prestosql-2",
-					URL:  prestoUrl2,
+					Name: "ns-2-trino-2",
+					URL:  trinoUrl2,
 					Tags: map[string]string{
-						"presto.distribution": "prestosql",
+						"test": "trino",
 					},
-					Enabled:      true,
+					Enabled: true,
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "shouldDiscoverPrestoDbInK8sCluster",
+			name: "shouldDiscoverTrinoDbInK8sCluster",
 			fields: fields{
 				k8sClient: client,
 				SelectorTags: map[string]string{
-					"presto.distribution": "prestodb",
+					"test": "trino",
 				},
 				clusterDomain: "cluster.test",
 			},
 			want: []models.Coordinator{
 				{
-					Name: "ns-1-prestodb-1",
-					URL:  prestoDbUrl1,
+					Name: "ns-1-trino-1",
+					URL:  trinoDbUrl1,
 					Tags: map[string]string{
-						"presto.distribution": "prestodb",
+						"test": "trino",
 					},
-					Enabled:      true,
+					Enabled: true,
+				},
+				{
+					Name: "ns-1-trino-12",
+					URL:  trinoUrl12,
+					Tags: map[string]string{
+						"test": "trino",
+					},
+					Enabled: true,
+				},
+				{
+					Name: "ns-2-trino-2",
+					URL:  trinoUrl2,
+					Tags: map[string]string{
+						"test": "trino",
+					},
+					Enabled: true,
 				},
 			},
 			wantErr: false,

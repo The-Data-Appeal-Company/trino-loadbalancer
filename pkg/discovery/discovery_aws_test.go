@@ -24,25 +24,25 @@ func (E *EMRMock) ListClustersPagesWithContext(ctx aws.Context, input *emr.ListC
 				},
 			},
 			{
-				Id: aws.String("waiting_no_presto"),
+				Id: aws.String("waiting_no_trino"),
 				Status: &emr.ClusterStatus{
 					State: aws.String(emr.ClusterStateWaiting),
 				},
 			},
 			{
-				Id: aws.String("running_prestosql"),
+				Id: aws.String("running_trino"),
 				Status: &emr.ClusterStatus{
 					State: aws.String(emr.ClusterStateRunning),
 				},
 			},
 			{
-				Id: aws.String("running_prestodb"),
+				Id: aws.String("running_trinodb"),
 				Status: &emr.ClusterStatus{
 					State: aws.String(emr.ClusterStateRunning),
 				},
 			},
 			{
-				Id: aws.String("running_prestodb_no_tags"),
+				Id: aws.String("running_trinodb_no_tags"),
 				Status: &emr.ClusterStatus{
 					State: aws.String(emr.ClusterStateRunning),
 				},
@@ -54,7 +54,7 @@ func (E *EMRMock) ListClustersPagesWithContext(ctx aws.Context, input *emr.ListC
 }
 
 func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.DescribeClusterOutput, error) {
-	if *input.ClusterId == "waiting_no_presto" {
+	if *input.ClusterId == "waiting_no_trino" {
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
 				Id: input.ClusterId,
@@ -66,7 +66,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "running_prestosql" {
+	} else if *input.ClusterId == "running_trino" {
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
 				Id: input.ClusterId,
@@ -84,7 +84,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "running_prestodb" {
+	} else if *input.ClusterId == "running_trinodb" {
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
 				Id: input.ClusterId,
@@ -102,7 +102,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "running_prestodb_no_tags" {
+	} else if *input.ClusterId == "running_trinodb_no_tags" {
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
 				Id: input.ClusterId,
@@ -119,7 +119,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 }
 
 func (E *EMRMock) ListInstances(input *emr.ListInstancesInput) (*emr.ListInstancesOutput, error) {
-	if *input.ClusterId == "running_prestosql" {
+	if *input.ClusterId == "running_trino" {
 		return &emr.ListInstancesOutput{
 			Instances: []*emr.Instance{
 				{
@@ -128,7 +128,7 @@ func (E *EMRMock) ListInstances(input *emr.ListInstancesInput) (*emr.ListInstanc
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "running_prestodb" {
+	} else if *input.ClusterId == "running_trinodb" {
 		return &emr.ListInstancesOutput{
 			Instances: []*emr.Instance{
 				{
@@ -137,7 +137,7 @@ func (E *EMRMock) ListInstances(input *emr.ListInstancesInput) (*emr.ListInstanc
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "running_prestodb_no_tags" {
+	} else if *input.ClusterId == "running_trinodb_no_tags" {
 		return &emr.ListInstancesOutput{
 			Instances: []*emr.Instance{
 				{
@@ -146,7 +146,7 @@ func (E *EMRMock) ListInstances(input *emr.ListInstancesInput) (*emr.ListInstanc
 				},
 			},
 		}, nil
-	} else if *input.ClusterId == "waiting_no_presto" {
+	} else if *input.ClusterId == "waiting_no_trino" {
 		return &emr.ListInstancesOutput{
 			Instances: []*emr.Instance{
 				{
@@ -171,7 +171,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "should discover both prestosql and prestodb, both group and fleet and filter cluster by tags",
+			name: "should discover trino from both group and fleet and filter cluster by tags",
 			fields: fields{
 				emrClient: &EMRMock{},
 				SelectTags: map[string]string{
@@ -180,7 +180,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 			},
 			want: []models.Coordinator{
 				{
-					Name: "running_prestosql",
+					Name: "running_trino",
 					URL:  getUrlOrPanic("http://10.11.12.13:8889"),
 					Tags: map[string]string{
 						"component": "coordinator",
@@ -188,7 +188,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 					Enabled:      true,
 				},
 				{
-					Name: "running_prestodb",
+					Name: "running_trinodb",
 					URL:  getUrlOrPanic("http://10.12.13.14:8889"),
 					Tags: map[string]string{
 						"component": "coordinator",

@@ -38,8 +38,7 @@ discovery:
         cluster_domain: 'cluster.local'
         selector_tags:
           component: 'coordinator'
-          deployment: 'presto'
-          presto.distribution: 'prestosql'
+          deployment: 'trino'
 
 
 session:

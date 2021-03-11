@@ -29,7 +29,7 @@ func init() {
 
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
-	Short: "start presto load balancer",
+	Short: "start load balancer",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if enableProfiling {
@@ -52,7 +52,7 @@ var proxyCmd = &cobra.Command{
 		pool := lb.NewPool(poolConfig, sessionStorage, clusterHealthCheck, clusterStats, logger)
 		sync := lb.NewPoolStateSync(discoveryStorage, logger)
 
-		logger.Info("presto proxy initialized, syncing cluster state")
+		logger.Info("proxy initialized, syncing cluster state")
 
 		if err := sync.Sync(pool); err != nil {
 			log.Fatal(err)
@@ -64,7 +64,7 @@ var proxyCmd = &cobra.Command{
 			SyncDelay: viper.GetDuration("clusters.sync.delay"),
 		}
 
-		proxy := lb.NewTrinoProxy(conf, pool, sync, sessionStorage, router, logger)
+		proxy := lb.NewProxy(conf, pool, sync, sessionStorage, router, logger)
 		if err := proxy.Init(); err != nil {
 			log.Fatal(err)
 		}
