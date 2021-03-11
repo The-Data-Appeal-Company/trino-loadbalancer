@@ -25,7 +25,7 @@ type PrestoProxy struct {
 	termSync      chan bool
 }
 
-func NewPrestoProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *PrestoProxy {
+func NewTrinoProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *PrestoProxy {
 	return &PrestoProxy{
 		conf:          conf,
 		poolSync:      sync,

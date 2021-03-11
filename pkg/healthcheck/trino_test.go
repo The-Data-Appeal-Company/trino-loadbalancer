@@ -13,7 +13,7 @@ func TestPrestoClusterHealth_Check(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	container, _, err := tests.CreatePrestoDatabase(ctx)
+	container, _, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 

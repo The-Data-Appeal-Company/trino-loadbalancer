@@ -13,5 +13,5 @@ func CreateStatisticsRetriever(conf StatisticsConfiguration) (statistics.Retriev
 		return statistics.Noop(), nil
 	}
 
-	return statistics.NewPrestoClusterApi(), nil
+	return statistics.NewClusterApi(), nil
 }

@@ -64,7 +64,7 @@ var proxyCmd = &cobra.Command{
 			SyncDelay: viper.GetDuration("clusters.sync.delay"),
 		}
 
-		proxy := lb.NewPrestoProxy(conf, pool, sync, sessionStorage, router, logger)
+		proxy := lb.NewTrinoProxy(conf, pool, sync, sessionStorage, router, logger)
 		if err := proxy.Init(); err != nil {
 			log.Fatal(err)
 		}

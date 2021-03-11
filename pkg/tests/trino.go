@@ -13,64 +13,64 @@ import (
 )
 
 const (
-	prestoImage = "trinodb/trino:353"
-	prestoPort  = 8080
+	trinoImage = "trinodb/trino:353"
+	trinoPort  = 8080
 )
 
-func CreatePrestoDatabase(ctx context.Context, opts ...InitOpt) (testcontainers.Container, *url.URL, error) {
-	presto, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+func CreateTrinoCluster(ctx context.Context, opts ...InitOpt) (testcontainers.Container, *url.URL, error) {
+	trino, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        prestoImage,
-			ExposedPorts: []string{fmt.Sprintf("%d/tcp", prestoPort)},
+			Image:        trinoImage,
+			ExposedPorts: []string{fmt.Sprintf("%d/tcp", trinoPort)},
 			WaitingFor:   wait.ForLog("SERVER STARTED"),
 		},
 		Started: false,
 	})
 
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
-	err = presto.Start(ctx)
+	err = trino.Start(ctx)
 
 	time.Sleep(1 * time.Second)
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
 	// At the end of the test remove the container
-	// defer presto.Terminate(ctx)
+	// defer trino.Terminate(ctx)
 	// Retrieve the container IP
 
-	ip, err := presto.Host(ctx)
+	ip, err := trino.Host(ctx)
 
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
-	port, err := presto.MappedPort(ctx, nat.Port(fmt.Sprintf("%d", prestoPort)))
+	port, err := trino.MappedPort(ctx, nat.Port(fmt.Sprintf("%d", trinoPort)))
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
 	conn := fmt.Sprintf("http://%s:%d", ip, port.Int())
 
 	uri, err := url.Parse(conn)
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
-	db, err := sql.Open("presto", conn)
+	db, err := sql.Open("trino", conn)
 
 	if err != nil {
-		return presto, nil, err
+		return trino, nil, err
 	}
 
 	for _, opt := range opts {
 		if err := opt.Init(db); err != nil {
-			return presto, uri, err
+			return trino, uri, err
 		}
 	}
 
-	return presto, uri, nil
+	return trino, uri, nil
 }

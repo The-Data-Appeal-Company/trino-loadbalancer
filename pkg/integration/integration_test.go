@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 )
-import _ "github.com/prestodb/presto-go-client/presto"
+import _ "github.com/trinodb/trino-go-client/trino"
 
 var proxyConfig = lb.ProxyConf{SyncDelay: 1 * time.Hour}
 
@@ -26,22 +26,22 @@ func TestIntegration(t *testing.T) {
 
 	ctx := context.Background()
 
-	cluster0, c0, err := tests.CreatePrestoDatabase(ctx)
+	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster0.Terminate(ctx)
 
-	cluster1, c1, err := tests.CreatePrestoDatabase(ctx)
+	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster1.Terminate(ctx)
 
-	cluster2, c2, err := tests.CreatePrestoDatabase(ctx)
+	cluster2, c2, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster2.Terminate(ctx)
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NewHttpHealth()
-	stats := statistics.NewPrestoClusterApi()
+	stats := statistics.NewClusterApi()
 
 	router := routing.New(routing.RoundRobin())
 
@@ -82,7 +82,7 @@ func TestIntegration(t *testing.T) {
 	err = poolSync.Sync(pool)
 	require.NoError(t, err)
 
-	proxy := lb.NewPrestoProxy(proxyConfig, pool, poolSync, sessStore, router, logger)
+	proxy := lb.NewTrinoProxy(proxyConfig, pool, poolSync, sessStore, router, logger)
 
 	go func() {
 		require.NoError(t, proxy.Init())
@@ -117,7 +117,7 @@ func TestIntegration(t *testing.T) {
 
 func testQuery(address string) error {
 	dsn := address
-	db, err := sql.Open("presto", dsn)
+	db, err := sql.Open("trino", dsn)
 	if err != nil {
 		return err
 	}

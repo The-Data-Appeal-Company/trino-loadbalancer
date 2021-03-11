@@ -19,7 +19,7 @@ type TrinoClusterApi struct {
 	trinoAuthState *trinoAuthState
 }
 
-func NewPrestoClusterApi() *TrinoClusterApi {
+func NewClusterApi() *TrinoClusterApi {
 	return &TrinoClusterApi{
 		client: &http.Client{
 			Timeout: 10 * time.Second,
@@ -35,7 +35,6 @@ func NewPrestoClusterApi() *TrinoClusterApi {
 }
 
 func (p *TrinoClusterApi) GetStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
-
 	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
 
 	if !hasAuth {
