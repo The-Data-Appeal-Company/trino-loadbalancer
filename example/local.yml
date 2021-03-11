@@ -11,8 +11,8 @@ clusters:
     delay: 10s
 persistence:
   postgres:
-    db: 'reviews_prod'
-    host: 'reviews-prod-02.clbp5affktnp.eu-west-1.rds.amazonaws.com'
+    db: 'public'
+    host: 'pg.host.uri'
     port: 5432
     username: ''
     password: ''
@@ -21,7 +21,7 @@ session:
   store:
     redis:
       opts:
-        prefix: 'presto::'
+        prefix: 'trino::'
         max_ttl: 24h
       standalone:
         host: '127.0.0.1:6379'
@@ -43,4 +43,4 @@ discovery:
       k8s:
         cluster_domain: 'cluster.local'
         selector_tags:
-          app: 'presto'
+          app: 'trino'
