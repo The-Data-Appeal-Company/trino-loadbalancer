@@ -3,7 +3,7 @@ package healthcheck
 import (
 	"database/sql"
 	"fmt"
-	"github.com/prestodb/presto-go-client/presto"
+	"github.com/trinodb/trino-go-client/trino"
 	_ "github.com/trinodb/trino-go-client/trino"
 	"net"
 	"net/http"
@@ -33,7 +33,7 @@ func NewHttpHealth() ClusterHealth {
 }
 
 func (p ClusterHealth) Check(u *url.URL) (Health, error) {
-	if err := presto.RegisterCustomClient("hc", p.client); err != nil {
+	if err := trino.RegisterCustomClient("hc", p.client); err != nil {
 		return Health{}, err
 	}
 
