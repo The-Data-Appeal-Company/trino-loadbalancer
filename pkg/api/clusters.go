@@ -2,9 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -106,7 +105,6 @@ func (a Api) clustersList(writer http.ResponseWriter, request *http.Request) {
 type ClusterAddRequest struct {
 	Name         string `json:"name"`
 	Url          string `json:"url"`
-	Distribution string `json:"distribution"`
 	Enabled      bool   `json:"enabled"`
 }
 
@@ -134,18 +132,10 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dist, err := a.distFromRequest(req)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	err = a.discoveryStorage.Add(ctx, models.Coordinator{
 		Name:         req.Name,
 		URL:          parsedUrl,
 		Enabled:      req.Enabled,
-		Distribution: dist,
 	})
 
 	if err != nil {
@@ -160,7 +150,7 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 func (a Api) launchDiscover(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	clusters, err := a.discover.Discover()
+	clusters, err := a.discover.Discover(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -174,15 +164,4 @@ func (a Api) launchDiscover(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func (a Api) distFromRequest(req ClusterAddRequest) (models.PrestoDist, error) {
-	switch req.Distribution {
-	case string(models.PrestoDistSql):
-		return models.PrestoDistSql, nil
-	case string(models.PrestoDistDb):
-		return models.PrestoDistDb, nil
-	default:
-		return "", fmt.Errorf("unknown distribution %s", req.Distribution)
-	}
 }

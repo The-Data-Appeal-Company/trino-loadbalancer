@@ -3,21 +3,21 @@ package integration
 import (
 	"context"
 	"database/sql"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/lb"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/lb"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
 	"time"
 )
-import _ "github.com/prestodb/presto-go-client/presto"
+import _ "github.com/trinodb/trino-go-client/trino"
 
 var proxyConfig = lb.ProxyConf{SyncDelay: 1 * time.Hour}
 
@@ -26,22 +26,22 @@ func TestIntegration(t *testing.T) {
 
 	ctx := context.Background()
 
-	cluster0, c0, err := tests.CreatePrestoDatabase(ctx)
+	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster0.Terminate(ctx)
 
-	cluster1, c1, err := tests.CreatePrestoDatabase(ctx)
+	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster1.Terminate(ctx)
 
-	cluster2, c2, err := tests.CreatePrestoDatabase(ctx)
+	cluster2, c2, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer cluster2.Terminate(ctx)
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
-	stats := statistics.NewPrestoClusterApi()
+	hc := healthcheck.NewHttpHealth()
+	stats := statistics.NewClusterApi()
 
 	router := routing.New(routing.RoundRobin())
 
@@ -82,7 +82,7 @@ func TestIntegration(t *testing.T) {
 	err = poolSync.Sync(pool)
 	require.NoError(t, err)
 
-	proxy := lb.NewPrestoProxy(proxyConfig, pool, poolSync, sessStore, router, logger)
+	proxy := lb.NewProxy(proxyConfig, pool, poolSync, sessStore, router, logger)
 
 	go func() {
 		require.NoError(t, proxy.Init())
@@ -109,15 +109,14 @@ func TestIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := 0; i < 5; i++ {
-		err = testQuery("http://test@localhost:4322?catalog=memory")
+		err = testQuery("http://test@localhost:4322?catalog=memory&schema=test")
 		require.NoError(t, err)
 	}
 
 }
 
 func testQuery(address string) error {
-	dsn := address
-	db, err := sql.Open("presto", dsn)
+	db, err := sql.Open("trino", address)
 	if err != nil {
 		return err
 	}

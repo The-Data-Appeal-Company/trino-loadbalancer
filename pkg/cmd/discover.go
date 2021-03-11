@@ -17,11 +17,11 @@ func init() {
 
 var discoverCmd = &cobra.Command{
 	Use:   "discovery",
-	Short: "start presto cluster discovery",
+	Short: "start cluster discovery",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		for {
-			clusters, err := discover.Discover()
+			clusters, err := discover.Discover(cmd.Context())
 			if err != nil {
 				log.Fatal(err)
 			}

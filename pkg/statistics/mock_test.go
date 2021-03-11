@@ -2,7 +2,7 @@ package statistics
 
 import (
 	"errors"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

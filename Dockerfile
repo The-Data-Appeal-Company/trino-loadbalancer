@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.15
+ARG GO_VERSION=1.16
 ARG UI_VERSION=latest
 
 FROM golang:${GO_VERSION}-alpine AS binary-builder

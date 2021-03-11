@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 )
 
 func NewStorageCache(source Storage, cache *Memory) *StorageCache {

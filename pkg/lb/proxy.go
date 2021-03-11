@@ -2,10 +2,10 @@ package lb
 
 import (
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -15,7 +15,7 @@ type ProxyConf struct {
 	SyncDelay time.Duration
 }
 
-type PrestoProxy struct {
+type Proxy struct {
 	conf          ProxyConf
 	logger        logging.Logger
 	pool          *Pool
@@ -25,8 +25,8 @@ type PrestoProxy struct {
 	termSync      chan bool
 }
 
-func NewPrestoProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *PrestoProxy {
-	return &PrestoProxy{
+func NewProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *Proxy {
+	return &Proxy{
 		conf:          conf,
 		poolSync:      sync,
 		router:        router,
@@ -37,7 +37,7 @@ func NewPrestoProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader sessio
 	}
 }
 
-func (p *PrestoProxy) Router() *mux.Router {
+func (p *Proxy) Router() *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/health", func(writer http.ResponseWriter, request *http.Request) {
@@ -48,7 +48,7 @@ func (p *PrestoProxy) Router() *mux.Router {
 	return r
 }
 
-func (p *PrestoProxy) Init() error {
+func (p *Proxy) Init() error {
 	// TODO We can start the proxy when we have at least 1 available cluster
 	if err := p.poolSync.Sync(p.pool); err != nil {
 		return err
@@ -58,7 +58,7 @@ func (p *PrestoProxy) Init() error {
 	return nil
 }
 
-func (p *PrestoProxy) Serve(addr string) error {
+func (p *Proxy) Serve(addr string) error {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: p.Router(),
@@ -66,7 +66,7 @@ func (p *PrestoProxy) Serve(addr string) error {
 	return srv.ListenAndServe()
 }
 
-func (p *PrestoProxy) Handle(writer http.ResponseWriter, request *http.Request) {
+func (p *Proxy) Handle(writer http.ResponseWriter, request *http.Request) {
 	coordinator, err := p.selectCoordinatorForRequest(request)
 	if err == ErrNoBackendsAvailable {
 		p.logger.Warn("no available backends for request %s", request.URL)
@@ -86,7 +86,7 @@ func (p *PrestoProxy) Handle(writer http.ResponseWriter, request *http.Request) 
 	}
 }
 
-func (p *PrestoProxy) selectCoordinatorForRequest(request *http.Request) (*CoordinatorConnection, error) {
+func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (*CoordinatorConnection, error) {
 
 	// the request is not query related OR the request is a query submission
 	// we can apply the user selected request routing algorithm
@@ -132,7 +132,7 @@ func (p *PrestoProxy) selectCoordinatorForRequest(request *http.Request) (*Coord
 }
 
 // retrieve backend by name, if not present force cluster status sync for the pool and then try again to fetch the request backend,
-func (p *PrestoProxy) getBackendByName(name string) (*CoordinatorConnection, error) {
+func (p *Proxy) getBackendByName(name string) (*CoordinatorConnection, error) {
 	backend, err := p.pool.GetByName(name, healthcheck.StatusUnhealthy)
 	if err != nil {
 		// If the pool doesn't have a backend with the specified name we force a state refresh to be sure that we
@@ -167,11 +167,11 @@ func routingRequest(backends []*CoordinatorConnection, req *http.Request) routin
 
 	return routing.Request{
 		Coordinators: coordinatorsWithStatistics,
-		User:         req.Header.Get(PrestoHeaderUser),
+		User:         req.Header.Get(TrinoHeaderUser),
 	}
 }
 
-func (p *PrestoProxy) syncPoolState() {
+func (p *Proxy) syncPoolState() {
 	ticker := time.NewTicker(p.conf.SyncDelay)
 	for {
 		select {
@@ -185,7 +185,7 @@ func (p *PrestoProxy) syncPoolState() {
 	}
 }
 
-func (p *PrestoProxy) Close() error {
+func (p *Proxy) Close() error {
 	p.termSync <- true
 	return nil
 }

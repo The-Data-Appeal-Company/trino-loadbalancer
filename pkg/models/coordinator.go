@@ -1,12 +1,7 @@
 package models
 
-import "net/url"
-
-type PrestoDist string
-
-var (
-	PrestoDistSql PrestoDist = "prestosql"
-	PrestoDistDb  PrestoDist = "prestodb"
+import (
+	"net/url"
 )
 
 type Coordinator struct {
@@ -14,5 +9,4 @@ type Coordinator struct {
 	URL          *url.URL
 	Tags         map[string]string
 	Enabled      bool
-	Distribution PrestoDist
 }

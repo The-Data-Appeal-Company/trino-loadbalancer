@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/factory"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/factory"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -16,8 +17,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "github.com/The-Data-Appeal-Company/presto-loadbalancer",
-	Short: "github.com/The-Data-Appeal-Company/presto-loadbalancer is a fast, high available loadbalancer for presto",
+	Use:   "github.com/The-Data-Appeal-Company/trino-loadbalancer",
+	Short: "github.com/The-Data-Appeal-Company/trino-loadbalancer is a fast, high available loadbalancer for trino",
 }
 
 var (
@@ -40,7 +41,7 @@ func init() {
 	viper.SetDefault("persistence.postgres.password", "")
 	viper.SetDefault("persistence.postgres.ssl_mode", "disable")
 
-	viper.SetDefault("session.store.redis.opts.prefix", "github.com/The-Data-Appeal-Company/presto-loadbalancer::")
+	viper.SetDefault("session.store.redis.opts.prefix", "github.com/The-Data-Appeal-Company/trino-loadbalancer::")
 	viper.SetDefault("session.store.redis.opts.max_ttl", 24*time.Hour)
 
 	viper.SetDefault("session.store.redis.standalone.enabled", true)
@@ -123,21 +124,34 @@ func init() {
 			log.Fatal(err)
 		}
 
-		discover, err = factory.CreateDiscovery(factory.DiscoveryConfiguration{
-			Enabled: viper.GetBool("discovery.enabled"),
-			Type:    viper.GetString("discovery.type"),
-			Aws: factory.AwsDiscoveryConfiguration{
-				AwsAccessKeyID: viper.GetString("discovery.aws.access_key_id"),
-				AwsSecretKey:   viper.GetString("discovery.aws.secret_key"),
-				AwsRegion:      viper.GetString("discovery.aws.region"),
-			},
-		})
+		conf := parseProvidersConfig(viper.GetStringMap("discovery.providers"))
 
+		discover, err = factory.CreateCrossProviderDiscovery(conf)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	})
+}
+
+func parseProvidersConfig(conf map[string]interface{}) []factory.DiscoveryConfiguration {
+	data, err := json.Marshal(conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results map[string]factory.DiscoveryConfiguration
+
+	if err := json.Unmarshal(data, &results); err != nil {
+		log.Fatal(err)
+	}
+
+	configuration := make([]factory.DiscoveryConfiguration, 0)
+	for _, val := range results {
+		configuration = append(configuration, val)
+	}
+
+	return configuration
 }
 
 func Execute() {

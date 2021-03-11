@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"net/url"
 )
 
 const (
-	DefaultDatabaseTableName = "presto_clusters"
+	DefaultDatabaseTableName = "trino_clusters"
 )
 
 type DatabaseStorage struct {
@@ -33,9 +33,9 @@ func (d DatabaseStorage) Remove(ctx context.Context, name string) error {
 
 func (d DatabaseStorage) Add(ctx context.Context, coordinator models.Coordinator) error {
 	query := fmt.Sprintf(`
-INSERT INTO %s (name, url, tags, enabled, distribution) VALUES ($1, $2, $3, $4, $5) 
+INSERT INTO %s (name, url, tags, enabled) VALUES ($1, $2, $3, $4) 
 ON CONFLICT (name) DO UPDATE 
-	SET tags = excluded.tags, distribution = excluded.distribution, enabled = excluded.enabled 
+	SET tags = excluded.tags, enabled = excluded.enabled 
 `, d.table)
 
 	tags, err := json.Marshal(coordinator.Tags)
@@ -43,13 +43,13 @@ ON CONFLICT (name) DO UPDATE
 		return fmt.Errorf("error serializing tags: %w", err)
 	}
 
-	_, err = d.db.ExecContext(ctx, query, coordinator.Name, coordinator.URL.String(), tags, coordinator.Enabled, coordinator.Distribution)
+	_, err = d.db.ExecContext(ctx, query, coordinator.Name, coordinator.URL.String(), tags, coordinator.Enabled)
 
 	return err
 }
 
 func (d DatabaseStorage) Get(ctx context.Context, name string) (models.Coordinator, error) {
-	query := fmt.Sprintf("SELECT name, url, tags, enabled, distribution FROM %s WHERE name = $1", d.table)
+	query := fmt.Sprintf("SELECT name, url, tags, enabled FROM %s WHERE name = $1", d.table)
 	rows, err := d.db.QueryContext(ctx, query, name)
 	if err != nil {
 		return models.Coordinator{}, err
@@ -78,7 +78,7 @@ func (d DatabaseStorage) Get(ctx context.Context, name string) (models.Coordinat
 }
 
 func (d DatabaseStorage) All(ctx context.Context) ([]models.Coordinator, error) {
-	query := fmt.Sprintf("SELECT name, url, tags, enabled, distribution FROM %s", d.table)
+	query := fmt.Sprintf("SELECT name, url, tags, enabled FROM %s", d.table)
 	rows, err := d.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -103,9 +103,8 @@ func coordinatorFromRow(rows *sql.Rows) (models.Coordinator, error) {
 	var urlRaw string
 	var tagsRaw string
 	var enabled bool
-	var distribution string
 
-	if err := rows.Scan(&name, &urlRaw, &tagsRaw, &enabled, &distribution); err != nil {
+	if err := rows.Scan(&name, &urlRaw, &tagsRaw, &enabled); err != nil {
 		return models.Coordinator{}, err
 	}
 
@@ -124,7 +123,6 @@ func coordinatorFromRow(rows *sql.Rows) (models.Coordinator, error) {
 		URL:          uri,
 		Tags:         tags,
 		Enabled:      enabled,
-		Distribution: models.PrestoDist(distribution),
 	}
 
 	return coordinator, nil

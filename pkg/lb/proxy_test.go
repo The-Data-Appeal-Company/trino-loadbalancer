@@ -1,13 +1,13 @@
 package lb
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/routing"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -43,7 +43,7 @@ func TestProxyRouting(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -89,7 +89,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -104,7 +104,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 func TestProxyWithUnhealthyBackend(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})
@@ -114,12 +114,12 @@ func TestProxyWithUnhealthyBackend(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	err := pool.Add(models.Coordinator{
 		Name:    "test",
-		URL:     mustUrl("http://presto.local:1231"),
+		URL:     mustUrl("http://trino.local:1231"),
 		Enabled: true,
 	})
 	require.NoError(t, err)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -143,12 +143,12 @@ func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 
 	err := pool.Add(models.Coordinator{
 		Name:    "test",
-		URL:     mustUrl("http://presto.local:1231"),
+		URL:     mustUrl("http://trino.local:1231"),
 		Enabled: true,
 	})
 	require.NoError(t, err)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -163,7 +163,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})
@@ -173,7 +173,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -188,7 +188,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewPrestoHealth()
+	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
 	router := routing.New(routing.RandomRouter{})
@@ -198,7 +198,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)
 
-	proxy := NewPrestoProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
 
 	srv := httptest.NewServer(proxy.Router())
 	defer srv.Close()

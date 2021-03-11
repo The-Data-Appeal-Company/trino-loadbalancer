@@ -2,11 +2,11 @@ package lb
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestSyncPoolStatus_AddMissingFromState(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests.MustUrl("http://presto.local:8889"),
+		URL:     tests.MustUrl("http://trino.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -49,7 +49,7 @@ func TestSyncPoolStatus_Remove(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests.MustUrl("http://presto.local:8889"),
+		URL:     tests.MustUrl("http://trino.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -77,7 +77,7 @@ func TestSyncPoolStatus_DoNothing(t *testing.T) {
 
 	coord0 := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests.MustUrl("http://presto0.local:8889"),
+		URL:     tests.MustUrl("http://trino0.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -86,7 +86,7 @@ func TestSyncPoolStatus_DoNothing(t *testing.T) {
 
 	coord1 := models.Coordinator{
 		Name:    "test-1",
-		URL:     tests.MustUrl("http://presto1.local:8889"),
+		URL:     tests.MustUrl("http://trino1.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -127,7 +127,7 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 
 	coord0 := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests.MustUrl("http://presto0.local:8889"),
+		URL:     tests.MustUrl("http://trino0.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -136,7 +136,7 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 
 	coord1 := models.Coordinator{
 		Name:    "test-1",
-		URL:     tests.MustUrl("http://presto1.local:8889"),
+		URL:     tests.MustUrl("http://trino1.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",

@@ -2,11 +2,11 @@ package lb
 
 import (
 	"errors"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -35,7 +35,7 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -77,7 +77,7 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -92,8 +92,8 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 	require.Len(t, backends, 1)
 
 	_, err = pool.AvailableBackends()
-	require.Error(t, ErrNoBackendsAvailable)
-
+	require.Error(t, err)
+	require.Equal(t, err, ErrNoBackendsAvailable)
 }
 
 func TestPool_RemoveBackend(t *testing.T) {
@@ -112,7 +112,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 	err := pool.Add(models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -120,7 +120,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 	err = pool.Add(models.Coordinator{
 		Name:    "coord-1",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -177,7 +177,7 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	err := pool.Add(models.Coordinator{
 		Name:    "coord-1",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	})
@@ -206,7 +206,7 @@ func TestPool_UpdateBackend(t *testing.T) {
 
 	coord := models.Coordinator{
 		Name:    "coord-0",
-		URL:     mustUrl("http://presto.local:8080"),
+		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}

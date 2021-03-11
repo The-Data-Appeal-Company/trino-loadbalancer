@@ -1,4 +1,5 @@
 .idea/
-presto-loadbalancer
+trino-loadbalancer
 node_modules
 example/prod.yml
+vendor/

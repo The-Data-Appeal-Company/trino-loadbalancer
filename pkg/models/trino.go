@@ -18,7 +18,7 @@ type QueryInfo struct {
 	TransactionID string
 }
 
-type PrestoQueryState struct {
+type TrinoQueryState struct {
 	ID      string  `json:"id"`
 	InfoURI string  `json:"infoUri"`
 	NextURI *string `json:"nextUri"`

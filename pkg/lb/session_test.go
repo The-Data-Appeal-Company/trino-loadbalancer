@@ -12,15 +12,15 @@ import (
 
 func TestIsStatementRequest(t *testing.T) {
 	valid := []string{
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.cluster:8889/v1/statement/20200924_102554_02623_yi2gi",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.cluster:8889/v1/statement/20200924_102554_02623_yi2gi",
 	}
 
 	invalid := []string{
-		"http://presto.cluster:8889/v1/cluster",
-		"http://presto.cluster:8889/v2/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.cluster:8889/v1/info",
+		"http://trino.cluster:8889/v1/cluster",
+		"http://trino.cluster:8889/v2/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.cluster:8889/v1/info",
 	}
 
 	for _, u := range valid {
@@ -34,15 +34,15 @@ func TestIsStatementRequest(t *testing.T) {
 func TestExtractQueryInfoFromRequest(t *testing.T) {
 
 	urls := []string{
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi/",
-		"http://presto.local:8889/v1/statement/20200924_102554_02623_yi2gi",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi/1?slug=xd9655d44c64d43119d3126cd47f2b6d0",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi/",
+		"http://trino.local:8889/v1/statement/20200924_102554_02623_yi2gi",
 	}
 
 	for _, u := range urls {
 		headers := http.Header{}
-		headers.Add(PrestoHeaderUser, "test-user")
-		headers.Add(PrestoHeaderTransaction, "test-tx")
+		headers.Add(TrinoHeaderUser, "test-user")
+		headers.Add(TrinoHeaderTransaction, "test-tx")
 
 		queryInfo, err := QueryInfoFromRequest(&http.Request{
 			Method: "POST",
@@ -61,8 +61,8 @@ func TestExtractQueryInfoFromResponse(t *testing.T) {
 	body := `{"id":"20200924_095706_01798_yi2gi","infoUri":"http://localhost:8080/ui/query.html?20200924_095706_01798_yi2gi","nextUri":"http://localhost:8080/v1/statement/20200924_095706_01798_yi2gi/1?slug=xc7951ca2b9124141a6baa68448edb219","stats":{"state":"QUEUED","queued":true,"scheduled":false,"nodes":0,"totalSplits":0,"queuedSplits":0,"runningSplits":0,"completedSplits":0,"cpuTimeMillis":0,"wallTimeMillis":0,"queuedTimeMillis":0,"elapsedTimeMillis":0,"processedRows":0,"processedBytes":0,"peakMemoryBytes":0,"spilledBytes":0},"warnings":[]}`
 
 	headers := http.Header{}
-	headers.Add(PrestoHeaderUser, "test-user")
-	headers.Add(PrestoHeaderTransaction, "test-tx")
+	headers.Add(TrinoHeaderUser, "test-user")
+	headers.Add(TrinoHeaderTransaction, "test-tx")
 
 	req := &http.Request{
 		Method: "POST",

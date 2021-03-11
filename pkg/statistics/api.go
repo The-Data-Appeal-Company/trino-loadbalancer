@@ -5,49 +5,37 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
 )
 
-const userName = "prestolb"
+const userName = "trinolb"
 
-type PrestoClusterApi struct {
+type TrinoClusterApi struct {
 	client         *http.Client
-	prestoSqlState *prestoSQLState
+	trinoAuthState *trinoAuthState
 }
 
-func NewPrestoClusterApi() *PrestoClusterApi {
-	return &PrestoClusterApi{
+func NewClusterApi() *TrinoClusterApi {
+	return &TrinoClusterApi{
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			CheckRedirect: func(*http.Request, []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
 		},
-		prestoSqlState: &prestoSQLState{
+		trinoAuthState: &trinoAuthState{
 			auth:  make(map[string]string),
 			mutex: &sync.Mutex{},
 		},
 	}
 }
 
-func (p *PrestoClusterApi) GetStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
-	switch coord.Distribution {
-	case models.PrestoDistDb:
-		return p.getPrestoDBStatistics(coord)
-	case models.PrestoDistSql:
-		return p.getPrestoSQLStatistics(coord)
-	default:
-		return models.ClusterStatistics{}, fmt.Errorf("statistics not implemented for distribution: %s", string(coord.Distribution))
-	}
-}
-
-func (p *PrestoClusterApi) getPrestoSQLStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
-
-	auth, hasAuth := p.prestoSqlState.GetAuth(coord.Name)
+func (p *TrinoClusterApi) GetStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
+	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
 
 	if !hasAuth {
 		login, err := p.login(coord)
@@ -57,7 +45,7 @@ func (p *PrestoClusterApi) getPrestoSQLStatistics(coord models.Coordinator) (mod
 		}
 
 		auth = login
-		p.prestoSqlState.SetAuth(coord.Name, login)
+		p.trinoAuthState.SetAuth(coord.Name, login)
 	}
 
 	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
@@ -74,8 +62,8 @@ func (p *PrestoClusterApi) getPrestoSQLStatistics(coord models.Coordinator) (mod
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		p.prestoSqlState.DelAuth(coord.Name)
-		return models.ClusterStatistics{}, errors.New("deauth by presto ui, trying again next update")
+		p.trinoAuthState.DelAuth(coord.Name)
+		return models.ClusterStatistics{}, errors.New("deauthenticated from trino ui, trying again next update")
 	}
 
 	if resp.StatusCode != 200 {
@@ -98,7 +86,7 @@ func (p *PrestoClusterApi) getPrestoSQLStatistics(coord models.Coordinator) (mod
 	return response, nil
 }
 
-func (p *PrestoClusterApi) login(coord models.Coordinator) (string, error) {
+func (p *TrinoClusterApi) login(coord models.Coordinator) (string, error) {
 	loginUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/login")
 	const contentType = "application/x-www-form-urlencoded"
 
@@ -121,52 +109,24 @@ func (p *PrestoClusterApi) login(coord models.Coordinator) (string, error) {
 	return cookie, nil
 }
 
-func (p *PrestoClusterApi) getPrestoDBStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
-	u := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/v1/cluster")
-	resp, err := p.client.Get(u)
-
-	if err != nil {
-		return models.ClusterStatistics{}, err
-	}
-
-	if resp.StatusCode != 200 {
-		return models.ClusterStatistics{}, fmt.Errorf("unexpected status code %d != 200", resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return models.ClusterStatistics{}, err
-	}
-
-	var response models.ClusterStatistics
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return models.ClusterStatistics{}, err
-	}
-
-	return response, nil
-}
-
-type prestoSQLState struct {
+type trinoAuthState struct {
 	auth  map[string]string
 	mutex *sync.Mutex
 }
 
-func (p *prestoSQLState) DelAuth(id string) {
+func (p *trinoAuthState) DelAuth(id string) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	delete(p.auth, id)
 }
 
-func (p *prestoSQLState) SetAuth(id string, val string) {
+func (p *trinoAuthState) SetAuth(id string, val string) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	p.auth[id] = val
 }
 
-func (p *prestoSQLState) GetAuth(id string) (string, bool) {
+func (p *trinoAuthState) GetAuth(id string) (string, bool) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	val, present := p.auth[id]

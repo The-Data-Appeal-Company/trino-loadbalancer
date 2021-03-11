@@ -1,0 +1,46 @@
+routing:
+  rule: round-robin
+clusters:
+  sync:
+    delay: 60s
+  statistics:
+    enabled: true
+    delay: 10s
+  healthcheck:
+    enabled: true
+    delay: 10s
+persistence:
+  postgres:
+    db: 'public'
+    host: 'pg.host.uri'
+    port: 5432
+    username: ''
+    password: ''
+    ssl_mode: 'disable'
+session:
+  store:
+    redis:
+      opts:
+        prefix: 'trino::'
+        max_ttl: 24h
+      standalone:
+        host: '127.0.0.1:6379'
+        enabled: true
+      sentinel:
+        enabled: false
+discovery:
+  providers:
+    aws_eu_west_1:
+      provider: aws-emr
+      enabled: false
+      aws:
+        access_key_id: ''
+        secret_key: ''
+        region: 'eu-west-1'
+    kube_local:
+      provider: k8s
+      enabled: true
+      k8s:
+        cluster_domain: 'cluster.local'
+        selector_tags:
+          app: 'trino'

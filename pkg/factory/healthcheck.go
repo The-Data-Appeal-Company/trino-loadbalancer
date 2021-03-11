@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"github.com/The-Data-Appeal-Company/presto-loadbalancer/pkg/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
 )
 
 type HealthCheckConfiguration struct {
@@ -13,5 +13,5 @@ func CreateHealthCheck(conf HealthCheckConfiguration) (healthcheck.HealthCheck, 
 		return healthcheck.NoOp(), nil
 	}
 
-	return healthcheck.NewPrestoHealth(), nil
+	return healthcheck.NewHttpHealth(), nil
 }

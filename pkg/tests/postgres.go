@@ -13,9 +13,7 @@ import (
 )
 
 func CreatePostgresDatabase(ctx context.Context, opts ...InitOpt) (testcontainers.Container, *sql.DB, error) {
-
 	const password = "password"
-
 	pg, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "postgres:10",
