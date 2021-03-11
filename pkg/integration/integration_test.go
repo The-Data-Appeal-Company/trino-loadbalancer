@@ -109,15 +109,14 @@ func TestIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := 0; i < 5; i++ {
-		err = testQuery("http://test@localhost:4322?catalog=memory")
+		err = testQuery("http://test@localhost:4322?catalog=memory&schema=test")
 		require.NoError(t, err)
 	}
 
 }
 
 func testQuery(address string) error {
-	dsn := address
-	db, err := sql.Open("trino", dsn)
+	db, err := sql.Open("trino", address)
 	if err != nil {
 		return err
 	}

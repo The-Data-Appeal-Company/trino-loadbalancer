@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/prestodb/presto-go-client/presto"
-	_ "github.com/prestodb/presto-go-client/presto"
+	_ "github.com/trinodb/trino-go-client/trino"
 	"net"
 	"net/http"
 	"net/url"
@@ -38,7 +38,7 @@ func (p ClusterHealth) Check(u *url.URL) (Health, error) {
 	}
 
 	urlWithName := fmt.Sprintf(	"%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
-	db, err := sql.Open("presto", urlWithName)
+	db, err := sql.Open("trino", urlWithName)
 	if err != nil {
 		return Health{
 			Status:    StatusUnhealthy,

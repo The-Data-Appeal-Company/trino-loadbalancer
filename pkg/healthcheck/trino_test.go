@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestPrestoClusterHealth_Check(t *testing.T) {
+func TestTrinoClusterHealth_Check(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -31,7 +31,7 @@ func TestPrestoClusterHealth_Check(t *testing.T) {
 	require.True(t, result.IsAvailable(), result.Message)
 }
 
-func TestPrestoClusterHealth_CheckDown(t *testing.T) {
+func TestTrinoClusterHealth_CheckDown(t *testing.T) {
 	check := NewHttpHealth()
 
 	uri, err := url.Parse("http://trino.local:8080")
