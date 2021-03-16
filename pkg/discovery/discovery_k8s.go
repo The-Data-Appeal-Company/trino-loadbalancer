@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	svcPortName = "http-coord"
+	svcPortName = "http"
 )
 
 type K8sClusterProvider struct {
