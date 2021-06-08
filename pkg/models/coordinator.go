@@ -5,8 +5,8 @@ import (
 )
 
 type Coordinator struct {
-	Name         string
-	URL          *url.URL
-	Tags         map[string]string
-	Enabled      bool
+	Name    string
+	URL     *url.URL
+	Tags    map[string]string
+	Enabled bool
 }

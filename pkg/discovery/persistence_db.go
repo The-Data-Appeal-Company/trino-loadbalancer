@@ -119,10 +119,10 @@ func coordinatorFromRow(rows *sql.Rows) (models.Coordinator, error) {
 	}
 
 	var coordinator = models.Coordinator{
-		Name:         name,
-		URL:          uri,
-		Tags:         tags,
-		Enabled:      enabled,
+		Name:    name,
+		URL:     uri,
+		Tags:    tags,
+		Enabled: enabled,
 	}
 
 	return coordinator, nil

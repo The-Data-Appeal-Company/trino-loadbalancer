@@ -59,10 +59,10 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 			}
 
 			coordinators = append(coordinators, models.Coordinator{
-				Name:         fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
-				URL:          svcUrl,
-				Tags:         k.SelectorTags,
-				Enabled:      true,
+				Name:    fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
+				URL:     svcUrl,
+				Tags:    k.SelectorTags,
+				Enabled: true,
 			})
 		}
 	}

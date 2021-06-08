@@ -57,7 +57,7 @@ func (E *EMRMock) DescribeCluster(input *emr.DescribeClusterInput) (*emr.Describ
 	if *input.ClusterId == "waiting_no_trino" {
 		return &emr.DescribeClusterOutput{
 			Cluster: &emr.Cluster{
-				Id: input.ClusterId,
+				Id:                     input.ClusterId,
 				InstanceCollectionType: aws.String(emr.InstanceCollectionTypeInstanceGroup),
 				Applications: []*emr.Application{
 					{
@@ -185,7 +185,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 					Tags: map[string]string{
 						"component": "coordinator",
 					},
-					Enabled:      true,
+					Enabled: true,
 				},
 				{
 					Name: "running_trinodb",
@@ -193,7 +193,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 					Tags: map[string]string{
 						"component": "coordinator",
 					},
-					Enabled:      true,
+					Enabled: true,
 				},
 			},
 			wantErr: false,

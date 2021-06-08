@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/factory"
@@ -124,7 +123,11 @@ func init() {
 			log.Fatal(err)
 		}
 
-		conf := parseProvidersConfig(viper.GetStringMap("discovery.providers"))
+		var conf []factory.DiscoveryConfiguration
+		err = viper.UnmarshalKey("discovery.providers", &conf)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		discover, err = factory.CreateCrossProviderDiscovery(conf)
 		if err != nil {
@@ -132,26 +135,6 @@ func init() {
 		}
 
 	})
-}
-
-func parseProvidersConfig(conf map[string]interface{}) []factory.DiscoveryConfiguration {
-	data, err := json.Marshal(conf)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var results map[string]factory.DiscoveryConfiguration
-
-	if err := json.Unmarshal(data, &results); err != nil {
-		log.Fatal(err)
-	}
-
-	configuration := make([]factory.DiscoveryConfiguration, 0)
-	for _, val := range results {
-		configuration = append(configuration, val)
-	}
-
-	return configuration
 }
 
 func Execute() {

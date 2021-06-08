@@ -25,6 +25,17 @@ persistence:
 
 discovery:
   providers:
+    - provider: static
+      enabled: true
+      static:
+        clusters:
+          - name: cluster-0
+            enabled: true
+            url: http://localhost:8080
+            tags:
+              local: true
+              env: dev
+
     - provider: aws-emr
       enabled: false
       aws:

@@ -2,4 +2,5 @@
 trino-loadbalancer
 node_modules
 example/prod.yml
+example/local.yml
 vendor/
