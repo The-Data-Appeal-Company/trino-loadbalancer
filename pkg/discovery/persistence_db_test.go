@@ -26,7 +26,7 @@ func TestDbPersistence(t *testing.T) {
 		Tags: map[string]string{
 			"test": "true",
 		},
-		Enabled:      true,
+		Enabled: true,
 	}
 	err = storage.Add(ctx, coord0)
 	require.NoError(t, err)

@@ -103,9 +103,9 @@ func (a Api) clustersList(writer http.ResponseWriter, request *http.Request) {
 }
 
 type ClusterAddRequest struct {
-	Name         string `json:"name"`
-	Url          string `json:"url"`
-	Enabled      bool   `json:"enabled"`
+	Name    string `json:"name"`
+	Url     string `json:"url"`
+	Enabled bool   `json:"enabled"`
 }
 
 func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
@@ -133,9 +133,9 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = a.discoveryStorage.Add(ctx, models.Coordinator{
-		Name:         req.Name,
-		URL:          parsedUrl,
-		Enabled:      req.Enabled,
+		Name:    req.Name,
+		URL:     parsedUrl,
+		Enabled: req.Enabled,
 	})
 
 	if err != nil {

@@ -61,9 +61,9 @@ func TestApiRetrieverTrino(t *testing.T) {
 	retriever := NewClusterApi()
 
 	stats, err := retriever.GetStatistics(models.Coordinator{
-		Name:         "test",
-		URL:          tests.MustUrl(apiSrv.URL),
-		Enabled:      true,
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
 	})
 	require.NoError(t, err)
 
@@ -87,9 +87,9 @@ func TestApiRetrieverFailOn404(t *testing.T) {
 	retriever := NewClusterApi()
 
 	_, err := retriever.GetStatistics(models.Coordinator{
-		Name:         "test",
-		URL:          tests.MustUrl(apiSrv.URL),
-		Enabled:      true,
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
 	})
 	require.Error(t, err)
 }
@@ -114,9 +114,9 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 	retriever := NewClusterApi()
 
 	_, err := retriever.GetStatistics(models.Coordinator{
-		Name:         "test",
-		URL:          tests.MustUrl(apiSrv.URL),
-		Enabled:      true,
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
 	})
 
 	require.Error(t, err)

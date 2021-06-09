@@ -35,7 +35,7 @@ func NewQueryClusterLinker(storage session.Storage, coordinatorName string) Quer
 	}
 }
 
-// Intercepts call to HttpProxy, when a response to POST /v1/statement request is detected it will create a link
+// Handle Intercepts call to HttpProxy, when a response to POST /v1/statement request is detected it will create a link
 // between the user/query/tx and coordinator that has provided the response to the http request.
 // All the other requests are ignored, no request/response object modification should be performed.
 func (q QueryClusterLinker) Handle(request *http.Request, response *http.Response) error {

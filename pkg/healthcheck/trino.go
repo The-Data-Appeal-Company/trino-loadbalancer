@@ -37,7 +37,7 @@ func (p ClusterHealth) Check(u *url.URL) (Health, error) {
 		return Health{}, err
 	}
 
-	urlWithName := fmt.Sprintf(	"%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
+	urlWithName := fmt.Sprintf("%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
 	db, err := sql.Open("trino", urlWithName)
 	if err != nil {
 		return Health{
