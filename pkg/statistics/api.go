@@ -50,7 +50,7 @@ func (p *TrinoClusterApi) QueryStatistics(coord models.Coordinator, queryID stri
 		return models.QueryStats{}, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return models.QueryStats{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 	}
 

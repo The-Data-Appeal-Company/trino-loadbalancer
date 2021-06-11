@@ -134,7 +134,6 @@ func (p *Pool) Update(id CoordinatorConnectionID, state models.Coordinator) erro
 	defer p.rwLock.Unlock()
 
 	target, err := p.connectionByID(id)
-
 	if err != nil {
 		return err
 	}

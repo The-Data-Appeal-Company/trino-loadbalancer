@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -17,8 +16,6 @@ func TestServeStaticFile(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	ui.Router().ServeHTTP(w, r)
-
-	loc := w.Result().Header.Get("Location")
 
 	require.Equal(t, http.StatusOK, w.Result().StatusCode)
 

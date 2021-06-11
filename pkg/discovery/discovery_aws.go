@@ -174,25 +174,27 @@ func (c *ClusterProvider) getMasterInstanceForNodeGroup(cluster *emr.DescribeClu
 		return "", err
 	}
 
-	for _, group := range instanceGroups.Instances {
-
-		instances, err := c.emrClient.ListInstances(&emr.ListInstancesInput{
-			ClusterId:       cluster.Cluster.Id,
-			InstanceGroupId: group.Id,
-		})
-
-		if err != nil {
-			return "", err
-		}
-
-		if len(instances.Instances) == 0 {
-			return "", fmt.Errorf("no master instances found for cluster %s", *cluster.Cluster.Id)
-		}
-
-		return *instances.Instances[0].PrivateIpAddress, nil
+	if len(instanceGroups.Instances) == 0 {
+		return "", fmt.Errorf("no master instance found for cluster %s", *cluster.Cluster.Id)
 	}
 
-	return "", fmt.Errorf("no master instance found for cluster %s", *cluster.Cluster.Id)
+	var groupInstances = instanceGroups.Instances
+
+	instances, err := c.emrClient.ListInstances(&emr.ListInstancesInput{
+		ClusterId:       cluster.Cluster.Id,
+		InstanceGroupId: groupInstances[0].Id,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(instances.Instances) == 0 {
+		return "", fmt.Errorf("no master instances found for cluster %s", *cluster.Cluster.Id)
+	}
+
+	return *instances.Instances[0].PrivateIpAddress, nil
+
 }
 
 func hasTrinoInstallation(descr *emr.DescribeClusterOutput) bool {
