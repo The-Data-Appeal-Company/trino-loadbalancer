@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/factory"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
@@ -11,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
-	"os"
 	"time"
 )
 
@@ -139,8 +137,7 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 

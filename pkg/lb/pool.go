@@ -22,7 +22,6 @@ var (
 type CoordinatorConnectionID string
 
 type coordinatorConnection struct {
-	id          CoordinatorConnectionID
 	proxy       proxy.HttpProxy
 	coordinator models.Coordinator
 	health      healthcheck.Health
@@ -56,7 +55,7 @@ type Pool struct {
 	conf               PoolConfig
 	logger             logging.Logger
 	sessionStore       session.Storage
-	coordinators       []*coordinatorConnection
+	coordinators       map[CoordinatorConnectionID]*coordinatorConnection
 	healthChecker      healthcheck.HealthCheck
 	statisticRetriever statistics.Retriever
 	rwLock             *sync.RWMutex
@@ -69,7 +68,7 @@ func NewPool(conf PoolConfig, sessionStore session.Storage, hc healthcheck.Healt
 		sessionStore:       sessionStore,
 		logger:             logger,
 		healthChecker:      hc,
-		coordinators:       make([]*coordinatorConnection, 0),
+		coordinators:       make(map[CoordinatorConnectionID]*coordinatorConnection),
 		rwLock:             &sync.RWMutex{},
 	}
 }
@@ -103,7 +102,7 @@ func (p *Pool) Fetch(req FetchRequest) []CoordinatorRef {
 	defer p.rwLock.RUnlock()
 
 	selected := make([]CoordinatorRef, 0)
-	for _, cc := range p.coordinators {
+	for id, cc := range p.coordinators {
 		if len(req.Name) != 0 && cc.coordinator.Name != req.Name {
 			continue
 		}
@@ -121,7 +120,7 @@ func (p *Pool) Fetch(req FetchRequest) []CoordinatorRef {
 		}
 
 		selected = append(selected, CoordinatorRef{
-			ID:          cc.id,
+			ID:          id,
 			Coordinator: cc.coordinator,
 			Statistics:  cc.statistics,
 		})
@@ -140,20 +139,17 @@ func (p *Pool) Update(id CoordinatorConnectionID, state models.Coordinator) erro
 		return err
 	}
 
-	fmt.Println(state)
 	target.coordinator.Tags = state.Tags
 	target.coordinator.Enabled = state.Enabled
 	return nil
 }
 
 func (p *Pool) connectionByID(id CoordinatorConnectionID) (*coordinatorConnection, error) {
-	// TODO we may want to store coordinators as map
-	for _, c := range p.coordinators {
-		if c.id == id {
-			return c, nil
-		}
+	conn, present := p.coordinators[id]
+	if !present {
+		return nil, ErrNoBackendsAvailable
 	}
-	return nil, ErrNoBackendsAvailable
+	return conn, nil
 }
 
 func (p *Pool) Add(coordinator models.Coordinator) error {
@@ -166,8 +162,8 @@ func (p *Pool) Add(coordinator models.Coordinator) error {
 		}
 	}
 
+	connectionID := CoordinatorConnectionID(uuid.New().String())
 	backendConn := &coordinatorConnection{
-		id:          CoordinatorConnectionID(uuid.New().String()),
 		coordinator: coordinator,
 		proxy:       proxy.NewReverseProxy(coordinator.URL, NewQueryClusterLinker(p.sessionStore, coordinator.Name)),
 		termHc:      make(chan bool),
@@ -175,7 +171,8 @@ func (p *Pool) Add(coordinator models.Coordinator) error {
 		stateMutex:  &sync.Mutex{},
 	}
 
-	p.coordinators = append(p.coordinators, backendConn)
+	p.coordinators[connectionID] = backendConn
+
 	p.updateBackendHealth(backendConn)
 
 	go p.healthCheck(backendConn)
@@ -189,30 +186,25 @@ func (p *Pool) Remove(id CoordinatorConnectionID) error {
 	p.rwLock.Lock()
 	defer p.rwLock.Unlock()
 
-	for i, conn := range p.coordinators {
-		if conn.id == id {
-			conn.termHc <- true
-			conn.termStats <- true
+	conn, present := p.coordinators[id]
 
-			conn.health = healthcheck.Health{
-				Timestamp: time.Now(),
-				Status:    healthcheck.StatusUnhealthy,
-				Message:   "backend has been removed from the pool",
-			}
-
-			p.logger.Info("removed backend from pool: %s ( %s )", conn.coordinator.Name, conn.coordinator)
-
-			p.coordinators = remove(p.coordinators, i)
-			return nil
-		}
+	if !present {
+		return errors.New("backend not found")
 	}
 
-	return errors.New("backend not found")
-}
+	conn.termHc <- true
+	conn.termStats <- true
 
-func remove(s []*coordinatorConnection, i int) []*coordinatorConnection {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
+	conn.health = healthcheck.Health{
+		Timestamp: time.Now(),
+		Status:    healthcheck.StatusUnhealthy,
+		Message:   "backend has been removed from the pool",
+	}
+
+	p.logger.Info("removed backend from pool: %s ( %s )", conn.coordinator.Name, conn.coordinator)
+
+	delete(p.coordinators, id)
+	return nil
 }
 
 func (p *Pool) clusterStatistics(b *coordinatorConnection) {

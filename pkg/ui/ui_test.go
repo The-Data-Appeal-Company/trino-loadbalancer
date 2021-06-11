@@ -19,7 +19,7 @@ func TestServeStaticFile(t *testing.T) {
 	ui.Router().ServeHTTP(w, r)
 
 	loc := w.Result().Header.Get("Location")
-	fmt.Println(loc)
+
 	require.Equal(t, http.StatusOK, w.Result().StatusCode)
 
 	responseBody, err := ioutil.ReadAll(w.Result().Body)
