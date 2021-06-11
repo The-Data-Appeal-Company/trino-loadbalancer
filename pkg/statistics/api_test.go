@@ -1,9 +1,12 @@
 package statistics
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -60,7 +63,7 @@ func TestApiRetrieverTrino(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	stats, err := retriever.GetStatistics(models.Coordinator{
+	stats, err := retriever.ClusterStatistics(models.Coordinator{
 		Name:    "test",
 		URL:     tests.MustUrl(apiSrv.URL),
 		Enabled: true,
@@ -86,12 +89,28 @@ func TestApiRetrieverFailOn404(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	_, err := retriever.GetStatistics(models.Coordinator{
+	_, err := retriever.ClusterStatistics(models.Coordinator{
 		Name:    "test",
 		URL:     tests.MustUrl(apiSrv.URL),
 		Enabled: true,
 	})
 	require.Error(t, err)
+}
+
+func TestApiRetrieverFailOnMultipleUnathorized(t *testing.T) {
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer apiSrv.Close()
+
+	retriever := NewClusterApi()
+
+	_, err := retriever.ClusterStatistics(models.Coordinator{
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
+	})
+	require.True(t, errors.Is(err, ErrAuthFailed))
 }
 
 func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
@@ -113,7 +132,7 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	_, err := retriever.GetStatistics(models.Coordinator{
+	_, err := retriever.ClusterStatistics(models.Coordinator{
 		Name:    "test",
 		URL:     tests.MustUrl(apiSrv.URL),
 		Enabled: true,
@@ -121,4 +140,59 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 
 	require.Error(t, err)
 
+}
+
+func TestQueryStatsRetriever(t *testing.T) {
+	var queryID = "abc-defg-123-hi"
+
+	respBody, err := ioutil.ReadFile("testdata/query-stats.json")
+	require.NoError(t, err)
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		const trinoUser = "trinolb"
+		const trinoAuthCookie = "test"
+
+		if request.URL.Path != "/ui/login" && request.Header.Get("Cookie") != trinoAuthCookie {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if request.URL.Path == "/ui/api/query/"+queryID {
+			_, err := writer.Write(respBody)
+			require.NoError(t, err)
+			return
+		}
+
+		if request.URL.Path == "/ui/login" {
+			body, err := ioutil.ReadAll(request.Body)
+			require.NoError(t, err)
+			defer request.Body.Close()
+
+			require.Equal(t, fmt.Sprintf("username=%s&password=&redirectPath=", trinoUser), string(body))
+
+			writer.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+			writer.Header().Set("Set-Cookie", trinoAuthCookie)
+			writer.Header().Set("Location", "http://trino.local")
+			writer.WriteHeader(http.StatusSeeOther)
+			return
+		}
+
+		writer.WriteHeader(http.StatusNotFound)
+	}))
+	defer apiSrv.Close()
+
+	retriever := NewClusterApi()
+
+	stats, err := retriever.QueryStatistics(models.Coordinator{
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
+	}, queryID)
+	require.NoError(t, err)
+
+	var expected models.QueryStats
+	err = json.Unmarshal(respBody, &expected)
+	require.NoError(t, err)
+
+	assert.Equal(t, stats, expected)
 }

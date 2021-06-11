@@ -1,7 +1,6 @@
 package lb
 
 import (
-	"errors"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
@@ -49,15 +48,17 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 	err = pool.UpdateStatus()
 	require.NoError(t, err)
 
-	backends := pool.AllBackends()
+	backends := pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 1)
 
-	availables, err := pool.AvailableBackends()
+	availables := pool.Fetch(FetchRequest{
+		Status: ClusterStatusEnabled,
+	})
 	require.NoError(t, err)
 	require.Len(t, availables, len(backends))
 
 	first := availables[0]
-	require.Equal(t, first.Backend, coord)
+	require.Equal(t, first.Coordinator, coord)
 
 }
 
@@ -88,12 +89,15 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 	err = pool.UpdateStatus()
 	require.NoError(t, err)
 
-	backends := pool.AllBackends()
+	backends := pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 1)
 
-	_, err = pool.AvailableBackends()
-	require.Error(t, err)
-	require.Equal(t, err, ErrNoBackendsAvailable)
+	availables := pool.Fetch(FetchRequest{
+		Status: ClusterStatusEnabled,
+		Health: healthcheck.StatusHealthy,
+	})
+
+	require.Empty(t, availables)
 }
 
 func TestPool_RemoveBackend(t *testing.T) {
@@ -132,17 +136,27 @@ func TestPool_RemoveBackend(t *testing.T) {
 	err = pool.UpdateStatus()
 	require.NoError(t, err)
 
-	backends := pool.AllBackends()
+	backends := pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 2)
 
-	err = pool.Remove("coord-0")
+	toRemove := pool.Fetch(FetchRequest{
+		Name: "coord-0",
+	})
+
+	require.Len(t, toRemove, 1)
+
+	err = pool.Remove(toRemove[0].ID)
 	require.NoError(t, err)
 
-	backends = pool.AllBackends()
+	backends = pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 1)
 
-	_, err = pool.GetByName("coord-1", healthcheck.StatusHealthy)
-	require.NoError(t, err)
+	coordsByName := pool.Fetch(FetchRequest{
+		Name:   "coord-1",
+		Health: healthcheck.StatusHealthy,
+	})
+
+	require.Len(t, coordsByName, 1)
 }
 
 func TestPool_GetByName(t *testing.T) {
@@ -159,8 +173,12 @@ func TestPool_GetByName(t *testing.T) {
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	_, err := pool.GetByName("test", healthcheck.StatusHealthy)
-	require.True(t, errors.Is(err, ErrNoBackendsAvailable))
+	coordsByName := pool.Fetch(FetchRequest{
+		Name:   "test",
+		Health: healthcheck.StatusHealthy,
+	})
+
+	require.Len(t, coordsByName, 0)
 }
 
 func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
@@ -185,13 +203,15 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 
 	err = pool.UpdateStatus()
 	require.NoError(t, err)
+	coordsByName := pool.Fetch(FetchRequest{
+		Name:   "coord-1",
+		Health: healthcheck.StatusUnhealthy,
+	})
 
-	_, err = pool.GetByName("coord-1", healthcheck.StatusUnhealthy)
-	require.NoError(t, err)
+	require.Len(t, coordsByName, 1)
 }
 
 func TestPool_UpdateBackend(t *testing.T) {
-
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.Mock(healthcheck.Health{
 		Status:    healthcheck.StatusHealthy,
@@ -214,10 +234,14 @@ func TestPool_UpdateBackend(t *testing.T) {
 	err := pool.Add(coord)
 	require.NoError(t, err)
 
-	state, err := pool.GetByName(coord.Name, healthcheck.StatusHealthy)
-	require.NoError(t, err)
+	state := pool.Fetch(FetchRequest{
+		Name:   coord.Name,
+		Health: healthcheck.StatusHealthy,
+	})
 
-	require.Equal(t, state.Backend, coord)
+	require.Len(t, state, 1)
+
+	require.Equal(t, state[0].Coordinator, coord)
 
 	newState := models.Coordinator{
 		Tags: map[string]string{
@@ -225,14 +249,19 @@ func TestPool_UpdateBackend(t *testing.T) {
 		},
 		Enabled: false,
 	}
-	err = pool.Update(coord.Name, newState)
+	err = pool.Update(state[0].ID, newState)
 	require.NoError(t, err)
 
-	require.Equal(t, state.Backend, models.Coordinator{
+	state = pool.Fetch(FetchRequest{
+		Name:   coord.Name,
+		Health: healthcheck.StatusHealthy,
+	})
+
+	require.Equal(t, models.Coordinator{
 		Name:    coord.Name,
 		URL:     coord.URL,
 		Tags:    newState.Tags,
 		Enabled: newState.Enabled,
-	})
+	}, state[0].Coordinator)
 
 }

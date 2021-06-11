@@ -19,6 +19,10 @@ type TrinoClusterApi struct {
 	trinoAuthState *trinoAuthState
 }
 
+var (
+	ErrAuthFailed = errors.New("trino ui auth failed")
+)
+
 func NewClusterApi() *TrinoClusterApi {
 	return &TrinoClusterApi{
 		client: &http.Client{
@@ -34,36 +38,45 @@ func NewClusterApi() *TrinoClusterApi {
 	}
 }
 
-func (p *TrinoClusterApi) GetStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
-	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
-
-	if !hasAuth {
-		login, err := p.login(coord)
-
-		if err != nil {
-			return models.ClusterStatistics{}, err
-		}
-
-		auth = login
-		p.trinoAuthState.SetAuth(coord.Name, login)
+func (p *TrinoClusterApi) QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error) {
+	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
+	req, err := http.NewRequest("GET", queryStatsUrl, nil)
+	if err != nil {
+		return models.QueryStats{}, err
 	}
 
+	resp, err := p.authenticatedRequest(coord, req)
+	if err != nil {
+		return models.QueryStats{}, err
+	}
+
+	if resp.StatusCode != 200 {
+		return models.QueryStats{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	var stats models.QueryStats
+	err = json.NewDecoder(resp.Body).Decode(&stats)
+
+	if err != nil {
+		return models.QueryStats{}, err
+	}
+
+	return stats, nil
+
+}
+
+func (p *TrinoClusterApi) ClusterStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
 	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
 	req, err := http.NewRequest("GET", apiStatsUrl, nil)
 	if err != nil {
 		return models.ClusterStatistics{}, err
 	}
 
-	req.Header.Set("Cookie", auth)
-
-	resp, err := p.client.Do(req)
+	resp, err := p.authenticatedRequest(coord, req)
 	if err != nil {
 		return models.ClusterStatistics{}, err
-	}
-
-	if resp.StatusCode == http.StatusUnauthorized {
-		p.trinoAuthState.DelAuth(coord.Name)
-		return models.ClusterStatistics{}, errors.New("deauthenticated from trino ui, trying again next update")
 	}
 
 	if resp.StatusCode != 200 {
@@ -86,6 +99,46 @@ func (p *TrinoClusterApi) GetStatistics(coord models.Coordinator) (models.Cluste
 	return response, nil
 }
 
+func (p *TrinoClusterApi) authenticatedRequest(coordinator models.Coordinator, req *http.Request) (*http.Response, error) {
+	const maxRetries = 3
+	for i := 0; i < maxRetries; i++ {
+		auth, _ := p.trinoAuthState.GetAuth(coordinator.Name)
+
+		req.Header.Set("Cookie", auth)
+		resp, err := p.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == http.StatusUnauthorized {
+			_, err = p.performLogin(coordinator, true)
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		return resp, nil
+	}
+
+	return nil, ErrAuthFailed
+}
+
+func (p *TrinoClusterApi) performLogin(coord models.Coordinator, force bool) (string, error) {
+	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
+	if !hasAuth || force {
+		login, err := p.login(coord)
+
+		if err != nil {
+			return "", err
+		}
+
+		auth = login
+		p.trinoAuthState.SetAuth(coord.Name, login)
+	}
+	return auth, nil
+}
+
 func (p *TrinoClusterApi) login(coord models.Coordinator) (string, error) {
 	loginUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/login")
 	const contentType = "application/x-www-form-urlencoded"
@@ -97,13 +150,13 @@ func (p *TrinoClusterApi) login(coord models.Coordinator) (string, error) {
 	}
 
 	if resp.StatusCode != http.StatusSeeOther {
-		return "", fmt.Errorf("unexpected status code: %d for uri %s", resp.StatusCode, loginUrl)
+		return "", fmt.Errorf("%w unexpected status code: %d for uri %s", ErrAuthFailed, resp.StatusCode, loginUrl)
 	}
 
 	cookie := resp.Header.Get("Set-Cookie")
 
 	if cookie == "" {
-		return "", errors.New("no Set-Cookie header present in response")
+		return "", fmt.Errorf("%w no Set-Cookie header present in response", ErrAuthFailed)
 	}
 
 	return cookie, nil

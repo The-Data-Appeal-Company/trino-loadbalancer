@@ -13,7 +13,7 @@ func TestMockRetriever(t *testing.T) {
 	mockStats := models.ClusterStatistics{}
 	retriever := Mock(mockStats, mockErr)
 
-	stats, err := retriever.GetStatistics(models.Coordinator{})
+	stats, err := retriever.ClusterStatistics(models.Coordinator{})
 
 	require.Equal(t, mockErr, err)
 	require.Equal(t, mockStats, stats)

@@ -8,7 +8,7 @@ import (
 
 func TestNoopRetriever(t *testing.T) {
 	retriever := Noop()
-	stats, err := retriever.GetStatistics(models.Coordinator{})
+	stats, err := retriever.ClusterStatistics(models.Coordinator{})
 	require.NoError(t, err)
 	require.Equal(t, stats, models.ClusterStatistics{})
 }

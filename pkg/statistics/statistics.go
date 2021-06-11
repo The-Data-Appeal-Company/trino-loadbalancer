@@ -5,5 +5,6 @@ import (
 )
 
 type Retriever interface {
-	GetStatistics(models.Coordinator) (models.ClusterStatistics, error)
+	ClusterStatistics(models.Coordinator) (models.ClusterStatistics, error)
+	QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error)
 }

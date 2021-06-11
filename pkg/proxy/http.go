@@ -15,8 +15,7 @@ type HttpProxy interface {
 }
 
 type ReverseProxy struct {
-	proxy       *httputil.ReverseProxy
-	interceptor Interceptor
+	proxy *httputil.ReverseProxy
 }
 
 func NewReverseProxy(target *url.URL, interceptor Interceptor) *ReverseProxy {

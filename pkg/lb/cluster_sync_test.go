@@ -35,11 +35,11 @@ func TestSyncPoolStatus_AddMissingFromState(t *testing.T) {
 	err = sync.Sync(pool)
 	require.NoError(t, err)
 
-	backends := pool.AllBackends()
+	backends := pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 1)
-	require.Equal(t, backends[0].Backend.Name, coord.Name)
-	require.Equal(t, backends[0].Backend.URL.String(), coord.URL.String())
-	require.Equal(t, backends[0].Backend.Enabled, coord.Enabled)
+	require.Equal(t, backends[0].Coordinator.Name, coord.Name)
+	require.Equal(t, backends[0].Coordinator.URL.String(), coord.URL.String())
+	require.Equal(t, backends[0].Coordinator.Enabled, coord.Enabled)
 
 }
 
@@ -64,7 +64,7 @@ func TestSyncPoolStatus_Remove(t *testing.T) {
 	err = sync.Sync(pool)
 	require.NoError(t, err)
 
-	backends := pool.AllBackends()
+	backends := pool.Fetch(FetchRequest{})
 	require.Len(t, backends, 0)
 
 }
@@ -115,7 +115,7 @@ func TestSyncPoolStatus_DoNothing(t *testing.T) {
 	stateBackends, err := storage.All(ctx)
 	require.NoError(t, err)
 
-	require.Len(t, pool.AllBackends(), len(stateBackends))
+	require.Len(t, pool.Fetch(FetchRequest{}), len(stateBackends))
 
 }
 
@@ -172,9 +172,12 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 	err = sync.Sync(pool)
 	require.NoError(t, err)
 
-	coord0FromPool, err := pool.GetByName(coord0.Name, healthcheck.StatusHealthy)
+	coord0FromPool := pool.Fetch(FetchRequest{
+		Name:   coord0.Name,
+		Health: healthcheck.StatusHealthy,
+	})
 	require.NoError(t, err)
 
-	require.Equal(t, coord0FromPool.Backend, coord0)
+	require.Equal(t, coord0FromPool[0].Coordinator, coord0)
 
 }

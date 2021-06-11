@@ -16,6 +16,10 @@ type MockStats struct {
 	err        error
 }
 
-func (m MockStats) GetStatistics(models.Coordinator) (models.ClusterStatistics, error) {
+func (m MockStats) ClusterStatistics(models.Coordinator) (models.ClusterStatistics, error) {
 	return m.statistics, m.err
+}
+
+func (m MockStats) QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error) {
+	return models.QueryStats{}, nil
 }

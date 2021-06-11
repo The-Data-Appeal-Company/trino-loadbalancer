@@ -11,6 +11,10 @@ func Noop() NoOp {
 type NoOp struct {
 }
 
-func (n NoOp) GetStatistics(models.Coordinator) (models.ClusterStatistics, error) {
+func (n NoOp) ClusterStatistics(models.Coordinator) (models.ClusterStatistics, error) {
 	return models.ClusterStatistics{}, nil
+}
+
+func (n NoOp) QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error) {
+	return models.QueryStats{}, nil
 }

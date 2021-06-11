@@ -9,6 +9,8 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/google/uuid"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -17,24 +19,32 @@ var (
 	ErrNoBackendsAvailable = errors.New("no backend available")
 )
 
-type CoordinatorConnection struct {
-	Proxy      proxy.HttpProxy
-	Backend    models.Coordinator
-	health     healthcheck.Health
-	statistics models.ClusterStatistics
-	termHc     chan bool
-	termStats  chan bool
-	stateMutex *sync.Mutex
+type CoordinatorConnectionID string
+
+type coordinatorConnection struct {
+	id          CoordinatorConnectionID
+	proxy       proxy.HttpProxy
+	coordinator models.Coordinator
+	health      healthcheck.Health
+	statistics  models.ClusterStatistics
+	termHc      chan bool
+	termStats   chan bool
+	stateMutex  *sync.Mutex
 }
 
-type HttpPool interface {
-	AllBackends() []*CoordinatorConnection
-	AvailableBackends() ([]*CoordinatorConnection, error)
-	GetByName(name string, unhealthy healthcheck.HealthStatus) (*CoordinatorConnection, error)
-	Add(coordinator models.Coordinator) error
-	Remove(name string) error
-	UpdateStatus() error
-	Update(name string, state models.Coordinator) error
+type CoordinatorRef struct {
+	ID         CoordinatorConnectionID
+	Statistics models.ClusterStatistics
+
+	models.Coordinator
+}
+
+type TrinoPool interface {
+	Handle(coordinator CoordinatorRef, writer http.ResponseWriter, request *http.Request) error
+	Fetch(FetchRequest) []CoordinatorRef
+	Add(models.Coordinator) error
+	Remove(CoordinatorConnectionID) error
+	Update(CoordinatorConnectionID, models.Coordinator) error
 }
 
 type PoolConfig struct {
@@ -46,7 +56,7 @@ type Pool struct {
 	conf               PoolConfig
 	logger             logging.Logger
 	sessionStore       session.Storage
-	coordinators       []*CoordinatorConnection
+	coordinators       []*coordinatorConnection
 	healthChecker      healthcheck.HealthCheck
 	statisticRetriever statistics.Retriever
 	rwLock             *sync.RWMutex
@@ -59,7 +69,7 @@ func NewPool(conf PoolConfig, sessionStore session.Storage, hc healthcheck.Healt
 		sessionStore:       sessionStore,
 		logger:             logger,
 		healthChecker:      hc,
-		coordinators:       make([]*CoordinatorConnection, 0),
+		coordinators:       make([]*coordinatorConnection, 0),
 		rwLock:             &sync.RWMutex{},
 	}
 }
@@ -73,55 +83,77 @@ func (p *Pool) UpdateStatus() error {
 	return nil
 }
 
-func (p *Pool) AllBackends() []*CoordinatorConnection {
-	return p.coordinators
+type EnabledStatus int
+
+const (
+	ClusterStatusAll      EnabledStatus = 0
+	ClusterStatusEnabled  EnabledStatus = 1
+	ClusterStatusDisabled EnabledStatus = 2
+)
+
+type FetchRequest struct {
+	Name   string
+	Tags   map[string]string
+	Health healthcheck.HealthStatus
+	Status EnabledStatus
 }
 
-func (p *Pool) AvailableBackends() ([]*CoordinatorConnection, error) {
+func (p *Pool) Fetch(req FetchRequest) []CoordinatorRef {
 	p.rwLock.RLock()
 	defer p.rwLock.RUnlock()
 
-	available := make([]*CoordinatorConnection, 0)
-	for _, conn := range p.coordinators {
-		if conn.Backend.Enabled && conn.health.IsAvailable() {
-			available = append(available, conn)
+	selected := make([]CoordinatorRef, 0)
+	for _, cc := range p.coordinators {
+		if len(req.Name) != 0 && cc.coordinator.Name != req.Name {
+			continue
 		}
+
+		if req.Health != 0 && cc.health.Status < req.Health {
+			continue
+		}
+
+		if len(req.Tags) != 0 && !matchTags(cc.coordinator.Tags, req.Tags) {
+			continue
+		}
+
+		if req.Status == ClusterStatusEnabled && !cc.coordinator.Enabled || req.Status == ClusterStatusDisabled && cc.coordinator.Enabled {
+			continue
+		}
+
+		selected = append(selected, CoordinatorRef{
+			ID:          cc.id,
+			Coordinator: cc.coordinator,
+			Statistics:  cc.statistics,
+		})
 	}
 
-	if len(available) == 0 {
-		return nil, ErrNoBackendsAvailable
-	}
-
-	return available, nil
+	return selected
 }
 
-func (p *Pool) GetByName(name string, includedStatus healthcheck.HealthStatus) (*CoordinatorConnection, error) {
-	p.rwLock.RLock()
-	defer p.rwLock.RUnlock()
+func (p *Pool) Update(id CoordinatorConnectionID, state models.Coordinator) error {
+	p.rwLock.Lock()
+	defer p.rwLock.Unlock()
 
-	for _, conn := range p.coordinators {
-		if name == conn.Backend.Name && conn.health.Status >= includedStatus {
-			return conn, nil
-		}
-	}
-
-	return nil, ErrNoBackendsAvailable
-}
-
-func (p *Pool) Update(name string, state models.Coordinator) error {
-	target, err := p.GetByName(name, healthcheck.StatusUnknown)
+	target, err := p.connectionByID(id)
 
 	if err != nil {
 		return err
 	}
 
-	p.rwLock.Lock()
-
-	target.Backend.Tags = state.Tags
-	target.Backend.Enabled = state.Enabled
-
-	p.rwLock.Unlock()
+	fmt.Println(state)
+	target.coordinator.Tags = state.Tags
+	target.coordinator.Enabled = state.Enabled
 	return nil
+}
+
+func (p *Pool) connectionByID(id CoordinatorConnectionID) (*coordinatorConnection, error) {
+	// TODO we may want to store coordinators as map
+	for _, c := range p.coordinators {
+		if c.id == id {
+			return c, nil
+		}
+	}
+	return nil, ErrNoBackendsAvailable
 }
 
 func (p *Pool) Add(coordinator models.Coordinator) error {
@@ -129,17 +161,18 @@ func (p *Pool) Add(coordinator models.Coordinator) error {
 	defer p.rwLock.Unlock()
 
 	for _, c := range p.coordinators {
-		if c.Backend.Name == coordinator.Name {
+		if c.coordinator.Name == coordinator.Name {
 			return fmt.Errorf("duplicated backend name: %s", coordinator.Name)
 		}
 	}
 
-	backendConn := &CoordinatorConnection{
-		Backend:    coordinator,
-		Proxy:      proxy.NewReverseProxy(coordinator.URL, NewQueryClusterLinker(p.sessionStore, coordinator.Name)),
-		termHc:     make(chan bool),
-		termStats:  make(chan bool),
-		stateMutex: &sync.Mutex{},
+	backendConn := &coordinatorConnection{
+		id:          CoordinatorConnectionID(uuid.New().String()),
+		coordinator: coordinator,
+		proxy:       proxy.NewReverseProxy(coordinator.URL, NewQueryClusterLinker(p.sessionStore, coordinator.Name)),
+		termHc:      make(chan bool),
+		termStats:   make(chan bool),
+		stateMutex:  &sync.Mutex{},
 	}
 
 	p.coordinators = append(p.coordinators, backendConn)
@@ -152,12 +185,12 @@ func (p *Pool) Add(coordinator models.Coordinator) error {
 	return nil
 }
 
-func (p *Pool) Remove(name string) error {
+func (p *Pool) Remove(id CoordinatorConnectionID) error {
 	p.rwLock.Lock()
 	defer p.rwLock.Unlock()
 
 	for i, conn := range p.coordinators {
-		if conn.Backend.Name == name {
+		if conn.id == id {
 			conn.termHc <- true
 			conn.termStats <- true
 
@@ -167,7 +200,7 @@ func (p *Pool) Remove(name string) error {
 				Message:   "backend has been removed from the pool",
 			}
 
-			p.logger.Info("removed backend from pool: %s ( %s )", name, conn.Backend)
+			p.logger.Info("removed backend from pool: %s ( %s )", conn.coordinator.Name, conn.coordinator)
 
 			p.coordinators = remove(p.coordinators, i)
 			return nil
@@ -177,12 +210,12 @@ func (p *Pool) Remove(name string) error {
 	return errors.New("backend not found")
 }
 
-func remove(s []*CoordinatorConnection, i int) []*CoordinatorConnection {
+func remove(s []*coordinatorConnection, i int) []*coordinatorConnection {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }
 
-func (p *Pool) clusterStatistics(b *CoordinatorConnection) {
+func (p *Pool) clusterStatistics(b *coordinatorConnection) {
 	ticker := time.NewTicker(p.conf.StatisticsDelay)
 	for {
 		select {
@@ -194,7 +227,7 @@ func (p *Pool) clusterStatistics(b *CoordinatorConnection) {
 	}
 }
 
-func (p *Pool) healthCheck(b *CoordinatorConnection) {
+func (p *Pool) healthCheck(b *coordinatorConnection) {
 	ticker := time.NewTicker(p.conf.HealthCheckDelay)
 	for {
 		select {
@@ -206,10 +239,10 @@ func (p *Pool) healthCheck(b *CoordinatorConnection) {
 	}
 }
 
-func (p *Pool) updateBackendHealth(b *CoordinatorConnection) {
+func (p *Pool) updateBackendHealth(b *coordinatorConnection) {
 	b.stateMutex.Lock()
 	defer b.stateMutex.Unlock()
-	result, err := p.healthChecker.Check(b.Backend.URL)
+	result, err := p.healthChecker.Check(b.coordinator.URL)
 	if err != nil {
 		result = healthcheck.Health{
 			Timestamp: time.Now(),
@@ -219,13 +252,13 @@ func (p *Pool) updateBackendHealth(b *CoordinatorConnection) {
 	}
 
 	if b.health.Status != result.Status {
-		p.logger.Warn("%s health status changed %s -> %s", b.Backend.Name, b.health.Status.String(), result.Status.String())
+		p.logger.Warn("%s health status changed %s -> %s", b.coordinator.Name, b.health.Status.String(), result.Status.String())
 	}
 
 	b.health = result
 }
 
-func (p *Pool) updateBackendStatistics(b *CoordinatorConnection) {
+func (p *Pool) updateBackendStatistics(b *coordinatorConnection) {
 	b.stateMutex.Lock()
 	defer b.stateMutex.Unlock()
 
@@ -233,11 +266,28 @@ func (p *Pool) updateBackendStatistics(b *CoordinatorConnection) {
 		return
 	}
 
-	stats, err := p.statisticRetriever.GetStatistics(b.Backend)
+	stats, err := p.statisticRetriever.ClusterStatistics(b.coordinator)
 	if err != nil {
-		p.logger.Warn("no statistics available for %s: %s", b.Backend.Name, err.Error())
+		p.logger.Warn("no statistics available for %s: %s", b.coordinator.Name, err.Error())
 		return
 	}
 
 	b.statistics = stats
+}
+
+func (p *Pool) Handle(coordinator CoordinatorRef, writer http.ResponseWriter, request *http.Request) error {
+	conn, err := p.connectionByID(coordinator.ID)
+	if err != nil {
+		return err
+	}
+	return conn.proxy.Handle(writer, request)
+}
+
+func matchTags(source map[string]string, match map[string]string) bool {
+	for k, v := range match {
+		if source[k] != v {
+			return false
+		}
+	}
+	return true
 }

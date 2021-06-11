@@ -9,7 +9,7 @@ import (
 )
 
 type PoolSync interface {
-	Sync(pool HttpPool) error
+	Sync(pool TrinoPool) error
 }
 
 type PoolStateSync struct {
@@ -28,29 +28,29 @@ func NewPoolStateSync(storage discovery.Storage, logger logging.Logger) *PoolSta
 
 type syncAction struct {
 	ToAdd    []models.Coordinator
-	ToRemove []models.Coordinator
+	ToRemove []CoordinatorRef
 }
 
-func (p *PoolStateSync) Sync(pool HttpPool) error {
+func (p *PoolStateSync) Sync(pool TrinoPool) error {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
 	ctx := context.Background()
 
-	current := coordinators(pool.AllBackends())
-	state, err := p.storage.All(ctx)
+	actualCoordinators := pool.Fetch(FetchRequest{})
+	expectedCoordinators, err := p.storage.All(ctx)
 
 	if err != nil {
 		return err
 	}
 
-	syncAction := getSyncAction(current, state)
+	syncAction := getSyncAction(actualCoordinators, expectedCoordinators)
 
 	if len(syncAction.ToAdd) != 0 || len(syncAction.ToRemove) != 0 {
-		p.logger.Info("new pool state retrieved: Add %d, Remove: %d", len(syncAction.ToAdd), len(syncAction.ToRemove))
+		p.logger.Info("new pool coordinators retrieved: Add %d, Remove: %d", len(syncAction.ToAdd), len(syncAction.ToRemove))
 
 		for _, removed := range syncAction.ToRemove {
-			if err := pool.Remove(removed.Name); err != nil {
+			if err := pool.Remove(removed.ID); err != nil {
 				return err
 			}
 		}
@@ -62,11 +62,11 @@ func (p *PoolStateSync) Sync(pool HttpPool) error {
 		}
 	}
 
-	// After pool items sync we sync items state
-	for _, currItem := range current {
-		for _, stateItem := range state {
+	// After pool items sync we sync items coordinators
+	for _, currItem := range actualCoordinators {
+		for _, stateItem := range expectedCoordinators {
 			if currItem.Name == stateItem.Name {
-				if err := pool.Update(currItem.Name, stateItem); err != nil {
+				if err := pool.Update(currItem.ID, stateItem); err != nil {
 					return err
 				}
 
@@ -80,18 +80,18 @@ func (p *PoolStateSync) Sync(pool HttpPool) error {
 	return nil
 }
 
-func getSyncAction(current []models.Coordinator, state []models.Coordinator) syncAction {
+func getSyncAction(current []CoordinatorRef, state []models.Coordinator) syncAction {
 	toAdd := make([]models.Coordinator, 0)
-	toRemove := make([]models.Coordinator, 0)
+	toRemove := make([]CoordinatorRef, 0)
 
 	for _, curr := range current {
-		if !contains(state, curr) {
+		if !containsCoord(state, curr.Coordinator) {
 			toRemove = append(toRemove, curr)
 		}
 	}
 
 	for _, stat := range state {
-		if !contains(current, stat) {
+		if !containsTarget(current, stat) {
 			toAdd = append(toAdd, stat)
 		}
 	}
@@ -102,15 +102,16 @@ func getSyncAction(current []models.Coordinator, state []models.Coordinator) syn
 	}
 }
 
-func coordinators(backends []*CoordinatorConnection) []models.Coordinator {
-	coordinators := make([]models.Coordinator, len(backends))
-	for i := range backends {
-		coordinators[i] = backends[i].Backend
+func containsTarget(src []CoordinatorRef, target models.Coordinator) bool {
+	for _, c := range src {
+		if target.Name == c.Name {
+			return true
+		}
 	}
-	return coordinators
+	return false
 }
 
-func contains(src []models.Coordinator, target models.Coordinator) bool {
+func containsCoord(src []models.Coordinator, target models.Coordinator) bool {
 	for _, c := range src {
 		if target.Name == c.Name {
 			return true
@@ -121,6 +122,6 @@ func contains(src []models.Coordinator, target models.Coordinator) bool {
 
 type NoOpSync struct{}
 
-func (n NoOpSync) Sync(pool HttpPool) error {
+func (n NoOpSync) Sync(pool TrinoPool) error {
 	return nil
 }
