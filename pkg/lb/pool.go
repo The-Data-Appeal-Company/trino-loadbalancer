@@ -164,10 +164,12 @@ func (p *Pool) Add(coordinator models.Coordinator) error {
 	connectionID := CoordinatorConnectionID(uuid.New().String())
 	backendConn := &coordinatorConnection{
 		coordinator: coordinator,
-		proxy:       proxy.NewReverseProxy(coordinator.URL, NewQueryClusterLinker(p.sessionStore, coordinator.Name)),
-		termHc:      make(chan bool),
-		termStats:   make(chan bool),
-		stateMutex:  &sync.Mutex{},
+		proxy: proxy.NewReverseProxy(coordinator.URL, proxy.NewCompositeInterceptor(
+			NewQueryClusterLinker(p.sessionStore, coordinator.Name),
+		)),
+		termHc:     make(chan bool),
+		termStats:  make(chan bool),
+		stateMutex: &sync.Mutex{},
 	}
 
 	p.coordinators[connectionID] = backendConn

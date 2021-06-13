@@ -10,6 +10,23 @@ type Interceptor interface {
 	Handle(*http.Request, *http.Response) error
 }
 
+type CompositeInterceptor struct {
+	Interceptors []Interceptor
+}
+
+func NewCompositeInterceptor(interceptor ...Interceptor) Interceptor {
+	return CompositeInterceptor{Interceptors: interceptor}
+}
+
+func (c CompositeInterceptor) Handle(request *http.Request, response *http.Response) error {
+	for _, i := range c.Interceptors {
+		if err := i.Handle(request, response); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type HttpProxy interface {
 	Handle(http.ResponseWriter, *http.Request) error
 }
