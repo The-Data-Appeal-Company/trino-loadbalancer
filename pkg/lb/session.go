@@ -122,7 +122,7 @@ func queryStateFromResponse(res *http.Response) (models.TrinoQueryState, error) 
 	return queryState, nil
 }
 
-func QueryInfoFromRequest(req *http.Request) (models.QueryInfo, error) {
+func queryInfoFromRequest(req *http.Request) (models.QueryInfo, error) {
 	user := req.Header.Get(TrinoHeaderUser)
 	tx := req.Header.Get(TrinoHeaderTransaction)
 

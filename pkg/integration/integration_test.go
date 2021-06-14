@@ -28,15 +28,25 @@ func TestIntegration(t *testing.T) {
 
 	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
-	defer cluster0.Terminate(ctx)
+	defer func() {
+		require.NoError(t, cluster0.Terminate(ctx))
+	}()
 
 	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
-	defer cluster1.Terminate(ctx)
+	defer func() {
+		if err := cluster1.Terminate(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	cluster2, c2, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
-	defer cluster2.Terminate(ctx)
+	defer func() {
+		if err := cluster2.Terminate(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()

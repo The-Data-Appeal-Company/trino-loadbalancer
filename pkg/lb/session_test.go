@@ -44,7 +44,7 @@ func TestExtractQueryInfoFromRequest(t *testing.T) {
 		headers.Add(TrinoHeaderUser, "test-user")
 		headers.Add(TrinoHeaderTransaction, "test-tx")
 
-		queryInfo, err := QueryInfoFromRequest(&http.Request{
+		queryInfo, err := queryInfoFromRequest(&http.Request{
 			Method: "POST",
 			URL:    mustUrl(u),
 			Header: headers,

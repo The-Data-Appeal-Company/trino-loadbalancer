@@ -71,13 +71,17 @@ func (p *Proxy) Handle(writer http.ResponseWriter, request *http.Request) {
 	if err == ErrNoBackendsAvailable {
 		p.logger.Warn("no available backends for request %s", request.URL)
 		writer.WriteHeader(http.StatusServiceUnavailable)
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			p.logger.Error("error writing response: %w", err)
+		}
 		return
 	}
 
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			p.logger.Error("error writing response: %w", err)
+		}
 		return
 	}
 
@@ -108,8 +112,8 @@ func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (CoordinatorR
 
 	// the request is retrieving info about a specific query we must get coordinator with planned the query
 	// so we use the sessionReader to retrieve its name
-	if isStatementRequest(request.URL) && request.Method == http.MethodGet { //todo check path
-		queryInfo, err := QueryInfoFromRequest(request)
+	if isStatementRequest(request.URL) && request.Method == http.MethodGet {
+		queryInfo, err := queryInfoFromRequest(request)
 		if err != nil {
 			return CoordinatorRef{}, err
 		}

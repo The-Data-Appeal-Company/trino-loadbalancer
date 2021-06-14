@@ -16,7 +16,7 @@ func TestDbPersistence(t *testing.T) {
 	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
 
-	defer container.Terminate(ctx)
+	defer require.NoError(t, container.Terminate(ctx))
 
 	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
 
@@ -72,7 +72,7 @@ func TestDbDoubleInsertUpdate(t *testing.T) {
 	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
 
-	defer container.Terminate(ctx)
+	defer require.NoError(t, container.Terminate(ctx))
 
 	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
 

@@ -17,7 +17,9 @@ func (a Api) statistics(writer http.ResponseWriter, request *http.Request) {
 
 	clusters, err := a.discoveryStorage.All(ctx)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -53,11 +55,15 @@ func (a Api) statistics(writer http.ResponseWriter, request *http.Request) {
 
 	body, err := json.Marshal(response)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writer.Write(body)
+	if _, err := writer.Write(body); err != nil {
+		a.logger.Error("error writing response: %w", err)
+	}
 
 }

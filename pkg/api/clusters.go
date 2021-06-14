@@ -39,7 +39,9 @@ func (a Api) updateCluster(w http.ResponseWriter, r *http.Request) {
 	var req ClusterUpdateRequest
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -47,13 +49,17 @@ func (a Api) updateCluster(w http.ResponseWriter, r *http.Request) {
 	cluster, err := a.discoveryStorage.Get(ctx, vars["name"])
 
 	if err == discovery.ErrClusterNotFound {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -62,7 +68,9 @@ func (a Api) updateCluster(w http.ResponseWriter, r *http.Request) {
 	err = a.discoveryStorage.Add(ctx, cluster)
 
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -75,7 +83,9 @@ func (a Api) clustersList(writer http.ResponseWriter, request *http.Request) {
 
 	clusters, err := a.discoveryStorage.All(ctx)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -89,17 +99,20 @@ func (a Api) clustersList(writer http.ResponseWriter, request *http.Request) {
 			Tags:      c.Tags,
 			Available: true, // TODO add health check
 		}
-
 	}
 
 	body, err := json.Marshal(results)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		if _, err := writer.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writer.Write(body)
+	if _, err := writer.Write(body); err != nil {
+		a.logger.Error("error writing response: %w", err)
+	}
 }
 
 type ClusterAddRequest struct {
@@ -120,14 +133,18 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 	var req ClusterAddRequest
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	parsedUrl, err := url.Parse(req.Url)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -139,7 +156,9 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			a.logger.Error("error writing response: %w", err)
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
