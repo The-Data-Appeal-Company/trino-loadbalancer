@@ -29,7 +29,7 @@ func TestIntegration(t *testing.T) {
 	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
-		require.NoError(t, cluster0.Terminate(ctx))
+		_ = cluster0.Terminate(ctx)
 	}()
 
 	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
