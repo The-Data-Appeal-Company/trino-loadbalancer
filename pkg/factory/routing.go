@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"errors"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
 	"regexp"
@@ -51,7 +52,7 @@ func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, err
 		return routing.UserAwareRouter{}, nil
 	}
 
-	defaultNameRe, err := regexp.Compile(users.Default.Cluster.Name)
+	defaultNameRe, err := regexpOrNil(users.Default.Cluster.Name)
 	if err != nil {
 		return routing.UserAwareRouter{}, nil
 	}
@@ -67,12 +68,16 @@ func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, err
 
 	rules := make([]routing.UserAwareRoutingRule, 0)
 	for i, r := range users.Rules {
-		userRe, err := regexp.Compile(r.User)
+		userRe, err := regexpOrNil(r.User)
 		if err != nil {
 			return routing.UserAwareRouter{}, nil
 		}
 
-		clusterNameRe, err := regexp.Compile(r.Cluster.Name)
+		if userRe == nil {
+			return routing.UserAwareRouter{}, errors.New("user must be specified on routing rule")
+		}
+
+		clusterNameRe, err := regexpOrNil(r.Cluster.Name)
 		if err != nil {
 			return routing.UserAwareRouter{}, nil
 		}
@@ -88,6 +93,13 @@ func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, err
 
 	conf.Rules = rules
 	return routing.NewUserAwareRouter(conf), nil
+}
+
+func regexpOrNil(raw string) (*regexp.Regexp, error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	return regexp.Compile(raw)
 }
 
 func createBehaviour(raw string) (routing.NoMatchBehaviour, error) {

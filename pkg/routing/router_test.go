@@ -7,7 +7,7 @@ import (
 )
 
 func TestRouterHandleRequest(t *testing.T) {
-	router := New(RoundRobin())
+	router := New(NewUserAwareRouter(UserAwareRoutingConf{}), RoundRobin())
 	route, err := router.Route(Request{
 		Coordinators: []CoordinatorWithStatistics{
 			{
@@ -22,7 +22,7 @@ func TestRouterHandleRequest(t *testing.T) {
 }
 
 func TestRouterHandleEmptyCoordinators(t *testing.T) {
-	router := New(RoundRobin())
+	router := New(NewUserAwareRouter(UserAwareRoutingConf{}), RoundRobin())
 	_, err := router.Route(Request{})
 	require.Error(t, err)
 }

@@ -31,7 +31,7 @@ func TestProxyRouting(t *testing.T) {
 	hc := healthcheck.NoOp()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
 	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -70,7 +70,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 	hc := healthcheck.NoOp()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RoundRobin())
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 
 	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -107,7 +107,7 @@ func TestProxyWithUnhealthyBackend(t *testing.T) {
 	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
 	logger := logging.Noop()
 
@@ -136,7 +136,7 @@ func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 	hc := healthcheck.NoOp()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
 	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -166,7 +166,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
 	logger := logging.Noop()
 
@@ -191,7 +191,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 	hc := healthcheck.NewHttpHealth()
 	stats := statistics.Noop()
 
-	router := routing.New(routing.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
 	logger := logging.Noop()
 

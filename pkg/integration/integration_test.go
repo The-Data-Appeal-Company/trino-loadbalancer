@@ -50,7 +50,7 @@ func TestIntegration(t *testing.T) {
 	hc := healthcheck.NewHttpHealth()
 	stats := statistics.NewClusterApi()
 
-	router := routing.New(routing.RoundRobin())
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 
 	logger := logging.Noop()
 

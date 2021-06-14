@@ -65,11 +65,11 @@ func filterByRule(rule UserAwareClusterMatchRule, coordinators []CoordinatorWith
 	coords := make([]CoordinatorWithStatistics, 0)
 	for _, coord := range coordinators {
 
-		if !rule.Name.MatchString(coord.Coordinator.Name) {
+		if rule.Name != nil && !rule.Name.MatchString(coord.Coordinator.Name) {
 			continue
 		}
 
-		if !matchTags(coord.Coordinator.Tags, rule.Tags) {
+		if rule.Tags != nil && !matchTags(coord.Coordinator.Tags, rule.Tags) {
 			continue
 		}
 
@@ -82,7 +82,7 @@ func filterByRule(rule UserAwareClusterMatchRule, coordinators []CoordinatorWith
 func (u UserAwareRouter) matchRule(req Request) (UserAwareClusterMatchRule, bool) {
 	for _, r := range u.conf.Rules {
 		if r.User.MatchString(req.User) {
-			return r.Cluster, false
+			return r.Cluster, true
 		}
 	}
 	return UserAwareClusterMatchRule{}, false
