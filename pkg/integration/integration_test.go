@@ -35,17 +35,13 @@ func TestIntegration(t *testing.T) {
 	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
-		if err := cluster1.Terminate(ctx); err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, cluster1.Terminate(ctx))
 	}()
 
 	cluster2, c2, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
-		if err := cluster2.Terminate(ctx); err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, cluster2.Terminate(ctx))
 	}()
 
 	stateStore := discovery.NewMemoryStorage()
