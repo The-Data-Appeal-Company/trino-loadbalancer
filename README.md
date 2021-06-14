@@ -1,9 +1,9 @@
 # Trino Loadbalancer
 
 # trino-loadbalancer 
-[![Go Report Card](https://goreportcard.com/badge/github.com/The-Data-Appeal-Company/trino-loadbalancer)](https://goreportcard.com/report/github.com/The-Data-Appeal-Company/trino-loadbalancer)
 ![Docker](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Docker/badge.svg)
 ![Tests](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Tests/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/The-Data-Appeal-Company/trino-loadbalancer)](https://goreportcard.com/report/github.com/The-Data-Appeal-Company/trino-loadbalancer)
 
 Fast, high available load balancer for trino with smart routing rules
 
