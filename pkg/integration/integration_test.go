@@ -29,6 +29,7 @@ func TestIntegration(t *testing.T) {
 	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
+		// if the test ran successfully this container should be already terminated
 		_ = cluster0.Terminate(ctx)
 	}()
 
