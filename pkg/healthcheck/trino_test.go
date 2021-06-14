@@ -15,7 +15,9 @@ func TestTrinoClusterHealth_Check(t *testing.T) {
 	ctx := context.Background()
 	container, _, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
-	defer require.NoError(t, container.Terminate(ctx))
+	defer func() {
+		require.NoError(t, container.Terminate(ctx))
+	}()
 
 	check := NewHttpHealth()
 

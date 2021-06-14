@@ -16,7 +16,9 @@ func TestRedisLinkerLinkCluster(t *testing.T) {
 	ctx := context.Background()
 	container, client, err := tests.CreateRedisServer(ctx)
 	require.NoError(t, err)
-	defer require.NoError(t, container.Terminate(ctx))
+	defer func() {
+		require.NoError(t, container.Terminate(ctx))
+	}()
 
 	storage := RedisLinkerStorage{
 		redis:  client,
@@ -55,7 +57,9 @@ func TestRedisLinkerLinkNotFoundErr(t *testing.T) {
 	ctx := context.Background()
 	container, client, err := tests.CreateRedisServer(ctx)
 	require.NoError(t, err)
-	defer require.NoError(t, container.Terminate(ctx))
+	defer func() {
+		require.NoError(t, container.Terminate(ctx))
+	}()
 
 	storage := RedisLinkerStorage{
 		redis:  client,

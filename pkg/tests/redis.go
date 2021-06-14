@@ -9,14 +9,13 @@ import (
 )
 
 func CreateRedisServer(ctx context.Context) (testcontainers.Container, redis.UniversalClient, error) {
-
 	const password = ""
 
 	redisContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "redis",
+			Image:        "redis:6.2-alpine",
 			ExposedPorts: []string{"6379/tcp"},
-			WaitingFor:   wait.ForLog("Ready to accept connections"),
+			WaitingFor:   wait.ForListeningPort("6379/tcp"),
 		},
 		Started: false,
 	})
