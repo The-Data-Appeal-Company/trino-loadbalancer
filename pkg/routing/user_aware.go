@@ -49,7 +49,10 @@ func (u UserAwareRouter) Route(req Request) (Request, error) {
 		return req, nil
 	}
 
+	// test matching rule for the requester user
 	rule, matched := u.matchRule(req)
+
+	// if no rule is found we apply the configured default behaviour
 	if !matched {
 		if u.conf.Default.Behaviour == NoMatchBehaviourForbid {
 			return Request{}, ErrForbiddenRouting
@@ -57,6 +60,7 @@ func (u UserAwareRouter) Route(req Request) (Request, error) {
 		rule = u.conf.Default.Cluster
 	}
 
+	// filter request's coordinator using the rule configuration
 	req.Coordinators = filterByRule(rule, req.Coordinators)
 	return req, nil
 }

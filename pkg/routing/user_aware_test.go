@@ -240,6 +240,63 @@ func TestRoutingAwareFilterByUserForbidOnError(t *testing.T) {
 	require.True(t, errors.Is(err, ErrForbiddenRouting))
 }
 
+func TestUserAwareRoutingSelectAllCoordinatorsWhenFallbackOnEmptyDefault(t *testing.T) {
+	uar := NewUserAwareRouter(UserAwareRoutingConf{
+		Default: UserAwareDefault{
+			Behaviour: NoMatchBehaviourDefault,
+			Cluster: UserAwareClusterMatchRule{},
+		},
+		Rules: []UserAwareRoutingRule{
+			{
+				User: mustRegex(t, "test-app-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-00"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				User: mustRegex(t, "test-user-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-00"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+		},
+	})
+
+	request := Request{
+		User: "non-matching-user",
+		Coordinators: []CoordinatorWithStatistics{
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-00",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-01",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+		},
+	}
+	coords, err := uar.Route(request)
+
+	require.NoError(t, err)
+
+	require.Equal(t, coords.User, request.User)
+	require.Len(t, coords.Coordinators, 2)
+}
+
 func mustRegex(t *testing.T, raw string) *regexp.Regexp {
 	re, err := regexp.Compile(raw)
 	require.NoError(t, err)
