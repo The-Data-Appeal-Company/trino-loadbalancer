@@ -3,6 +3,25 @@ proxy:
 
 routing:
   rule: round-robin
+  users:
+    default:
+      behaviour: default
+      cluster:
+        tags:
+          workload: etl
+    rules:
+      - user: 'team-data-science-(.+)'
+        cluster:
+          name: 'cluster-00'
+          tags:
+            workload: interactive
+
+      - user: 'etl-(.+)-(dev|beta|prod)'
+        cluster:
+          name: 'cluster-01'
+          tags:
+            workload: etl
+
 
 clusters:
   sync:

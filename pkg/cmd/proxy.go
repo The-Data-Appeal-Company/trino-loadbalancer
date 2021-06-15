@@ -36,10 +36,12 @@ var proxyCmd = &cobra.Command{
 			go enableProfilingServer(profilingAddr)
 		}
 
-		router, err := factory.CreateQueryRouter(factory.QueryRouterConfiguration{
-			Type: viper.GetString("routing.rule"),
-		})
+		var routerConf factory.RoutingConf
+		if err := viper.UnmarshalKey("routing", &routerConf); err != nil {
+			log.Fatal(err)
+		}
 
+		router, err := factory.CreateQueryRouter(routerConf)
 		if err != nil {
 			log.Fatal(err)
 		}
