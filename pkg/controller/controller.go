@@ -3,11 +3,10 @@ package controller
 import (
 	"context"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/concurrency"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	"golang.org/x/sync/errgroup"
-	"sync"
 )
 
 type Controller struct {
@@ -29,13 +28,52 @@ func (c Controller) Run(ctx context.Context) error {
 		return err
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	mg := concurrency.NewMultiErrorGroup()
+
+	for _, coord := range coordinators {
+		mg.Go(func() error {
+			return c.controlCluster(coord)
+		})
+	}
+
+	err = mg.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Controller) controlCluster(cluster models.Coordinator) error {
+	health, err := c.HealthCheck.Check(cluster.URL)
+	if err != nil {
+		return err
+	}
+
+	if health.Status != healthcheck.StatusHealthy {
+		return nil
+	}
+
+	queriesList, err := c.Api.QueryList(cluster)
+	if err != nil {
+		return err
+	}
+
+	queriesList = c.filterProcessedQueries(queriesList)
+
+	for _, query := range queriesList {
+		queryDetail, err := c.Api.QueryDetail(cluster, query.QueryId)
+		if err != nil {
+			return err
+		}
+
+
+	}
 
 
 	return nil
 }
 
-func controlCluster(cluster models.Coordinator) error {
-
-	return nil
+func (c Controller) filterProcessedQueries(list trino.QueryList) trino.QueryList {
+	return list
 }
