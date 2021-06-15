@@ -26,19 +26,17 @@ type RoutingUsersConf struct {
 }
 
 type RoutingConf struct {
-	Routing struct {
-		Mode  string           `json:"mode" yaml:"mode" mapstructure:"mode"`
-		Users RoutingUsersConf `json:"users" yaml:"users" mapstructure:"users"`
-	} `json:"routing" yaml:"routing" mapstructure:"routing"`
+	Rule  string           `json:"rule" yaml:"rule" mapstructure:"rule"`
+	Users RoutingUsersConf `json:"users" yaml:"users" mapstructure:"users"`
 }
 
 func CreateQueryRouter(conf RoutingConf) (routing.Router, error) {
-	userAwareRouter, err := createUserAwareRouter(conf.Routing.Users)
+	userAwareRouter, err := createUserAwareRouter(conf.Users)
 	if err != nil {
 		return routing.Router{}, err
 	}
 
-	rule, err := createRouterRule(conf.Routing.Mode)
+	rule, err := createRouterRule(conf.Rule)
 	if err != nil {
 		return routing.Router{}, err
 	}
@@ -66,7 +64,7 @@ func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, err
 		},
 	}
 
-	rules := make([]routing.UserAwareRoutingRule, 0)
+	rules := make([]routing.UserAwareRoutingRule, len(users.Rules))
 	for i, r := range users.Rules {
 		userRe, err := regexpOrNil(r.User)
 		if err != nil {
