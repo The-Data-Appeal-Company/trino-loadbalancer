@@ -1,4 +1,4 @@
-package statistics
+package trino
 
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
@@ -20,6 +20,10 @@ func (m MockStats) ClusterStatistics(models.Coordinator) (models.ClusterStatisti
 	return m.statistics, m.err
 }
 
-func (m MockStats) QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error) {
-	return models.QueryStats{}, nil
+func (m MockStats) QueryDetail(coord models.Coordinator, queryID string) (models.QueryDetail, error) {
+	return models.QueryDetail{}, nil
+}
+
+func (m MockStats) QueryList(coord models.Coordinator) (models.QueryList, error) {
+	return nil, nil
 }

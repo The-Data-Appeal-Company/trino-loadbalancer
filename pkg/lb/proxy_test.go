@@ -7,7 +7,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +29,7 @@ func TestProxyRouting(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NoOp()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
@@ -68,7 +68,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NoOp()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 
@@ -105,7 +105,7 @@ func TestProxyWithUnhealthyBackend(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NewHttpHealth()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
@@ -134,7 +134,7 @@ func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NoOp()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
@@ -164,7 +164,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NewHttpHealth()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
@@ -189,7 +189,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NewHttpHealth()
-	stats := statistics.Noop()
+	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 

@@ -10,7 +10,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/routing"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
 	"github.com/stretchr/testify/require"
 	"sync"
@@ -48,7 +48,7 @@ func TestIntegration(t *testing.T) {
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
 	hc := healthcheck.NewHttpHealth()
-	stats := statistics.NewClusterApi()
+	stats := trino.NewClusterApi()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 

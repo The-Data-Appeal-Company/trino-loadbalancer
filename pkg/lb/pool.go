@@ -8,7 +8,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/google/uuid"
 	"net/http"
 	"sync"
@@ -57,11 +57,11 @@ type Pool struct {
 	sessionStore       session.Storage
 	coordinators       map[CoordinatorConnectionID]*coordinatorConnection
 	healthChecker      healthcheck.HealthCheck
-	statisticRetriever statistics.Retriever
+	statisticRetriever trino.Retriever
 	rwLock             *sync.RWMutex
 }
 
-func NewPool(conf PoolConfig, sessionStore session.Storage, hc healthcheck.HealthCheck, statisticRetriever statistics.Retriever, logger logging.Logger) *Pool {
+func NewPool(conf PoolConfig, sessionStore session.Storage, hc healthcheck.HealthCheck, statisticRetriever trino.Retriever, logger logging.Logger) *Pool {
 	return &Pool{
 		conf:               conf,
 		statisticRetriever: statisticRetriever,

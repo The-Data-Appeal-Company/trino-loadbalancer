@@ -6,7 +6,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -23,7 +23,7 @@ var (
 	logger             logging.Logger = logging.Logrus()
 	discoveryStorage   discovery.Storage
 	sessionStorage     session.Storage
-	clusterStats       statistics.Retriever
+	clusterStats       trino.Retriever
 	clusterHealthCheck healthcheck.HealthCheck
 	discover           discovery.Discovery
 )

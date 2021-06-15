@@ -1,4 +1,4 @@
-package statistics
+package trino
 
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"

@@ -5,7 +5,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -27,7 +27,7 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -71,7 +71,7 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -109,7 +109,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -168,7 +168,7 @@ func TestPool_GetByName(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -189,7 +189,7 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -219,7 +219,7 @@ func TestPool_UpdateBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := statistics.Mock(models.ClusterStatistics{}, nil)
+	stats := trino.Mock(models.ClusterStatistics{}, nil)
 	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)

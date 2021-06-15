@@ -1,4 +1,4 @@
-package statistics
+package trino
 
 import (
 	"encoding/json"
@@ -183,14 +183,68 @@ func TestQueryStatsRetriever(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	stats, err := retriever.QueryStatistics(models.Coordinator{
+	stats, err := retriever.QueryDetail(models.Coordinator{
 		Name:    "test",
 		URL:     tests.MustUrl(apiSrv.URL),
 		Enabled: true,
 	}, queryID)
 	require.NoError(t, err)
 
-	var expected models.QueryStats
+	var expected models.QueryDetail
+	err = json.Unmarshal(respBody, &expected)
+	require.NoError(t, err)
+
+	assert.Equal(t, stats, expected)
+}
+
+
+func TestQueryList(t *testing.T) {
+	respBody, err := ioutil.ReadFile("testdata/query-list.json")
+	require.NoError(t, err)
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		const trinoUser = "trinolb"
+		const trinoAuthCookie = "test"
+
+		if request.URL.Path != "/ui/login" && request.Header.Get("Cookie") != trinoAuthCookie {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if request.URL.Path == "/ui/api/query/" {
+			_, err := writer.Write(respBody)
+			require.NoError(t, err)
+			return
+		}
+
+		if request.URL.Path == "/ui/login" {
+			body, err := ioutil.ReadAll(request.Body)
+			require.NoError(t, err)
+			defer request.Body.Close()
+
+			require.Equal(t, fmt.Sprintf("username=%s&password=&redirectPath=", trinoUser), string(body))
+
+			writer.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+			writer.Header().Set("Set-Cookie", trinoAuthCookie)
+			writer.Header().Set("Location", "http://trino.local")
+			writer.WriteHeader(http.StatusSeeOther)
+			return
+		}
+
+		writer.WriteHeader(http.StatusNotFound)
+	}))
+	defer apiSrv.Close()
+
+	retriever := NewClusterApi()
+
+	stats, err := retriever.QueryList(models.Coordinator{
+		Name:    "test",
+		URL:     tests.MustUrl(apiSrv.URL),
+		Enabled: true,
+	})
+	require.NoError(t, err)
+
+	var expected models.QueryList
 	err = json.Unmarshal(respBody, &expected)
 	require.NoError(t, err)
 

@@ -3,19 +3,19 @@ package api
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/trino"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 type Api struct {
-	statsRetriever   statistics.Retriever
+	statsRetriever   trino.Retriever
 	discoveryStorage discovery.Storage
 	discover         discovery.Discovery
 	logger           logging.Logger
 }
 
-func NewApi(statsRetriever statistics.Retriever, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging.Logger) Api {
+func NewApi(statsRetriever trino.Retriever, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging.Logger) Api {
 	return Api{
 		statsRetriever:   statsRetriever,
 		discoveryStorage: discoverStorage,

@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type QueryStats struct {
+type QueryDetail struct {
 	QueryId string `json:"queryId"`
 	Session struct {
 		QueryId                  string        `json:"queryId"`

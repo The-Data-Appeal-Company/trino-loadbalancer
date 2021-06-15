@@ -1,4 +1,4 @@
-package statistics
+package trino
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 
 const userName = "trinolb"
 
-type TrinoClusterApi struct {
+type ClusterApi struct {
 	client         *http.Client
 	trinoAuthState *trinoAuthState
 }
@@ -23,8 +23,8 @@ var (
 	ErrAuthFailed = errors.New("trino ui auth failed")
 )
 
-func NewClusterApi() *TrinoClusterApi {
-	return &TrinoClusterApi{
+func NewClusterApi() *ClusterApi {
+	return &ClusterApi{
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			CheckRedirect: func(*http.Request, []*http.Request) error {
@@ -38,36 +38,66 @@ func NewClusterApi() *TrinoClusterApi {
 	}
 }
 
-func (p *TrinoClusterApi) QueryStatistics(coord models.Coordinator, queryID string) (models.QueryStats, error) {
-	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
+
+func (p *ClusterApi) QueryList(coord models.Coordinator) (models.QueryList, error) {
+	queryStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/")
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
-		return models.QueryStats{}, err
+		return nil, err
 	}
 
 	resp, err := p.authenticatedRequest(coord, req)
 	if err != nil {
-		return models.QueryStats{}, err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return models.QueryStats{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 
-	var stats models.QueryStats
+	var queries models.QueryList
+	err = json.NewDecoder(resp.Body).Decode(&queries)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return queries, nil
+
+}
+
+func (p *ClusterApi) QueryDetail(coord models.Coordinator, queryID string) (models.QueryDetail, error) {
+	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
+	req, err := http.NewRequest("GET", queryStatsUrl, nil)
+	if err != nil {
+		return models.QueryDetail{}, err
+	}
+
+	resp, err := p.authenticatedRequest(coord, req)
+	if err != nil {
+		return models.QueryDetail{}, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return models.QueryDetail{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	var stats models.QueryDetail
 	err = json.NewDecoder(resp.Body).Decode(&stats)
 
 	if err != nil {
-		return models.QueryStats{}, err
+		return models.QueryDetail{}, err
 	}
 
 	return stats, nil
 
 }
 
-func (p *TrinoClusterApi) ClusterStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
+func (p *ClusterApi) ClusterStatistics(coord models.Coordinator) (models.ClusterStatistics, error) {
 	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
 	req, err := http.NewRequest("GET", apiStatsUrl, nil)
 	if err != nil {
@@ -99,7 +129,7 @@ func (p *TrinoClusterApi) ClusterStatistics(coord models.Coordinator) (models.Cl
 	return response, nil
 }
 
-func (p *TrinoClusterApi) authenticatedRequest(coordinator models.Coordinator, req *http.Request) (*http.Response, error) {
+func (p *ClusterApi) authenticatedRequest(coordinator models.Coordinator, req *http.Request) (*http.Response, error) {
 	const maxRetries = 3
 	for i := 0; i < maxRetries; i++ {
 		auth, _ := p.trinoAuthState.GetAuth(coordinator.Name)
@@ -124,7 +154,7 @@ func (p *TrinoClusterApi) authenticatedRequest(coordinator models.Coordinator, r
 	return nil, ErrAuthFailed
 }
 
-func (p *TrinoClusterApi) performLogin(coord models.Coordinator, force bool) (string, error) {
+func (p *ClusterApi) performLogin(coord models.Coordinator, force bool) (string, error) {
 	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
 	if !hasAuth || force {
 		login, err := p.login(coord)
@@ -139,7 +169,7 @@ func (p *TrinoClusterApi) performLogin(coord models.Coordinator, force bool) (st
 	return auth, nil
 }
 
-func (p *TrinoClusterApi) login(coord models.Coordinator) (string, error) {
+func (p *ClusterApi) login(coord models.Coordinator) (string, error) {
 	loginUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/login")
 	const contentType = "application/x-www-form-urlencoded"
 
