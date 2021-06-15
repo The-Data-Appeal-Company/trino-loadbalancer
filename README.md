@@ -4,6 +4,7 @@
 ![Docker](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Docker/badge.svg)
 ![Tests](https://github.com/The-Data-Appeal-Company/trino-loadbalancer/workflows/Tests/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/The-Data-Appeal-Company/trino-loadbalancer)](https://goreportcard.com/report/github.com/The-Data-Appeal-Company/trino-loadbalancer)
+[![Coverage Status](https://coveralls.io/repos/github/The-Data-Appeal-Company/trino-loadbalancer/badge.svg?branch=master)](https://coveralls.io/github/The-Data-Appeal-Company/trino-loadbalancer?branch=master)
 
 Fast, high available load balancer for trino with smart routing rules
 
