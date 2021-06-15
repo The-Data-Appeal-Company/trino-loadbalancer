@@ -39,7 +39,7 @@ func NewClusterApi() *ClusterApi {
 }
 
 
-func (p *ClusterApi) QueryList(coord models2.Coordinator) (models2.QueryList, error) {
+func (p *ClusterApi) QueryList(coord models2.Coordinator) (QueryList, error) {
 	queryStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/")
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
@@ -57,7 +57,7 @@ func (p *ClusterApi) QueryList(coord models2.Coordinator) (models2.QueryList, er
 
 	defer resp.Body.Close()
 
-	var queries models2.QueryList
+	var queries QueryList
 	err = json.NewDecoder(resp.Body).Decode(&queries)
 
 	if err != nil {
@@ -68,62 +68,62 @@ func (p *ClusterApi) QueryList(coord models2.Coordinator) (models2.QueryList, er
 
 }
 
-func (p *ClusterApi) QueryDetail(coord models2.Coordinator, queryID string) (models2.QueryDetail, error) {
+func (p *ClusterApi) QueryDetail(coord models2.Coordinator, queryID string) (QueryDetail, error) {
 	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
-		return models2.QueryDetail{}, err
+		return QueryDetail{}, err
 	}
 
 	resp, err := p.authenticatedRequest(coord, req)
 	if err != nil {
-		return models2.QueryDetail{}, err
+		return QueryDetail{}, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return models2.QueryDetail{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+		return QueryDetail{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 
-	var stats models2.QueryDetail
+	var stats QueryDetail
 	err = json.NewDecoder(resp.Body).Decode(&stats)
 
 	if err != nil {
-		return models2.QueryDetail{}, err
+		return QueryDetail{}, err
 	}
 
 	return stats, nil
 
 }
 
-func (p *ClusterApi) ClusterStatistics(coord models2.Coordinator) (models2.ClusterStatistics, error) {
+func (p *ClusterApi) ClusterStatistics(coord models2.Coordinator) (ClusterStatistics, error) {
 	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
 	req, err := http.NewRequest("GET", apiStatsUrl, nil)
 	if err != nil {
-		return models2.ClusterStatistics{}, err
+		return ClusterStatistics{}, err
 	}
 
 	resp, err := p.authenticatedRequest(coord, req)
 	if err != nil {
-		return models2.ClusterStatistics{}, err
+		return ClusterStatistics{}, err
 	}
 
 	if resp.StatusCode != 200 {
-		return models2.ClusterStatistics{}, fmt.Errorf("unexpected status code %d != 200", resp.StatusCode)
+		return ClusterStatistics{}, fmt.Errorf("unexpected status code %d != 200", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return models2.ClusterStatistics{}, err
+		return ClusterStatistics{}, err
 	}
 
-	var response models2.ClusterStatistics
+	var response ClusterStatistics
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return models2.ClusterStatistics{}, err
+		return ClusterStatistics{}, err
 	}
 
 	return response, nil

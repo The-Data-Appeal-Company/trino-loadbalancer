@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 )
 
 func NewStorageCache(source Storage, cache *Memory) *StorageCache {
@@ -24,7 +24,7 @@ func NewCaching(source Storage, cache *Memory) *StorageCache {
 	}
 }
 
-func (s StorageCache) Link(ctx context.Context, info models2.QueryInfo, coordinator string) error {
+func (s StorageCache) Link(ctx context.Context, info trino.QueryInfo, coordinator string) error {
 	if err := s.cache.Link(ctx, info, coordinator); err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (s StorageCache) Link(ctx context.Context, info models2.QueryInfo, coordina
 	return nil
 }
 
-func (s StorageCache) Unlink(ctx context.Context, info models2.QueryInfo) error {
+func (s StorageCache) Unlink(ctx context.Context, info trino.QueryInfo) error {
 	if err := s.cache.Unlink(ctx, info); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s StorageCache) Unlink(ctx context.Context, info models2.QueryInfo) error 
 	return nil
 }
 
-func (s StorageCache) Get(ctx context.Context, info models2.QueryInfo) (string, error) {
+func (s StorageCache) Get(ctx context.Context, info trino.QueryInfo) (string, error) {
 	cached, err := s.cache.Get(ctx, info)
 	if err != nil {
 		if err != ErrLinkNotFound {

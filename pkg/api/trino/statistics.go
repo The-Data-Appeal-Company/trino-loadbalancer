@@ -5,7 +5,7 @@ import (
 )
 
 type Retriever interface {
-	ClusterStatistics(models2.Coordinator) (models2.ClusterStatistics, error)
-	QueryDetail(coordinator models2.Coordinator, queryID string) (models2.QueryDetail, error)
-	QueryList(coordinator models2.Coordinator) (models2.QueryList, error)
+	ClusterStatistics(models2.Coordinator) (ClusterStatistics, error)
+	QueryDetail(coordinator models2.Coordinator, queryID string) (QueryDetail, error)
+	QueryList(coordinator models2.Coordinator) (QueryList, error)
 }

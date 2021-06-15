@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -17,19 +18,19 @@ func TestRoundRobinRouting(t *testing.T) {
 				Coordinator: models2.Coordinator{
 					Name: values[0],
 				},
-				Statistics: models2.ClusterStatistics{},
+				Statistics: trino.ClusterStatistics{},
 			},
 			{
 				Coordinator: models2.Coordinator{
 					Name: values[1],
 				},
-				Statistics: models2.ClusterStatistics{},
+				Statistics: trino.ClusterStatistics{},
 			},
 			{
 				Coordinator: models2.Coordinator{
 					Name: values[2],
 				},
-				Statistics: models2.ClusterStatistics{},
+				Statistics: trino.ClusterStatistics{},
 			},
 		},
 	}

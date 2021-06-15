@@ -190,7 +190,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 	}, queryID)
 	require.NoError(t, err)
 
-	var expected models2.QueryDetail
+	var expected QueryDetail
 	err = json.Unmarshal(respBody, &expected)
 	require.NoError(t, err)
 
@@ -244,7 +244,7 @@ func TestQueryList(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	var expected models2.QueryList
+	var expected QueryList
 	err = json.Unmarshal(respBody, &expected)
 	require.NoError(t, err)
 

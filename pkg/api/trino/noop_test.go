@@ -10,5 +10,5 @@ func TestNoopRetriever(t *testing.T) {
 	retriever := Noop()
 	stats, err := retriever.ClusterStatistics(models2.Coordinator{})
 	require.NoError(t, err)
-	require.Equal(t, stats, models2.ClusterStatistics{})
+	require.Equal(t, stats, ClusterStatistics{})
 }

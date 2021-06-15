@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"io/ioutil"
 	"net/http"
@@ -72,7 +72,7 @@ func (q QueryClusterLinker) Handle(request *http.Request, response *http.Respons
 	return nil
 }
 
-func QueryInfoFromResponse(req *http.Request, res *http.Response) (models2.QueryInfo, error) {
+func QueryInfoFromResponse(req *http.Request, res *http.Response) (trino.QueryInfo, error) {
 	user := req.Header.Get(TrinoHeaderUser)
 	tx := req.Header.Get(TrinoHeaderTransaction)
 
@@ -82,38 +82,38 @@ func QueryInfoFromResponse(req *http.Request, res *http.Response) (models2.Query
 
 	queryState, err := queryStateFromResponse(res)
 	if err != nil {
-		return models2.QueryInfo{}, err
+		return trino.QueryInfo{}, err
 	}
 
-	return models2.QueryInfo{
+	return trino.QueryInfo{
 		QueryID:       queryState.ID,
 		User:          user,
 		TransactionID: tx,
 	}, nil
 }
 
-func queryStateFromResponse(res *http.Response) (models2.TrinoQueryState, error) {
+func queryStateFromResponse(res *http.Response) (trino.QueryState, error) {
 	resp, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return models2.TrinoQueryState{}, err
+		return trino.QueryState{}, err
 	}
 
 	var jsonBody = resp
 	if isGzip(jsonBody) {
 		reader, err := gzip.NewReader(bytes.NewBuffer(jsonBody))
 		if err != nil {
-			return models2.TrinoQueryState{}, err
+			return trino.QueryState{}, err
 		}
 
 		jsonBody, err = ioutil.ReadAll(reader)
 		if err != nil {
-			return models2.TrinoQueryState{}, err
+			return trino.QueryState{}, err
 		}
 	}
 
-	var queryState models2.TrinoQueryState
+	var queryState trino.QueryState
 	if err := json.Unmarshal(jsonBody, &queryState); err != nil {
-		return models2.TrinoQueryState{}, err
+		return trino.QueryState{}, err
 	}
 
 	// Reset response Body ReadCloser to be read again, this should be transparent but we may need
@@ -122,7 +122,7 @@ func queryStateFromResponse(res *http.Response) (models2.TrinoQueryState, error)
 	return queryState, nil
 }
 
-func queryInfoFromRequest(req *http.Request) (models2.QueryInfo, error) {
+func queryInfoFromRequest(req *http.Request) (trino.QueryInfo, error) {
 	user := req.Header.Get(TrinoHeaderUser)
 	tx := req.Header.Get(TrinoHeaderTransaction)
 
@@ -136,7 +136,7 @@ func queryInfoFromRequest(req *http.Request) (models2.QueryInfo, error) {
 		queryID = path[4]
 	}
 
-	return models2.QueryInfo{
+	return trino.QueryInfo{
 		QueryID:       queryID,
 		User:          user,
 		TransactionID: tx,

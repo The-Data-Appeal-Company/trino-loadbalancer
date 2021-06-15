@@ -2,6 +2,7 @@ package lb
 
 import (
 	"errors"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/google/uuid"
 	"net/http"
@@ -46,7 +47,7 @@ func (m *MockPool) Fetch(req FetchRequest) []CoordinatorRef {
 func (m *MockPool) Add(coordinator models2.Coordinator) error {
 	m.coordinators = append(m.coordinators, &CoordinatorRef{
 		ID:          CoordinatorConnectionID(uuid.New().String()),
-		Statistics:  models2.ClusterStatistics{},
+		Statistics:  trino.ClusterStatistics{},
 		Coordinator: coordinator,
 	})
 	return nil

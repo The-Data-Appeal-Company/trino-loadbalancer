@@ -27,7 +27,7 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -71,7 +71,7 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -109,7 +109,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -168,7 +168,7 @@ func TestPool_GetByName(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -189,7 +189,7 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
@@ -219,7 +219,7 @@ func TestPool_UpdateBackend(t *testing.T) {
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(models2.ClusterStatistics{}, nil)
+	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
 	logger := logging2.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)

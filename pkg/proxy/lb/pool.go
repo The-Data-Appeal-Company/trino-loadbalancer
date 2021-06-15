@@ -24,16 +24,16 @@ type CoordinatorConnectionID string
 type coordinatorConnection struct {
 	proxy       http2.HttpProxy
 	coordinator models2.Coordinator
-	health      healthcheck2.Health
-	statistics  models2.ClusterStatistics
-	termHc      chan bool
+	health     healthcheck2.Health
+	statistics trino2.ClusterStatistics
+	termHc     chan bool
 	termStats   chan bool
 	stateMutex  *sync.Mutex
 }
 
 type CoordinatorRef struct {
 	ID         CoordinatorConnectionID
-	Statistics models2.ClusterStatistics
+	Statistics trino2.ClusterStatistics
 
 	models2.Coordinator
 }

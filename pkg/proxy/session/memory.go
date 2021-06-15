@@ -3,7 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"sync"
 )
 
@@ -19,7 +19,7 @@ func NewMemoryStorage() *Memory {
 	}
 }
 
-func (m *Memory) Link(ctx context.Context, info models2.QueryInfo, s string) error {
+func (m *Memory) Link(ctx context.Context, info trino.QueryInfo, s string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -28,7 +28,7 @@ func (m *Memory) Link(ctx context.Context, info models2.QueryInfo, s string) err
 	return nil
 }
 
-func (m *Memory) Unlink(ctx context.Context, info models2.QueryInfo) error {
+func (m *Memory) Unlink(ctx context.Context, info trino.QueryInfo) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -37,7 +37,7 @@ func (m *Memory) Unlink(ctx context.Context, info models2.QueryInfo) error {
 	return nil
 }
 
-func (m *Memory) Get(ctx context.Context, info models2.QueryInfo) (string, error) {
+func (m *Memory) Get(ctx context.Context, info trino.QueryInfo) (string, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
@@ -51,6 +51,6 @@ func (m *Memory) Get(ctx context.Context, info models2.QueryInfo) (string, error
 	return val, nil
 }
 
-func (m *Memory) queryHash(info models2.QueryInfo) string {
+func (m *Memory) queryHash(info trino.QueryInfo) string {
 	return fmt.Sprintf("%s::%s", info.TransactionID, info.QueryID)
 }

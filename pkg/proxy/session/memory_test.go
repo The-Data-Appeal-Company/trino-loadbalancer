@@ -3,7 +3,7 @@ package session
 import (
 	"context"
 	"errors"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -14,7 +14,7 @@ func TestMemoryLinkerLinkCluster(t *testing.T) {
 	storage := NewMemoryStorage()
 	ctx := context.TODO()
 
-	queryInfo := models2.QueryInfo{
+	queryInfo := trino.QueryInfo{
 		User:          "user",
 		QueryID:       "query",
 		TransactionID: "tx",
@@ -45,7 +45,7 @@ func TestMemoryLinkerLinkNotFoundErr(t *testing.T) {
 	storage := NewMemoryStorage()
 	ctx := context.TODO()
 
-	_, err := storage.Get(ctx, models2.QueryInfo{
+	_, err := storage.Get(ctx, trino.QueryInfo{
 		User:          "user",
 		QueryID:       "query",
 		TransactionID: "tx",

@@ -3,7 +3,7 @@ package session
 import (
 	"context"
 	"errors"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -26,7 +26,7 @@ func TestRedisLinkerLinkCluster(t *testing.T) {
 		ttl:    10 * time.Minute,
 	}
 
-	queryInfo := models2.QueryInfo{
+	queryInfo := trino.QueryInfo{
 		User:          "user",
 		QueryID:       "query",
 		TransactionID: "tx",
@@ -67,7 +67,7 @@ func TestRedisLinkerLinkNotFoundErr(t *testing.T) {
 		ttl:    10 * time.Minute,
 	}
 
-	_, err = storage.Get(ctx, models2.QueryInfo{
+	_, err = storage.Get(ctx, trino.QueryInfo{
 		User:          "user",
 		QueryID:       "query",
 		TransactionID: "tx",
@@ -75,5 +75,4 @@ func TestRedisLinkerLinkNotFoundErr(t *testing.T) {
 
 	require.Error(t, err)
 	require.True(t, errors.Is(err, ErrLinkNotFound))
-
 }

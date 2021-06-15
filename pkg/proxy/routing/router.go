@@ -3,6 +3,7 @@ package routing
 import (
 	"errors"
 	"fmt"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
@@ -12,7 +13,7 @@ type Rule interface {
 
 type CoordinatorWithStatistics struct {
 	Coordinator models2.Coordinator
-	Statistics  models2.ClusterStatistics
+	Statistics  trino.ClusterStatistics
 }
 
 type Request struct {

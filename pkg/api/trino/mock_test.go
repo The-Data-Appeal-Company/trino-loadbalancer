@@ -10,7 +10,7 @@ import (
 func TestMockRetriever(t *testing.T) {
 
 	mockErr := errors.New("generic err")
-	mockStats := models2.ClusterStatistics{}
+	mockStats := ClusterStatistics{}
 	retriever := Mock(mockStats, mockErr)
 
 	stats, err := retriever.ClusterStatistics(models2.Coordinator{})
