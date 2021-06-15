@@ -8,7 +8,7 @@ type StatisticsConfiguration struct {
 	Enabled bool
 }
 
-func CreateStatisticsRetriever(conf StatisticsConfiguration) (trino2.Retriever, error) {
+func CreateStatisticsRetriever(conf StatisticsConfiguration) (trino2.Api, error) {
 	if !conf.Enabled {
 		return trino2.Noop(), nil
 	}

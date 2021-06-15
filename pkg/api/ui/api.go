@@ -9,13 +9,13 @@ import (
 )
 
 type Api struct {
-	statsRetriever   trino2.Retriever
+	statsRetriever   trino2.Api
 	discoveryStorage discovery.Storage
 	discover discovery.Discovery
 	logger   logging2.Logger
 }
 
-func NewApi(statsRetriever trino2.Retriever, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging2.Logger) Api {
+func NewApi(statsRetriever trino2.Api, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging2.Logger) Api {
 	return Api{
 		statsRetriever:   statsRetriever,
 		discoveryStorage: discoverStorage,

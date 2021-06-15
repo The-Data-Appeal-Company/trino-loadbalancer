@@ -23,7 +23,7 @@ var (
 	logger           logging2.Logger = logging2.Logrus()
 	discoveryStorage discovery.Storage
 	sessionStorage     session2.Storage
-	clusterStats       trino2.Retriever
+	clusterStats       trino2.Api
 	clusterHealthCheck healthcheck2.HealthCheck
 	discover           discovery.Discovery
 )

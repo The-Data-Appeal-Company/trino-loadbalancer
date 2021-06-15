@@ -57,11 +57,11 @@ type Pool struct {
 	sessionStore session2.Storage
 	coordinators       map[CoordinatorConnectionID]*coordinatorConnection
 	healthChecker      healthcheck2.HealthCheck
-	statisticRetriever trino2.Retriever
+	statisticRetriever trino2.Api
 	rwLock             *sync.RWMutex
 }
 
-func NewPool(conf PoolConfig, sessionStore session2.Storage, hc healthcheck2.HealthCheck, statisticRetriever trino2.Retriever, logger logging2.Logger) *Pool {
+func NewPool(conf PoolConfig, sessionStore session2.Storage, hc healthcheck2.HealthCheck, statisticRetriever trino2.Api, logger logging2.Logger) *Pool {
 	return &Pool{
 		conf:               conf,
 		statisticRetriever: statisticRetriever,
