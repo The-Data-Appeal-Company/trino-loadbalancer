@@ -10,6 +10,7 @@ require (
 	github.com/gorilla/mux v1.6.2
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/lib/pq v1.8.0
+	github.com/montanaflynn/stats v0.6.6
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.0.0

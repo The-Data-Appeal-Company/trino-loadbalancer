@@ -1,7 +1,7 @@
 package routing
 
 import (
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 type RunningQueriesRouter struct {
@@ -11,7 +11,7 @@ func LessRunningQueries() RunningQueriesRouter {
 	return RunningQueriesRouter{}
 }
 
-func (r RunningQueriesRouter) Route(request Request) (models2.Coordinator, error) {
+func (r RunningQueriesRouter) Route(request Request) (models.Coordinator, error) {
 	var selected = request.Coordinators[0]
 
 	for i := 1; i < len(request.Coordinators); i++ {

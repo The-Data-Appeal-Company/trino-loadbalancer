@@ -2,10 +2,10 @@ package lb
 
 import (
 	"fmt"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	routing2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -16,16 +16,16 @@ type ProxyConf struct {
 }
 
 type Proxy struct {
-	conf   ProxyConf
-	logger logging2.Logger
-	pool   *Pool
-	sessionReader session2.Reader
-	router        routing2.Router
+	conf          ProxyConf
+	logger        logging.Logger
+	pool          *Pool
+	sessionReader session.Reader
+	router        routing.Router
 	poolSync      PoolSync
 	termSync      chan bool
 }
 
-func NewProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session2.Reader, router routing2.Router, logger logging2.Logger) *Proxy {
+func NewProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *Proxy {
 	return &Proxy{
 		conf:          conf,
 		poolSync:      sync,
@@ -95,7 +95,7 @@ func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (CoordinatorR
 	// we can apply the user selected request routing algorithm
 	if !isStatementRequest(request.URL) || isStatementRequest(request.URL) && request.Method == http.MethodPost {
 		healthyCoordinators := p.pool.Fetch(FetchRequest{
-			Health: healthcheck2.StatusHealthy,
+			Health: healthcheck.StatusHealthy,
 		})
 
 		if len(healthyCoordinators) == 0 {
@@ -158,16 +158,16 @@ func (p *Proxy) coordinatorRefByName(name string) (CoordinatorRef, error) {
 	return coordinator[0], nil
 }
 
-func routingRequest(backends []CoordinatorRef, req *http.Request) routing2.Request {
-	coordinatorsWithStatistics := make([]routing2.CoordinatorWithStatistics, len(backends))
+func routingRequest(backends []CoordinatorRef, req *http.Request) routing.Request {
+	coordinatorsWithStatistics := make([]routing.CoordinatorWithStatistics, len(backends))
 	for i, backend := range backends {
-		coordinatorsWithStatistics[i] = routing2.CoordinatorWithStatistics{
+		coordinatorsWithStatistics[i] = routing.CoordinatorWithStatistics{
 			Coordinator: backend.Coordinator,
 			Statistics:  backend.Statistics,
 		}
 	}
 
-	return routing2.Request{
+	return routing.Request{
 		Coordinators: coordinatorsWithStatistics,
 		User:         req.Header.Get(TrinoHeaderUser),
 	}

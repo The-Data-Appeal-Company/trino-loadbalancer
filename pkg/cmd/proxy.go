@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/serving"
+	api2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/ui"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
 	lb2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/lb"
-	api2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/ui"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/serving"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"

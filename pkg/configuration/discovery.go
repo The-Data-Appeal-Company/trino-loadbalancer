@@ -3,7 +3,7 @@ package configuration
 import (
 	"database/sql"
 	"fmt"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery/kubernetes"
 	_ "github.com/lib/pq"
@@ -109,13 +109,13 @@ func CreateDiscoveryProvider(conf DiscoveryConfiguration) (discovery.Discovery, 
 	}
 
 	if conf.Provider == DiscoveryStatic {
-		coordinators := make([]models2.Coordinator, len(conf.Static.Clusters))
+		coordinators := make([]models.Coordinator, len(conf.Static.Clusters))
 		for i, c := range conf.Static.Clusters {
 			uri, err := url.Parse(c.Url)
 			if err != nil {
 				return nil, err
 			}
-			coordinators[i] = models2.Coordinator{
+			coordinators[i] = models.Coordinator{
 				Name:    c.Name,
 				URL:     uri,
 				Tags:    c.Tags,

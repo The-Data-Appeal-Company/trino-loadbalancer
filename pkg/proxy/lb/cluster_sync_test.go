@@ -2,11 +2,11 @@ package lb
 
 import (
 	"context"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
-	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -17,9 +17,9 @@ func TestSyncPoolStatus_AddMissingFromState(t *testing.T) {
 	pool := NewMockPool()
 	storage := discovery.NewMemoryStorage()
 
-	coord := models2.Coordinator{
+	coord := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests2.MustUrl("http://trino.local:8889"),
+		URL:     tests.MustUrl("http://trino.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -30,7 +30,7 @@ func TestSyncPoolStatus_AddMissingFromState(t *testing.T) {
 
 	require.NoError(t, err)
 
-	sync := NewPoolStateSync(storage, logging2.Noop())
+	sync := NewPoolStateSync(storage, logging.Noop())
 
 	err = sync.Sync(pool)
 	require.NoError(t, err)
@@ -47,9 +47,9 @@ func TestSyncPoolStatus_Remove(t *testing.T) {
 	pool := NewMockPool()
 	storage := discovery.NewMemoryStorage()
 
-	coord := models2.Coordinator{
+	coord := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests2.MustUrl("http://trino.local:8889"),
+		URL:     tests.MustUrl("http://trino.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -59,7 +59,7 @@ func TestSyncPoolStatus_Remove(t *testing.T) {
 	err := pool.Add(coord)
 	require.NoError(t, err)
 
-	sync := NewPoolStateSync(storage, logging2.Noop())
+	sync := NewPoolStateSync(storage, logging.Noop())
 
 	err = sync.Sync(pool)
 	require.NoError(t, err)
@@ -75,18 +75,18 @@ func TestSyncPoolStatus_DoNothing(t *testing.T) {
 	pool := NewMockPool()
 	storage := discovery.NewMemoryStorage()
 
-	coord0 := models2.Coordinator{
+	coord0 := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests2.MustUrl("http://trino0.local:8889"),
+		URL:     tests.MustUrl("http://trino0.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
 		},
 	}
 
-	coord1 := models2.Coordinator{
+	coord1 := models.Coordinator{
 		Name:    "test-1",
-		URL:     tests2.MustUrl("http://trino1.local:8889"),
+		URL:     tests.MustUrl("http://trino1.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -105,7 +105,7 @@ func TestSyncPoolStatus_DoNothing(t *testing.T) {
 	err = storage.Add(ctx, coord0)
 	require.NoError(t, err)
 
-	sync := NewPoolStateSync(storage, logging2.Noop())
+	sync := NewPoolStateSync(storage, logging.Noop())
 
 	for i := 0; i < 3; i++ {
 		err = sync.Sync(pool)
@@ -125,18 +125,18 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 	pool := NewMockPool()
 	storage := discovery.NewMemoryStorage()
 
-	coord0 := models2.Coordinator{
+	coord0 := models.Coordinator{
 		Name:    "test-0",
-		URL:     tests2.MustUrl("http://trino0.local:8889"),
+		URL:     tests.MustUrl("http://trino0.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
 		},
 	}
 
-	coord1 := models2.Coordinator{
+	coord1 := models.Coordinator{
 		Name:    "test-1",
-		URL:     tests2.MustUrl("http://trino1.local:8889"),
+		URL:     tests.MustUrl("http://trino1.local:8889"),
 		Enabled: true,
 		Tags: map[string]string{
 			"test": "asd",
@@ -155,7 +155,7 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 	err = storage.Add(ctx, coord0)
 	require.NoError(t, err)
 
-	sync := NewPoolStateSync(storage, logging2.Noop())
+	sync := NewPoolStateSync(storage, logging.Noop())
 
 	err = sync.Sync(pool)
 	require.NoError(t, err)
@@ -174,7 +174,7 @@ func TestSyncPoolStatus_UpdateEnabledStatus(t *testing.T) {
 
 	coord0FromPool := pool.Fetch(FetchRequest{
 		Name:   coord0.Name,
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 	require.NoError(t, err)
 

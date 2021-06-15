@@ -3,7 +3,7 @@ package configuration
 import (
 	"context"
 	"errors"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
@@ -34,7 +34,7 @@ type SessionStorageConfiguration struct {
 	Opts       RedisSessionStorageOpts
 }
 
-func CreateSessionStorage(conf SessionStorageConfiguration) (session2.Storage, error) {
+func CreateSessionStorage(conf SessionStorageConfiguration) (session.Storage, error) {
 	if !conf.Standalone.Enabled && !conf.Sentinel.Enabled {
 		return nil, errors.New("no session storage enabled")
 	}
@@ -63,7 +63,7 @@ func CreateSessionStorage(conf SessionStorageConfiguration) (session2.Storage, e
 		return nil, err
 	}
 
-	redisStorage := session2.NewRedisStorage(client, conf.Opts.Prefix, conf.Opts.MaxTTL)
-	memoryStorage := session2.NewMemoryStorage()
-	return session2.NewStorageCache(redisStorage, memoryStorage), nil
+	redisStorage := session.NewRedisStorage(client, conf.Opts.Prefix, conf.Opts.MaxTTL)
+	memoryStorage := session.NewMemoryStorage()
+	return session.NewStorageCache(redisStorage, memoryStorage), nil
 }

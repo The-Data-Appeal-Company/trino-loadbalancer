@@ -3,7 +3,7 @@ package lb
 import (
 	"errors"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/google/uuid"
 	"net/http"
 )
@@ -44,7 +44,7 @@ func (m *MockPool) Fetch(req FetchRequest) []CoordinatorRef {
 
 }
 
-func (m *MockPool) Add(coordinator models2.Coordinator) error {
+func (m *MockPool) Add(coordinator models.Coordinator) error {
 	m.coordinators = append(m.coordinators, &CoordinatorRef{
 		ID:          CoordinatorConnectionID(uuid.New().String()),
 		Statistics:  trino.ClusterStatistics{},
@@ -62,7 +62,7 @@ func (m *MockPool) Remove(id CoordinatorConnectionID) error {
 	return nil
 }
 
-func (m *MockPool) Update(id CoordinatorConnectionID, state models2.Coordinator) error {
+func (m *MockPool) Update(id CoordinatorConnectionID, state models.Coordinator) error {
 	for _, c := range m.coordinators {
 		if c.ID == id {
 			c.Coordinator.Tags = state.Tags

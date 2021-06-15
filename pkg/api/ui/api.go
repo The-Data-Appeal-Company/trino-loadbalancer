@@ -1,21 +1,21 @@
 package ui
 
 import (
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 type Api struct {
-	statsRetriever   trino2.Api
+	statsRetriever   trino.Api
 	discoveryStorage discovery.Storage
-	discover discovery.Discovery
-	logger   logging2.Logger
+	discover         discovery.Discovery
+	logger           logging.Logger
 }
 
-func NewApi(statsRetriever trino2.Api, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging2.Logger) Api {
+func NewApi(statsRetriever trino.Api, discover discovery.Discovery, discoverStorage discovery.Storage, logger logging.Logger) Api {
 	return Api{
 		statsRetriever:   statsRetriever,
 		discoveryStorage: discoverStorage,

@@ -1,7 +1,7 @@
 package routing
 
 import (
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -11,7 +11,7 @@ func TestRouterHandleRequest(t *testing.T) {
 	route, err := router.Route(Request{
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "test",
 				},
 			},

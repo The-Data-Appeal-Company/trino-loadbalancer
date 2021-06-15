@@ -3,7 +3,7 @@ package configuration
 import (
 	"errors"
 	"fmt"
-	routing2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
 	"regexp"
 	"strings"
 )
@@ -30,59 +30,59 @@ type RoutingConf struct {
 	Users RoutingUsersConf `json:"users" yaml:"users" mapstructure:"users"`
 }
 
-func CreateQueryRouter(conf RoutingConf) (routing2.Router, error) {
+func CreateQueryRouter(conf RoutingConf) (routing.Router, error) {
 	userAwareRouter, err := createUserAwareRouter(conf.Users)
 	if err != nil {
-		return routing2.Router{}, err
+		return routing.Router{}, err
 	}
 
 	rule, err := createRouterRule(conf.Rule)
 	if err != nil {
-		return routing2.Router{}, err
+		return routing.Router{}, err
 	}
 
-	return routing2.New(userAwareRouter, rule), nil
+	return routing.New(userAwareRouter, rule), nil
 }
 
-func createUserAwareRouter(users RoutingUsersConf) (routing2.UserAwareRouter, error) {
+func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, error) {
 	defaultBehaviour, err := createBehaviour(users.Default.Behaviour)
 	if err != nil {
-		return routing2.UserAwareRouter{}, nil
+		return routing.UserAwareRouter{}, nil
 	}
 
 	defaultNameRe, err := regexpOrNil(users.Default.Cluster.Name)
 	if err != nil {
-		return routing2.UserAwareRouter{}, nil
+		return routing.UserAwareRouter{}, nil
 	}
 
-	var conf routing2.UserAwareRoutingConf
-	conf.Default = routing2.UserAwareDefault{
+	var conf routing.UserAwareRoutingConf
+	conf.Default = routing.UserAwareDefault{
 		Behaviour: defaultBehaviour,
-		Cluster: routing2.UserAwareClusterMatchRule{
+		Cluster: routing.UserAwareClusterMatchRule{
 			Name: defaultNameRe,
 			Tags: users.Default.Cluster.Tags,
 		},
 	}
 
-	rules := make([]routing2.UserAwareRoutingRule, len(users.Rules))
+	rules := make([]routing.UserAwareRoutingRule, len(users.Rules))
 	for i, r := range users.Rules {
 		userRe, err := regexpOrNil(r.User)
 		if err != nil {
-			return routing2.UserAwareRouter{}, nil
+			return routing.UserAwareRouter{}, nil
 		}
 
 		if userRe == nil {
-			return routing2.UserAwareRouter{}, errors.New("user must be specified on routing rule")
+			return routing.UserAwareRouter{}, errors.New("user must be specified on routing rule")
 		}
 
 		clusterNameRe, err := regexpOrNil(r.Cluster.Name)
 		if err != nil {
-			return routing2.UserAwareRouter{}, nil
+			return routing.UserAwareRouter{}, nil
 		}
 
-		rules[i] = routing2.UserAwareRoutingRule{
+		rules[i] = routing.UserAwareRoutingRule{
 			User: userRe,
-			Cluster: routing2.UserAwareClusterMatchRule{
+			Cluster: routing.UserAwareClusterMatchRule{
 				Name: clusterNameRe,
 				Tags: r.Cluster.Tags,
 			},
@@ -90,7 +90,7 @@ func createUserAwareRouter(users RoutingUsersConf) (routing2.UserAwareRouter, er
 	}
 
 	conf.Rules = rules
-	return routing2.NewUserAwareRouter(conf), nil
+	return routing.NewUserAwareRouter(conf), nil
 }
 
 func regexpOrNil(raw string) (*regexp.Regexp, error) {
@@ -100,25 +100,25 @@ func regexpOrNil(raw string) (*regexp.Regexp, error) {
 	return regexp.Compile(raw)
 }
 
-func createBehaviour(raw string) (routing2.NoMatchBehaviour, error) {
+func createBehaviour(raw string) (routing.NoMatchBehaviour, error) {
 	switch strings.ToLower(raw) {
 	case "forbid":
-		return routing2.NoMatchBehaviourForbid, nil
+		return routing.NoMatchBehaviourForbid, nil
 	case "default":
-		return routing2.NoMatchBehaviourDefault, nil
+		return routing.NoMatchBehaviourDefault, nil
 	default:
-		return routing2.NoMatchBehaviourForbid, fmt.Errorf("invalid behaviour type: %s", raw)
+		return routing.NoMatchBehaviourForbid, fmt.Errorf("invalid behaviour type: %s", raw)
 	}
 }
 
-func createRouterRule(t string) (routing2.Rule, error) {
+func createRouterRule(t string) (routing.Rule, error) {
 	switch t {
 	case "random":
-		return routing2.Random(), nil
+		return routing.Random(), nil
 	case "round-robin":
-		return routing2.RoundRobin(), nil
+		return routing.RoundRobin(), nil
 	case "less-running-queries":
-		return routing2.LessRunningQueries(), nil
+		return routing.LessRunningQueries(), nil
 	default:
 		return nil, fmt.Errorf("no router rule for value: %s", t)
 	}

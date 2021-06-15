@@ -3,14 +3,15 @@ package lb
 import (
 	"context"
 	"database/sql"
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
-	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	routing2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
@@ -23,33 +24,33 @@ func TestIntegration(t *testing.T) {
 
 	ctx := context.Background()
 
-	cluster0, c0, err := tests2.CreateTrinoCluster(ctx)
+	cluster0, c0, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
 		// if the test ran successfully this container should be already terminated
 		_ = cluster0.Terminate(ctx)
 	}()
 
-	cluster1, c1, err := tests2.CreateTrinoCluster(ctx)
+	cluster1, c1, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, cluster1.Terminate(ctx))
 	}()
 
-	cluster2, c2, err := tests2.CreateTrinoCluster(ctx)
+	cluster2, c2, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, cluster2.Terminate(ctx))
 	}()
 
 	stateStore := discovery.NewMemoryStorage()
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NewHttpHealth()
-	stats := trino2.NewClusterApi()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NewHttpHealth()
+	stats := trino.NewClusterApi()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RoundRobin())
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 
 	poolCfg := PoolConfig{
 		HealthCheckDelay: 5 * time.Second,
@@ -57,9 +58,9 @@ func TestIntegration(t *testing.T) {
 	}
 
 	pool := NewPool(poolCfg, sessStore, hc, stats, logger)
-	poolSync := NewPoolStateSync(stateStore, logging2.Noop())
+	poolSync := NewPoolStateSync(stateStore, logging.Noop())
 
-	err = stateStore.Add(ctx, models2.Coordinator{
+	err = stateStore.Add(ctx, models.Coordinator{
 		Name:    "c0",
 		URL:     c0,
 		Tags:    nil,
@@ -67,7 +68,7 @@ func TestIntegration(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = stateStore.Add(ctx, models2.Coordinator{
+	err = stateStore.Add(ctx, models.Coordinator{
 		Name:    "c1",
 		URL:     c1,
 		Tags:    nil,
@@ -75,7 +76,7 @@ func TestIntegration(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = stateStore.Add(ctx, models2.Coordinator{
+	err = stateStore.Add(ctx, models.Coordinator{
 		Name:    "c2",
 		URL:     c2,
 		Tags:    nil,

@@ -3,12 +3,12 @@ package lb
 import (
 	"errors"
 	"fmt"
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
 	http2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/http"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/google/uuid"
 	"net/http"
 	"sync"
@@ -23,27 +23,27 @@ type CoordinatorConnectionID string
 
 type coordinatorConnection struct {
 	proxy       http2.HttpProxy
-	coordinator models2.Coordinator
-	health     healthcheck2.Health
-	statistics trino2.ClusterStatistics
-	termHc     chan bool
+	coordinator models.Coordinator
+	health      healthcheck.Health
+	statistics  trino.ClusterStatistics
+	termHc      chan bool
 	termStats   chan bool
 	stateMutex  *sync.Mutex
 }
 
 type CoordinatorRef struct {
 	ID         CoordinatorConnectionID
-	Statistics trino2.ClusterStatistics
+	Statistics trino.ClusterStatistics
 
-	models2.Coordinator
+	models.Coordinator
 }
 
 type TrinoPool interface {
 	Handle(coordinator CoordinatorRef, writer http.ResponseWriter, request *http.Request) error
 	Fetch(FetchRequest) []CoordinatorRef
-	Add(models2.Coordinator) error
+	Add(models.Coordinator) error
 	Remove(CoordinatorConnectionID) error
-	Update(CoordinatorConnectionID, models2.Coordinator) error
+	Update(CoordinatorConnectionID, models.Coordinator) error
 }
 
 type PoolConfig struct {
@@ -52,16 +52,16 @@ type PoolConfig struct {
 }
 
 type Pool struct {
-	conf         PoolConfig
-	logger       logging2.Logger
-	sessionStore session2.Storage
+	conf               PoolConfig
+	logger             logging.Logger
+	sessionStore       session.Storage
 	coordinators       map[CoordinatorConnectionID]*coordinatorConnection
-	healthChecker      healthcheck2.HealthCheck
-	statisticRetriever trino2.Api
+	healthChecker      healthcheck.HealthCheck
+	statisticRetriever trino.Api
 	rwLock             *sync.RWMutex
 }
 
-func NewPool(conf PoolConfig, sessionStore session2.Storage, hc healthcheck2.HealthCheck, statisticRetriever trino2.Api, logger logging2.Logger) *Pool {
+func NewPool(conf PoolConfig, sessionStore session.Storage, hc healthcheck.HealthCheck, statisticRetriever trino.Api, logger logging.Logger) *Pool {
 	return &Pool{
 		conf:               conf,
 		statisticRetriever: statisticRetriever,
@@ -93,7 +93,7 @@ const (
 type FetchRequest struct {
 	Name   string
 	Tags   map[string]string
-	Health healthcheck2.HealthStatus
+	Health healthcheck.HealthStatus
 	Status EnabledStatus
 }
 
@@ -129,7 +129,7 @@ func (p *Pool) Fetch(req FetchRequest) []CoordinatorRef {
 	return selected
 }
 
-func (p *Pool) Update(id CoordinatorConnectionID, state models2.Coordinator) error {
+func (p *Pool) Update(id CoordinatorConnectionID, state models.Coordinator) error {
 	p.rwLock.Lock()
 	defer p.rwLock.Unlock()
 
@@ -151,7 +151,7 @@ func (p *Pool) connectionByID(id CoordinatorConnectionID) (*coordinatorConnectio
 	return conn, nil
 }
 
-func (p *Pool) Add(coordinator models2.Coordinator) error {
+func (p *Pool) Add(coordinator models.Coordinator) error {
 	p.rwLock.Lock()
 	defer p.rwLock.Unlock()
 
@@ -196,9 +196,9 @@ func (p *Pool) Remove(id CoordinatorConnectionID) error {
 	conn.termHc <- true
 	conn.termStats <- true
 
-	conn.health = healthcheck2.Health{
+	conn.health = healthcheck.Health{
 		Timestamp: time.Now(),
-		Status:    healthcheck2.StatusUnhealthy,
+		Status:    healthcheck.StatusUnhealthy,
 		Message:   "backend has been removed from the pool",
 	}
 
@@ -237,9 +237,9 @@ func (p *Pool) updateBackendHealth(b *coordinatorConnection) {
 	defer b.stateMutex.Unlock()
 	result, err := p.healthChecker.Check(b.coordinator.URL)
 	if err != nil {
-		result = healthcheck2.Health{
+		result = healthcheck.Health{
 			Timestamp: time.Now(),
-			Status:    healthcheck2.StatusUnhealthy,
+			Status:    healthcheck.StatusUnhealthy,
 			Message:   err.Error(),
 		}
 	}

@@ -1,11 +1,11 @@
 package lb
 
 import (
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -20,19 +20,19 @@ func PoolConfigTest() PoolConfig {
 
 func TestPool_AddHealthyBackend(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusHealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusHealthy,
 		Message:   "ok",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	coord := models2.Coordinator{
+	coord := models.Coordinator{
 		Name:    "coord-0",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -64,19 +64,19 @@ func TestPool_AddHealthyBackend(t *testing.T) {
 
 func TestPool_AddUnHealthyBackend(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusUnhealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusUnhealthy,
 		Message:   "generic health check error",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	coord := models2.Coordinator{
+	coord := models.Coordinator{
 		Name:    "coord-0",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -94,7 +94,7 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 
 	availables := pool.Fetch(FetchRequest{
 		Status: ClusterStatusEnabled,
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 
 	require.Empty(t, availables)
@@ -102,19 +102,19 @@ func TestPool_AddUnHealthyBackend(t *testing.T) {
 
 func TestPool_RemoveBackend(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusHealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusHealthy,
 		Message:   "ok",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "coord-0",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -122,7 +122,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = pool.Add(models2.Coordinator{
+	err = pool.Add(models.Coordinator{
 		Name:    "coord-1",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -153,7 +153,7 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 	coordsByName := pool.Fetch(FetchRequest{
 		Name:   "coord-1",
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 
 	require.Len(t, coordsByName, 1)
@@ -161,39 +161,39 @@ func TestPool_RemoveBackend(t *testing.T) {
 
 func TestPool_GetByName(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusHealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusHealthy,
 		Message:   "ok",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
 	coordsByName := pool.Fetch(FetchRequest{
 		Name:   "test",
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 
 	require.Len(t, coordsByName, 0)
 }
 
 func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusUnhealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusUnhealthy,
 		Message:   "ok",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "coord-1",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -205,26 +205,26 @@ func TestPool_GetByNameWithUnhealthyStatus(t *testing.T) {
 	require.NoError(t, err)
 	coordsByName := pool.Fetch(FetchRequest{
 		Name:   "coord-1",
-		Health: healthcheck2.StatusUnhealthy,
+		Health: healthcheck.StatusUnhealthy,
 	})
 
 	require.Len(t, coordsByName, 1)
 }
 
 func TestPool_UpdateBackend(t *testing.T) {
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.Mock(healthcheck2.Health{
-		Status:    healthcheck2.StatusHealthy,
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.Mock(healthcheck.Health{
+		Status:    healthcheck.StatusHealthy,
 		Message:   "ok",
 		Timestamp: time.Now(),
 	}, nil)
 
-	stats := trino2.Mock(trino2.ClusterStatistics{}, nil)
-	logger := logging2.Noop()
+	stats := trino.Mock(trino.ClusterStatistics{}, nil)
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	coord := models2.Coordinator{
+	coord := models.Coordinator{
 		Name:    "coord-0",
 		URL:     mustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
@@ -236,14 +236,14 @@ func TestPool_UpdateBackend(t *testing.T) {
 
 	state := pool.Fetch(FetchRequest{
 		Name:   coord.Name,
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 
 	require.Len(t, state, 1)
 
 	require.Equal(t, state[0].Coordinator, coord)
 
-	newState := models2.Coordinator{
+	newState := models.Coordinator{
 		Tags: map[string]string{
 			"updated": "true",
 		},
@@ -254,10 +254,10 @@ func TestPool_UpdateBackend(t *testing.T) {
 
 	state = pool.Fetch(FetchRequest{
 		Name:   coord.Name,
-		Health: healthcheck2.StatusHealthy,
+		Health: healthcheck.StatusHealthy,
 	})
 
-	require.Equal(t, models2.Coordinator{
+	require.Equal(t, models.Coordinator{
 		Name:    coord.Name,
 		URL:     coord.URL,
 		Tags:    newState.Tags,

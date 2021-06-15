@@ -3,7 +3,7 @@ package healthcheck
 import (
 	"context"
 	"fmt"
-	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"
@@ -13,7 +13,7 @@ func TestTrinoClusterHealth_Check(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	container, _, err := tests2.CreateTrinoCluster(ctx)
+	container, _, err := tests.CreateTrinoCluster(ctx)
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, container.Terminate(ctx))

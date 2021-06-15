@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -38,8 +38,7 @@ func NewClusterApi() *ClusterApi {
 	}
 }
 
-
-func (p *ClusterApi) QueryList(coord models2.Coordinator) (QueryList, error) {
+func (p *ClusterApi) QueryList(coord models.Coordinator) (QueryList, error) {
 	queryStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/")
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
@@ -68,7 +67,7 @@ func (p *ClusterApi) QueryList(coord models2.Coordinator) (QueryList, error) {
 
 }
 
-func (p *ClusterApi) QueryDetail(coord models2.Coordinator, queryID string) (QueryDetail, error) {
+func (p *ClusterApi) QueryDetail(coord models.Coordinator, queryID string) (QueryDetail, error) {
 	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
@@ -97,7 +96,7 @@ func (p *ClusterApi) QueryDetail(coord models2.Coordinator, queryID string) (Que
 
 }
 
-func (p *ClusterApi) ClusterStatistics(coord models2.Coordinator) (ClusterStatistics, error) {
+func (p *ClusterApi) ClusterStatistics(coord models.Coordinator) (ClusterStatistics, error) {
 	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
 	req, err := http.NewRequest("GET", apiStatsUrl, nil)
 	if err != nil {
@@ -129,7 +128,7 @@ func (p *ClusterApi) ClusterStatistics(coord models2.Coordinator) (ClusterStatis
 	return response, nil
 }
 
-func (p *ClusterApi) authenticatedRequest(coordinator models2.Coordinator, req *http.Request) (*http.Response, error) {
+func (p *ClusterApi) authenticatedRequest(coordinator models.Coordinator, req *http.Request) (*http.Response, error) {
 	const maxRetries = 3
 	for i := 0; i < maxRetries; i++ {
 		auth, _ := p.trinoAuthState.GetAuth(coordinator.Name)
@@ -154,7 +153,7 @@ func (p *ClusterApi) authenticatedRequest(coordinator models2.Coordinator, req *
 	return nil, ErrAuthFailed
 }
 
-func (p *ClusterApi) performLogin(coord models2.Coordinator, force bool) (string, error) {
+func (p *ClusterApi) performLogin(coord models.Coordinator, force bool) (string, error) {
 	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
 	if !hasAuth || force {
 		login, err := p.login(coord)
@@ -169,7 +168,7 @@ func (p *ClusterApi) performLogin(coord models2.Coordinator, force bool) (string
 	return auth, nil
 }
 
-func (p *ClusterApi) login(coord models2.Coordinator) (string, error) {
+func (p *ClusterApi) login(coord models.Coordinator) (string, error) {
 	loginUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/login")
 	const contentType = "application/x-www-form-urlencoded"
 

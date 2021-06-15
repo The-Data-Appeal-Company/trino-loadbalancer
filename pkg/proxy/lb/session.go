@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -25,10 +25,10 @@ const (
 
 type QueryClusterLinker struct {
 	coordinatorName string
-	storage         session2.Storage
+	storage         session.Storage
 }
 
-func NewQueryClusterLinker(storage session2.Storage, coordinatorName string) QueryClusterLinker {
+func NewQueryClusterLinker(storage session.Storage, coordinatorName string) QueryClusterLinker {
 	return QueryClusterLinker{
 		storage:         storage,
 		coordinatorName: coordinatorName,

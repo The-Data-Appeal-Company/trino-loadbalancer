@@ -2,7 +2,7 @@ package routing
 
 import (
 	"errors"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/stretchr/testify/require"
 	"regexp"
 	"testing"
@@ -45,7 +45,7 @@ func TestUserAwareRouter(t *testing.T) {
 		User: "test-user-00",
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-00",
 					Tags: map[string]string{
 						"test": "true",
@@ -53,7 +53,7 @@ func TestUserAwareRouter(t *testing.T) {
 				},
 			},
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-01",
 					Tags: map[string]string{
 						"test": "true",
@@ -108,7 +108,7 @@ func TestUserAwareRoutingFallbackOnDefault(t *testing.T) {
 		User: "non-matching-user",
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-00",
 					Tags: map[string]string{
 						"test": "true",
@@ -116,7 +116,7 @@ func TestUserAwareRoutingFallbackOnDefault(t *testing.T) {
 				},
 			},
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-01",
 					Tags: map[string]string{
 						"test": "true",
@@ -155,7 +155,7 @@ func TestRoutingAwareFilterByTags(t *testing.T) {
 		User: "test-user-00",
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-00",
 					Tags: map[string]string{
 						"test": "true",
@@ -163,7 +163,7 @@ func TestRoutingAwareFilterByTags(t *testing.T) {
 				},
 			},
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-01",
 					Tags: map[string]string{
 						"test": "true",
@@ -217,7 +217,7 @@ func TestRoutingAwareFilterByUserForbidOnError(t *testing.T) {
 		User: "non-matching-user",
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-00",
 					Tags: map[string]string{
 						"test": "true",
@@ -225,7 +225,7 @@ func TestRoutingAwareFilterByUserForbidOnError(t *testing.T) {
 				},
 			},
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-01",
 					Tags: map[string]string{
 						"test": "true",
@@ -272,7 +272,7 @@ func TestUserAwareRoutingSelectAllCoordinatorsWhenFallbackOnEmptyDefault(t *test
 		User: "non-matching-user",
 		Coordinators: []CoordinatorWithStatistics{
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-00",
 					Tags: map[string]string{
 						"test": "true",
@@ -280,7 +280,7 @@ func TestUserAwareRoutingSelectAllCoordinatorsWhenFallbackOnEmptyDefault(t *test
 				},
 			},
 			{
-				Coordinator: models2.Coordinator{
+				Coordinator: models.Coordinator{
 					Name: "cluster-01",
 					Tags: map[string]string{
 						"test": "true",

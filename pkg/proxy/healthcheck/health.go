@@ -22,8 +22,8 @@ type HealthCheck interface {
 }
 
 type Health struct {
-	Status  HealthStatus
-	Message string
+	Status    HealthStatus
+	Message   string
 	Timestamp time.Time
 }
 

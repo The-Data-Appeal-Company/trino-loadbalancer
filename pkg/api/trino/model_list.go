@@ -2,6 +2,10 @@ package trino
 
 import "time"
 
+const (
+	QueryFinished string = "FINISHED"
+)
+
 type QueryList []QueryListItem
 
 type QueryListItem struct {

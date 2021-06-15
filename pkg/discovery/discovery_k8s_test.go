@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -170,7 +170,7 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []models2.Coordinator
+		want    []models.Coordinator
 		wantErr bool
 	}{
 		{
@@ -182,7 +182,7 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				},
 				clusterDomain: "cluster.test",
 			},
-			want: []models2.Coordinator{
+			want: []models.Coordinator{
 				{
 					Name: "ns-1-trino-1",
 					URL:  trinoUrl1,
@@ -219,7 +219,7 @@ func TestK8sClusterProvider_Discover(t *testing.T) {
 				},
 				clusterDomain: "cluster.test",
 			},
-			want: []models2.Coordinator{
+			want: []models.Coordinator{
 				{
 					Name: "ns-1-trino-1",
 					URL:  trinoDbUrl1,

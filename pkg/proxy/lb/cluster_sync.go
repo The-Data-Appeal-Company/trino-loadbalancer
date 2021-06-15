@@ -2,8 +2,8 @@ package lb
 
 import (
 	"context"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"sync"
 )
@@ -14,11 +14,11 @@ type PoolSync interface {
 
 type PoolStateSync struct {
 	storage discovery.Storage
-	logger  logging2.Logger
+	logger  logging.Logger
 	mutex   *sync.Mutex
 }
 
-func NewPoolStateSync(storage discovery.Storage, logger logging2.Logger) *PoolStateSync {
+func NewPoolStateSync(storage discovery.Storage, logger logging.Logger) *PoolStateSync {
 	return &PoolStateSync{
 		storage: storage,
 		logger:  logger,
@@ -27,7 +27,7 @@ func NewPoolStateSync(storage discovery.Storage, logger logging2.Logger) *PoolSt
 }
 
 type syncAction struct {
-	ToAdd    []models2.Coordinator
+	ToAdd    []models.Coordinator
 	ToRemove []CoordinatorRef
 }
 
@@ -80,8 +80,8 @@ func (p *PoolStateSync) Sync(pool TrinoPool) error {
 	return nil
 }
 
-func getSyncAction(current []CoordinatorRef, state []models2.Coordinator) syncAction {
-	toAdd := make([]models2.Coordinator, 0)
+func getSyncAction(current []CoordinatorRef, state []models.Coordinator) syncAction {
+	toAdd := make([]models.Coordinator, 0)
 	toRemove := make([]CoordinatorRef, 0)
 
 	for _, curr := range current {
@@ -102,7 +102,7 @@ func getSyncAction(current []CoordinatorRef, state []models2.Coordinator) syncAc
 	}
 }
 
-func containsTarget(src []CoordinatorRef, target models2.Coordinator) bool {
+func containsTarget(src []CoordinatorRef, target models.Coordinator) bool {
 	for _, c := range src {
 		if target.Name == c.Name {
 			return true
@@ -111,7 +111,7 @@ func containsTarget(src []CoordinatorRef, target models2.Coordinator) bool {
 	return false
 }
 
-func containsCoord(src []models2.Coordinator, target models2.Coordinator) bool {
+func containsCoord(src []models.Coordinator, target models.Coordinator) bool {
 	for _, c := range src {
 		if target.Name == c.Name {
 			return true

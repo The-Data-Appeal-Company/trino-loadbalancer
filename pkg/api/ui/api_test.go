@@ -1,7 +1,7 @@
 package ui
 
 import (
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -10,7 +10,7 @@ import (
 
 func TestApiHealth(t *testing.T) {
 
-	api := NewApi(nil, nil, nil, logging2.Noop())
+	api := NewApi(nil, nil, nil, logging.Noop())
 
 	r, err := http.NewRequest("GET", "/api/health", nil)
 	require.NoError(t, err)

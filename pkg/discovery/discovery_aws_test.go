@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/emr"
@@ -167,7 +167,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []models2.Coordinator
+		want    []models.Coordinator
 		wantErr bool
 	}{
 		{
@@ -178,7 +178,7 @@ func TestClusterProvider_Discover(t *testing.T) {
 					"component": "coordinator",
 				},
 			},
-			want: []models2.Coordinator{
+			want: []models.Coordinator{
 				{
 					Name: "running_trino",
 					URL:  getUrlOrPanic("http://10.11.12.13:8889"),

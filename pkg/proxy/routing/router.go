@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 type Rule interface {
-	Route(Request) (models2.Coordinator, error)
+	Route(Request) (models.Coordinator, error)
 }
 
 type CoordinatorWithStatistics struct {
-	Coordinator models2.Coordinator
+	Coordinator models.Coordinator
 	Statistics  trino.ClusterStatistics
 }
 
@@ -33,14 +33,14 @@ func New(userAwareRouter UserAwareRouter, rule Rule) Router {
 	}
 }
 
-func (r Router) Route(req Request) (models2.Coordinator, error) {
+func (r Router) Route(req Request) (models.Coordinator, error) {
 	if len(req.Coordinators) == 0 {
-		return models2.Coordinator{}, errors.New("unable to handle routing with no available coordinators")
+		return models.Coordinator{}, errors.New("unable to handle routing with no available coordinators")
 	}
 
 	req, err := r.UserAwareRouter.Route(req)
 	if err != nil {
-		return models2.Coordinator{}, fmt.Errorf("error routing request: %w", err)
+		return models.Coordinator{}, fmt.Errorf("error routing request: %w", err)
 	}
 
 	return r.Rule.Route(req)

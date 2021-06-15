@@ -1,6 +1,5 @@
 package trino
 
-
 type ClusterStatistics struct {
 	RunningQueries   int32   `json:"runningQueries"`
 	BlockedQueries   int32   `json:"blockedQueries"`

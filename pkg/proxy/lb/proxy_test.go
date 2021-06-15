@@ -1,13 +1,13 @@
 package lb
 
 import (
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	routing2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/routing"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -27,16 +27,16 @@ func TestProxyRouting(t *testing.T) {
 	}))
 	defer fakeCoord0.Close()
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NoOp()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NoOp()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "test",
 		URL:     mustUrl(fakeCoord0.URL),
 		Enabled: true,
@@ -66,23 +66,23 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 	}))
 	defer fakeCoord1.Close()
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NoOp()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NoOp()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RoundRobin())
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "cluster-0",
 		URL:     mustUrl(fakeCoord0.URL),
 		Enabled: true,
 	})
 	require.NoError(t, err)
 
-	err = pool.Add(models2.Coordinator{
+	err = pool.Add(models.Coordinator{
 		Name:    "cluster-1",
 		URL:     mustUrl(fakeCoord1.URL),
 		Enabled: true,
@@ -103,16 +103,16 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 
 func TestProxyWithUnhealthyBackend(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NewHttpHealth()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NewHttpHealth()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "test",
 		URL:     mustUrl("http://trino.local:1231"),
 		Enabled: true,
@@ -132,16 +132,16 @@ func TestProxyWithUnhealthyBackend(t *testing.T) {
 
 func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NoOp()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NoOp()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 
-	err := pool.Add(models2.Coordinator{
+	err := pool.Add(models.Coordinator{
 		Name:    "test",
 		URL:     mustUrl("http://trino.local:1231"),
 		Enabled: true,
@@ -162,13 +162,13 @@ func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 func TestProxyWithNoBackends(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NewHttpHealth()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NewHttpHealth()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)
@@ -187,13 +187,13 @@ func TestProxyWithNoBackends(t *testing.T) {
 func TestProxyHealthEndpoint(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
-	sessStore := session2.NewMemoryStorage()
-	hc := healthcheck2.NewHttpHealth()
-	stats := trino2.Noop()
+	sessStore := session.NewMemoryStorage()
+	hc := healthcheck.NewHttpHealth()
+	stats := trino.Noop()
 
-	router := routing2.New(routing2.NewUserAwareRouter(routing2.UserAwareRoutingConf{}), routing2.RandomRouter{})
+	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
 
-	logger := logging2.Noop()
+	logger := logging.Noop()
 
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)

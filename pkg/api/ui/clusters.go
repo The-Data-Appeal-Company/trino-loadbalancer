@@ -2,7 +2,7 @@ package ui
 
 import (
 	"encoding/json"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -149,7 +149,7 @@ func (a Api) addCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.discoveryStorage.Add(ctx, models2.Coordinator{
+	err = a.discoveryStorage.Add(ctx, models.Coordinator{
 		Name:    req.Name,
 		URL:     parsedUrl,
 		Enabled: req.Enabled,

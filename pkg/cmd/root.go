@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	trino2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	logging2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	healthcheck2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
-	session2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -19,12 +19,12 @@ var rootCmd = &cobra.Command{
 }
 
 var (
-	configPath       string
-	logger           logging2.Logger = logging2.Logrus()
-	discoveryStorage discovery.Storage
-	sessionStorage     session2.Storage
-	clusterStats       trino2.Api
-	clusterHealthCheck healthcheck2.HealthCheck
+	configPath         string
+	logger             logging.Logger = logging.Logrus()
+	discoveryStorage   discovery.Storage
+	sessionStorage     session.Storage
+	clusterStats       trino.Api
+	clusterHealthCheck healthcheck.HealthCheck
 	discover           discovery.Discovery
 )
 

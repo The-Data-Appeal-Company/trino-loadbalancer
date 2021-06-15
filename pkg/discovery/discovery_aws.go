@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -46,13 +46,13 @@ func AwsEmrDiscovery(cred AwsCredentials) *ClusterProvider {
 	}
 }
 
-func (c *ClusterProvider) Discover(ctx context.Context) ([]models2.Coordinator, error) {
+func (c *ClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
 	masters, err := c.listTargetMasters(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	filtered := make([]models2.Coordinator, 0)
+	filtered := make([]models.Coordinator, 0)
 	for _, m := range masters {
 		if containsAll(m.Tags, c.SelectTags) {
 			filtered = append(filtered, m)
@@ -62,9 +62,9 @@ func (c *ClusterProvider) Discover(ctx context.Context) ([]models2.Coordinator, 
 	return filtered, nil
 }
 
-func (c *ClusterProvider) listTargetMasters(ctx context.Context) ([]models2.Coordinator, error) {
+func (c *ClusterProvider) listTargetMasters(ctx context.Context) ([]models.Coordinator, error) {
 
-	coordinators := make([]models2.Coordinator, 0)
+	coordinators := make([]models.Coordinator, 0)
 
 	clusters, err := c.listTargetClusters(ctx)
 
@@ -83,7 +83,7 @@ func (c *ClusterProvider) listTargetMasters(ctx context.Context) ([]models2.Coor
 		if err != nil {
 			return nil, err
 		}
-		coordinators = append(coordinators, models2.Coordinator{
+		coordinators = append(coordinators, models.Coordinator{
 			Name:    *cluster.Cluster.Id,
 			URL:     masterUrl,
 			Tags:    tagsToMap(cluster.Cluster.Tags),

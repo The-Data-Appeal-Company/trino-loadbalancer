@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
-	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -14,7 +14,7 @@ func TestRedisLinkerLinkCluster(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	container, client, err := tests2.CreateRedisServer(ctx)
+	container, client, err := tests.CreateRedisServer(ctx)
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, container.Terminate(ctx))
@@ -55,7 +55,7 @@ func TestRedisLinkerLinkNotFoundErr(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	container, client, err := tests2.CreateRedisServer(ctx)
+	container, client, err := tests.CreateRedisServer(ctx)
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, container.Terminate(ctx))

@@ -1,7 +1,7 @@
 package trino
 
 import (
-	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 func Mock(statistics ClusterStatistics, err error) MockStats {
@@ -16,14 +16,14 @@ type MockStats struct {
 	err        error
 }
 
-func (m MockStats) ClusterStatistics(models2.Coordinator) (ClusterStatistics, error) {
+func (m MockStats) ClusterStatistics(models.Coordinator) (ClusterStatistics, error) {
 	return m.statistics, m.err
 }
 
-func (m MockStats) QueryDetail(coord models2.Coordinator, queryID string) (QueryDetail, error) {
+func (m MockStats) QueryDetail(coord models.Coordinator, queryID string) (QueryDetail, error) {
 	return QueryDetail{}, nil
 }
 
-func (m MockStats) QueryList(coord models2.Coordinator) (QueryList, error) {
+func (m MockStats) QueryList(coord models.Coordinator) (QueryList, error) {
 	return nil, nil
 }
