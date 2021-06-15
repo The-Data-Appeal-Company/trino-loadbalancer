@@ -24,15 +24,26 @@ persistence:
     db: 'postgres'
     host: '127.0.0.1'
     port: 5432
-    username: 'trinohub'
-    password: 'trino'
+    username: 'postgres'
+    password: 'test'
     ssl_mode: 'disable'
+
+discovery:
+  providers:
+    - provider: static
+      enabled: true
+      static:
+        clusters:
+          - name: cluster-0
+            enabled: true
+            url: http://localhost:8080
 
 session:
   store:
-      standalone:
-        enabled: true
-        host: '127.0.0.1:6379'
+    redis:
+      opts:
+        prefix: 'trino::'
+        max_ttl: 24h
 ```
 
 ## Deploy
