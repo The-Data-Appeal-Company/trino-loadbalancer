@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,9 +26,9 @@ func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]stri
 	return &K8sClusterProvider{k8sClient: k8sClient, SelectorTags: selectorTags, clusterDomain: clusterDomain}
 }
 
-func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
+func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models2.Coordinator, error) {
 
-	coordinators := make([]models.Coordinator, 0)
+	coordinators := make([]models2.Coordinator, 0)
 	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx, v1.ListOptions{})
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 				return nil, err
 			}
 
-			coordinators = append(coordinators, models.Coordinator{
+			coordinators = append(coordinators, models2.Coordinator{
 				Name:    fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
 				URL:     svcUrl,
 				Tags:    k.SelectorTags,

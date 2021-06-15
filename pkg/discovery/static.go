@@ -2,17 +2,17 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 type Static struct {
-	Coordinators []models.Coordinator
+	Coordinators []models2.Coordinator
 }
 
-func NewStatic(coords ...models.Coordinator) Static {
+func NewStatic(coords ...models2.Coordinator) Static {
 	return Static{Coordinators: coords}
 }
 
-func (s Static) Discover(ctx context.Context) ([]models.Coordinator, error) {
+func (s Static) Discover(ctx context.Context) ([]models2.Coordinator, error) {
 	return s.Coordinators, nil
 }

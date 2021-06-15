@@ -2,11 +2,11 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 type Discovery interface {
-	Discover(ctx context.Context) ([]models.Coordinator, error)
+	Discover(ctx context.Context) ([]models2.Coordinator, error)
 }
 
 type CrossProviderDiscovery struct {
@@ -17,9 +17,9 @@ func NewCrossProviderDiscovery(discoveryProviders []Discovery) *CrossProviderDis
 	return &CrossProviderDiscovery{discoveryProviders: discoveryProviders}
 }
 
-func (c *CrossProviderDiscovery) Discover(ctx context.Context) ([]models.Coordinator, error) {
+func (c *CrossProviderDiscovery) Discover(ctx context.Context) ([]models2.Coordinator, error) {
 
-	coordinators := make([]models.Coordinator, 0)
+	coordinators := make([]models2.Coordinator, 0)
 
 	for _, dProvider := range c.discoveryProviders {
 		currentProviderCoordinators, err := dProvider.Discover(ctx)

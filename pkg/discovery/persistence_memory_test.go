@@ -2,8 +2,8 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -12,9 +12,9 @@ func TestMemoryStorage_Add(t *testing.T) {
 	ctx := context.TODO()
 	storage := NewMemoryStorage()
 
-	coord0 := models.Coordinator{
+	coord0 := models2.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://trino.local:8080"),
+		URL:     tests2.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -34,9 +34,9 @@ func TestMemoryStorage_AddRemove(t *testing.T) {
 	ctx := context.TODO()
 	storage := NewMemoryStorage()
 
-	coord0 := models.Coordinator{
+	coord0 := models2.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://trino.local:8080"),
+		URL:     tests2.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}
@@ -60,9 +60,9 @@ func TestMemoryStorage_AddGet(t *testing.T) {
 	ctx := context.TODO()
 	storage := NewMemoryStorage()
 
-	coord0 := models.Coordinator{
+	coord0 := models2.Coordinator{
 		Name:    "coord-0",
-		URL:     tests.MustUrl("http://trino.local:8080"),
+		URL:     tests2.MustUrl("http://trino.local:8080"),
 		Tags:    map[string]string{},
 		Enabled: true,
 	}

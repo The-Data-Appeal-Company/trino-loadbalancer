@@ -2,8 +2,8 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/tests"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	tests2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -13,7 +13,7 @@ import (
 func TestDbPersistence(t *testing.T) {
 
 	ctx := context.Background()
-	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
+	container, db, err := tests2.CreatePostgresDatabase(ctx, tests2.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
 
 	defer func() {
@@ -22,9 +22,9 @@ func TestDbPersistence(t *testing.T) {
 
 	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
 
-	coord0 := models.Coordinator{
+	coord0 := models2.Coordinator{
 		Name: "test-0",
-		URL:  tests.MustUrl("http://test.local:8889"),
+		URL:  tests2.MustUrl("http://test.local:8889"),
 		Tags: map[string]string{
 			"test": "true",
 		},
@@ -71,7 +71,7 @@ func TestDbPersistence(t *testing.T) {
 func TestDbDoubleInsertUpdate(t *testing.T) {
 
 	ctx := context.Background()
-	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
+	container, db, err := tests2.CreatePostgresDatabase(ctx, tests2.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
 
 	defer func() {
@@ -80,9 +80,9 @@ func TestDbDoubleInsertUpdate(t *testing.T) {
 
 	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
 
-	err = storage.Add(ctx, models.Coordinator{
+	err = storage.Add(ctx, models2.Coordinator{
 		Name: "test-0",
-		URL:  tests.MustUrl("http://test.local:8889"),
+		URL:  tests2.MustUrl("http://test.local:8889"),
 		Tags: map[string]string{
 			"test": "true",
 		},
@@ -91,9 +91,9 @@ func TestDbDoubleInsertUpdate(t *testing.T) {
 
 	require.NoError(t, err)
 
-	updated := models.Coordinator{
+	updated := models2.Coordinator{
 		Name: "test-0",
-		URL:  tests.MustUrl("http://test.local:8889"),
+		URL:  tests2.MustUrl("http://test.local:8889"),
 		Tags: map[string]string{
 			"test":    "true",
 			"updated": "true",

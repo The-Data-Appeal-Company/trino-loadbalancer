@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	models2 "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 func Noop() NoOp {
@@ -12,6 +12,6 @@ func Noop() NoOp {
 type NoOp struct {
 }
 
-func (n NoOp) Discover(ctx context.Context) ([]models.Coordinator, error) {
-	return []models.Coordinator{}, nil
+func (n NoOp) Discover(ctx context.Context) ([]models2.Coordinator, error) {
+	return []models2.Coordinator{}, nil
 }
