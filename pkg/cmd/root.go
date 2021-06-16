@@ -7,6 +7,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -26,6 +27,7 @@ var (
 	clusterStats       trino.Api
 	clusterHealthCheck healthcheck.HealthCheck
 	discover           discovery.Discovery
+	redisClient        redis.UniversalClient
 )
 
 func init() {
@@ -82,7 +84,7 @@ func init() {
 			log.Fatal(err)
 		}
 
-		sessionStorage, err = configuration.CreateSessionStorage(configuration.SessionStorageConfiguration{
+		redisConfig := configuration.SessionStorageConfiguration{
 			Standalone: configuration.RedisSessionStorageConfiguration{
 				Enabled:  viper.GetBool("session.store.redis.standalone.enabled"),
 				Host:     viper.GetString("session.store.redis.standalone.host"),
@@ -100,7 +102,14 @@ func init() {
 				Prefix: viper.GetString("session.store.redis.opts.prefix"),
 				MaxTTL: viper.GetDuration("session.store.redis.opts.max_ttl"),
 			},
-		})
+		}
+
+		redisClient, err = configuration.CreateRedisStorageClient(redisConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		sessionStorage, err = configuration.CreateSessionStorage(redisClient, redisConfig)
 
 		if err != nil {
 			log.Fatal(err)

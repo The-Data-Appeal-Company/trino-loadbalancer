@@ -16,7 +16,12 @@ var controllerCmd = &cobra.Command{
 	Use:   "controller",
 	Short: "start trino cluster controller",
 	Run: func(cmd *cobra.Command, args []string) {
-		var ctrl = process.NewController(trino.NewClusterApi(), discoveryStorage, clusterHealthCheck)
+		var ctrl = process.NewController(
+			trino.NewClusterApi(),
+			discoveryStorage,
+			clusterHealthCheck,
+			process.NewRedisControllerState(redisClient),
+		)
 		if err := ctrl.Run(context.Background()); err != nil {
 			log.Fatal(err)
 		}
