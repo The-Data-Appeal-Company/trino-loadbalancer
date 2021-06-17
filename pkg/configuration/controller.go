@@ -9,11 +9,9 @@ import (
 )
 
 type ControllerConf struct {
-	Controller struct {
 		Features struct {
 			SlowWorkerDrainer SlowWorkerDrainerConf `json:"slow_worker_drainer" yaml:"slow_worker_drainer" mapstructure:"slow_worker_drainer"`
 		} `json:"features" yaml:"features" mapstructure:"features"`
-	} `json:"controller" yaml:"controller" mapstructure:"controller"`
 }
 
 type SlowWorkerDrainerConf struct {
@@ -31,7 +29,7 @@ type SlowWorkerDrainerConf struct {
 func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, conf ControllerConf) (components.QueryHandler, error) {
 	handlers := make([]components.QueryHandler, 0)
 
-	slowNodeDrainerConf := conf.Controller.Features.SlowWorkerDrainer
+	slowNodeDrainerConf := conf.Features.SlowWorkerDrainer
 	if slowNodeDrainerConf.Enabled {
 		slowWorkerHandler, err := createDrainSlowWorkerNodeHandler(redisClient, logger, slowNodeDrainerConf)
 		if err != nil {

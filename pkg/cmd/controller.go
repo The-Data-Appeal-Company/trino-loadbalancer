@@ -35,6 +35,7 @@ var controllerCmd = &cobra.Command{
 			clusterHealthCheck,
 			process.NewRedisControllerState(redisClient),
 			handlers,
+			logger,
 		)
 		if err := ctrl.Run(context.Background()); err != nil {
 			log.Fatal(err)

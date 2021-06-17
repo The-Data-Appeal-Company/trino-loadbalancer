@@ -41,6 +41,8 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 			continue
 		}
 
+		s.logger.Info("%s selected for drain", node)
+
 		// TODO Check if this is blocking
 		err = s.nodeDrainer.Drain(ctx, node.NodeID)
 		if err != nil {

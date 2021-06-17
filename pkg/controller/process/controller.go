@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/concurrency"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/controller/components"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
@@ -17,10 +18,11 @@ type Controller struct {
 	healthCheck  healthcheck.HealthCheck
 	state        State
 	queryHandler components.QueryHandler
+	logger       logging.Logger
 }
 
-func NewController(api trino.Api, discovery discovery.Storage, healthCheck healthcheck.HealthCheck, state State, queryHandler components.QueryHandler) Controller {
-	return Controller{api: api, discovery: discovery, healthCheck: healthCheck, state: state, queryHandler: queryHandler}
+func NewController(api trino.Api, discovery discovery.Storage, healthCheck healthcheck.HealthCheck, state State, queryHandler components.QueryHandler, logger logging.Logger) Controller {
+	return Controller{api: api, discovery: discovery, healthCheck: healthCheck, state: state, queryHandler: queryHandler, logger: logger}
 }
 
 func (c Controller) Run(ctx context.Context) error {
@@ -67,6 +69,8 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 	}
 
 	completedQueryList := c.filterProcessedQueries(queriesList, previousState)
+
+	c.logger.Info("retrieved %d queries", len(completedQueryList))
 
 	for _, query := range completedQueryList {
 		queryDetail, err := c.api.QueryDetail(cluster, query.QueryId)

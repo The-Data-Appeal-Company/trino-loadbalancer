@@ -29,6 +29,10 @@ func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNod
 		tasks = append(tasks, stage.Tasks...)
 	}
 
+	if len(tasks) == 0 {
+		return nil, nil
+	}
+
 	taskMap := make(map[string]time.Duration)
 	for _, task := range tasks {
 		val, found := taskMap[task.TaskStatus.NodeID]
@@ -39,7 +43,7 @@ func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNod
 
 	taskTimes := make([]float64, 0)
 	for _, duration := range taskMap {
-		taskTimes = append(taskTimes, float64(duration.Microseconds()))
+		taskTimes = append(taskTimes, float64(duration.Milliseconds()))
 	}
 
 	averageTime, err := stats.Mean(taskTimes)
@@ -54,7 +58,7 @@ func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNod
 	nodesToEvict := make([]SlowNodeRef, 0)
 	nodeEvictionThreshold := averageTime + stdDeviationTime*StdDeviationRatio
 	for nodeId, duration := range taskMap {
-		if float64(duration.Microseconds()) > nodeEvictionThreshold {
+		if float64(duration.Milliseconds()) > nodeEvictionThreshold {
 			nodesToEvict = append(nodesToEvict, SlowNodeRef{NodeID: nodeId})
 		}
 	}
