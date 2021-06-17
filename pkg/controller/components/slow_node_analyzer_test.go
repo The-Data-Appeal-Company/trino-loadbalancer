@@ -67,7 +67,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 								NodeID: "node-01",
 							},
 							Stats: trino.Stats{
-								ElapsedTime: "22us",
+								ElapsedTime: "22ms",
 							},
 						},
 						{
@@ -75,7 +75,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 								NodeID: "node-02",
 							},
 							Stats: trino.Stats{
-								ElapsedTime: "2us",
+								ElapsedTime: "2ms",
 							},
 						},
 						{
@@ -83,7 +83,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 								NodeID: "node-03",
 							},
 							Stats: trino.Stats{
-								ElapsedTime: "20us",
+								ElapsedTime: "20ms",
 							},
 						},
 						{
@@ -91,7 +91,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 								NodeID: "node-04",
 							},
 							Stats: trino.Stats{
-								ElapsedTime: "1us",
+								ElapsedTime: "1ms",
 							},
 						},
 						{
@@ -99,7 +99,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 								NodeID: "node-05",
 							},
 							Stats: trino.Stats{
-								ElapsedTime: "1us",
+								ElapsedTime: "1ms",
 							},
 						},
 					},
@@ -156,6 +156,18 @@ func TestShouldDetectNoNodes(t *testing.T) {
 					},
 				},
 			},
+		},
+	}
+	analyzer := TrinoSlowNodeAnalyzer{}
+	nodes, err := analyzer.Analyze(queryDetail)
+	require.NoError(t, err)
+	require.Len(t, nodes, 0)
+}
+
+func TestShouldDetectNoNodesIfNoTaskAreAvailable(t *testing.T) {
+	queryDetail := trino.QueryDetail{
+		OutputStage: trino.OutputStage{
+			SubStages: nil,
 		},
 	}
 	analyzer := TrinoSlowNodeAnalyzer{}
