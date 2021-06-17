@@ -1,4 +1,4 @@
-package analysis
+package components
 
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
@@ -49,11 +49,11 @@ func TestShouldDetectSingleSlowNode(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoNodeAnalyzer{}
+	analyzer := TrinoSlowNodeAnalyzer{}
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 1)
-	require.Equal(t, nodes[0], "node-04")
+	require.Equal(t, nodes[0], SlowNodeRef{NodeID: "node-04"})
 }
 
 func TestShouldDetectMultiplesSlowNode(t *testing.T) {
@@ -107,12 +107,12 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoNodeAnalyzer{}
+	analyzer := TrinoSlowNodeAnalyzer{}
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 2)
-	require.Contains(t, nodes, "node-01")
-	require.Contains(t, nodes, "node-03")
+	require.Contains(t, nodes, SlowNodeRef{NodeID: "node-01"})
+	require.Contains(t, nodes, SlowNodeRef{NodeID: "node-03"})
 }
 
 func TestShouldDetectNoNodes(t *testing.T) {
@@ -158,7 +158,7 @@ func TestShouldDetectNoNodes(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoNodeAnalyzer{}
+	analyzer := TrinoSlowNodeAnalyzer{}
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 0)

@@ -1,4 +1,4 @@
-package analysis
+package components
 
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
@@ -8,14 +8,18 @@ import (
 
 const StdDeviationRatio = 1.1
 
-type NodeAnalyzer interface {
-	Analyze(trino.QueryDetail) ([]string, error)
+type SlowNodeRef struct {
+	NodeID string
 }
 
-type TrinoNodeAnalyzer struct {
+type SlowNodeAnalyzer interface {
+	Analyze(trino.QueryDetail) ([]SlowNodeRef, error)
 }
 
-func (a TrinoNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]string, error) {
+type TrinoSlowNodeAnalyzer struct {
+}
+
+func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNodeRef, error) {
 	tasks := make([]trino.Tasks, 0)
 	for _, stage := range queryDetail.OutputStage.SubStages {
 		tasks = append(tasks, stage.Tasks...)
@@ -43,11 +47,11 @@ func (a TrinoNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]string, err
 		return nil, err
 	}
 
-	nodesToEvict := make([]string, 0)
+	nodesToEvict := make([]SlowNodeRef, 0)
 	nodeEvictionThreshold := averageTime + stdDeviationTime*StdDeviationRatio
 	for nodeId, duration := range taskMap {
 		if float64(duration.Microseconds()) > nodeEvictionThreshold {
-			nodesToEvict = append(nodesToEvict, nodeId)
+			nodesToEvict = append(nodesToEvict, SlowNodeRef{NodeID: nodeId})
 		}
 	}
 
