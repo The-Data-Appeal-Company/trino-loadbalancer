@@ -19,6 +19,10 @@ type SlowNodeAnalyzer interface {
 type TrinoSlowNodeAnalyzer struct {
 }
 
+func NewTrinoSlowNodeAnalyzer() TrinoSlowNodeAnalyzer {
+	return TrinoSlowNodeAnalyzer{}
+}
+
 func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNodeRef, error) {
 	tasks := make([]trino.Tasks, 0)
 	for _, stage := range queryDetail.OutputStage.SubStages {

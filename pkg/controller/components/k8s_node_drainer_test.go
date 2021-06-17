@@ -52,10 +52,10 @@ func TestNodeDrainerDrainNodeSuccess(t *testing.T) {
 	})
 
 	conf := KubeNodeDrainerConf{
-		namespaceLabelSelector: map[string]string{
+		NamespaceLabelSelector: map[string]string{
 			"scope": "trino",
 		},
-		podGracePeriod: 0,
+		PodGracePeriod: 0,
 	}
 
 	nodeDrainer := NewKubeNodeDrainer(client, conf, logging.Noop())
@@ -97,10 +97,10 @@ func TestNodeDrainerDrainPodNotFound(t *testing.T) {
 	})
 
 	conf := KubeNodeDrainerConf{
-		namespaceLabelSelector: map[string]string{
+		NamespaceLabelSelector: map[string]string{
 			"scope": "trino",
 		},
-		podGracePeriod: 0,
+		PodGracePeriod: 0,
 	}
 
 	nodeDrainer := NewKubeNodeDrainer(client, conf, logging.Noop())
@@ -147,10 +147,10 @@ func TestNodeDrainerDrainNodeNotFound(t *testing.T) {
 	})
 
 	conf := KubeNodeDrainerConf{
-		namespaceLabelSelector: map[string]string{
+		NamespaceLabelSelector: map[string]string{
 			"scope": "trino",
 		},
-		podGracePeriod: 0,
+		PodGracePeriod: 0,
 	}
 
 	nodeDrainer := NewKubeNodeDrainer(client, conf, logging.Noop())
@@ -201,10 +201,10 @@ func TestNodeDrainerDrainPodNotInNamespaceSelector(t *testing.T) {
 	})
 
 	conf := KubeNodeDrainerConf{
-		namespaceLabelSelector: map[string]string{
+		NamespaceLabelSelector: map[string]string{
 			"scope": "trino-other",
 		},
-		podGracePeriod: 0,
+		PodGracePeriod: 0,
 	}
 
 	nodeDrainer := NewKubeNodeDrainer(client, conf, logging.Noop())
@@ -262,10 +262,10 @@ func TestNodeDrainerMultiNamespace(t *testing.T) {
 	})
 
 	conf := KubeNodeDrainerConf{
-		namespaceLabelSelector: map[string]string{
+		NamespaceLabelSelector: map[string]string{
 			"scope": "trino",
 		},
-		podGracePeriod: 0,
+		PodGracePeriod: 0,
 	}
 
 	nodeDrainer := NewKubeNodeDrainer(client, conf, logging.Noop())

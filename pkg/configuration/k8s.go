@@ -1,4 +1,4 @@
-package kubernetes
+package configuration
 
 import (
 	k8s "k8s.io/client-go/kubernetes"
@@ -23,7 +23,7 @@ func newConfiguration(kubeConfig *string) (*rest.Config, error) {
 	return clientcmd.BuildConfigFromFlags("", *kubeConfig)
 }
 
-func NewClient(kubeConfig *string) (k8s.Interface, error) {
+func NewK8sClient(kubeConfig *string) (k8s.Interface, error) {
 	kubeConf, err := newConfiguration(kubeConfig)
 	if err != nil {
 		return nil, err

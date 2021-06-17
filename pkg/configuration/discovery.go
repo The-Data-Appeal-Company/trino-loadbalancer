@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery/kubernetes"
 	_ "github.com/lib/pq"
 	"net/url"
 )
@@ -99,7 +98,7 @@ func CreateDiscoveryProvider(conf DiscoveryConfiguration) (discovery.Discovery, 
 	}
 
 	if conf.Provider == DiscoveryK8s {
-		client, err := kubernetes.NewClient(&conf.K8s.KubeConfig)
+		client, err := NewK8sClient(&conf.K8s.KubeConfig)
 
 		if err != nil {
 			return nil, err

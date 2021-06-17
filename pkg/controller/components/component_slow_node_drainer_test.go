@@ -94,7 +94,6 @@ func TestSlowNodeDrainerComponentNoActionOnEmptySlowNodes(t *testing.T) {
 	require.Empty(t, nodeDrainer.drained)
 }
 
-
 type mockNodeDrainer struct {
 	drained map[string]int
 	l       *sync.Mutex

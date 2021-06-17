@@ -25,8 +25,9 @@ type NodeDrainer interface {
 }
 
 type KubeNodeDrainerConf struct {
-	namespaceLabelSelector map[string]string
-	podGracePeriod         time.Duration
+	NamespaceLabelSelector map[string]string
+	PodGracePeriod         time.Duration
+	DryRun                 bool
 }
 
 type KubeNodeDrainer struct {
@@ -49,7 +50,7 @@ func (k KubeNodeDrainer) Drain(ctx context.Context, nodeID string) error {
 	var podName = nodeID
 
 	namespaces, err := k.client.CoreV1().Namespaces().List(ctx, v1.ListOptions{
-		LabelSelector: labels.FormatLabels(k.conf.namespaceLabelSelector),
+		LabelSelector: labels.FormatLabels(k.conf.NamespaceLabelSelector),
 	})
 
 	if err != nil {
@@ -95,6 +96,11 @@ func (k KubeNodeDrainer) Drain(ctx context.Context, nodeID string) error {
 }
 
 func (k KubeNodeDrainer) cordonAndDrainNode(ctx context.Context, nodeName string) error {
+	k.logger.Info("draining node %s", nodeName)
+	if k.conf.DryRun {
+		return nil
+	}
+
 	node, err := k.client.CoreV1().Nodes().Get(ctx, nodeName, v1.GetOptions{})
 	if err != nil {
 		return err
@@ -104,8 +110,8 @@ func (k KubeNodeDrainer) cordonAndDrainNode(ctx context.Context, nodeName string
 		Ctx:                 ctx,
 		Client:              k.client,
 		Force:               true,
-		Timeout:             k.conf.podGracePeriod * time.Second,
-		GracePeriodSeconds:  int(k.conf.podGracePeriod.Seconds()),
+		Timeout:             k.conf.PodGracePeriod * time.Second,
+		GracePeriodSeconds:  int(k.conf.PodGracePeriod.Seconds()),
 		IgnoreAllDaemonSets: true,
 		DeleteEmptyDirData:  true,
 		ErrOut:              ioc.NewNoopWriter(),
