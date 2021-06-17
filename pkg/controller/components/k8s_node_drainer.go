@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	ErrPodNotFound = errors.New("specified pod not found")
+	ErrPodNotFound  = errors.New("specified pod not found")
 	ErrNodeNotFound = errors.New("node not found")
 )
 

@@ -244,7 +244,7 @@ func TestNodeDrainerMultiNamespace(t *testing.T) {
 				"scope": "trino",
 			},
 		},
-	},&v1.Namespace{
+	}, &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "trino-00",
 			Labels: map[string]string{
