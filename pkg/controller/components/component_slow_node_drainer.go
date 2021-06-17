@@ -10,7 +10,7 @@ import (
 )
 
 type SlowNodeDrainerConf struct {
-	DrainThreshold int
+	DrainThreshold int64
 }
 
 type SlowNodeDrainer struct {
@@ -53,26 +53,27 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 
 func (s SlowNodeDrainer) markSlowNode(ctx context.Context, node SlowNodeRef) (bool, error) {
 	val, err := s.slowNodeMarker.Mark(ctx, node.NodeID)
-	return val > s.conf.DrainThreshold, err
+	return val >= s.conf.DrainThreshold, err
 }
 
 type SlowNodeMarker interface {
-	Mark(ctx context.Context, nodeName string) (int, error)
+	Mark(ctx context.Context, nodeName string) (int64, error)
+	Delete(ctx context.Context, nodeName string) error
 }
 
 type InMemorySlowNodeMarker struct {
-	status map[string]int
+	status map[string]int64
 	l      *sync.Mutex
 }
 
-func NewInMemoryMarker() *InMemorySlowNodeMarker {
+func NewInMemorySlowNodeMarker() *InMemorySlowNodeMarker {
 	return &InMemorySlowNodeMarker{
-		status: make(map[string]int),
+		status: make(map[string]int64),
 		l:      &sync.Mutex{},
 	}
 }
 
-func (i InMemorySlowNodeMarker) Mark(ctx context.Context, nodeName string) (int, error) {
+func (i *InMemorySlowNodeMarker) Mark(ctx context.Context, nodeName string) (int64, error) {
 	i.l.Lock()
 	defer i.l.Unlock()
 
@@ -83,6 +84,14 @@ func (i InMemorySlowNodeMarker) Mark(ctx context.Context, nodeName string) (int,
 	return val, nil
 }
 
+func (i *InMemorySlowNodeMarker) Delete(ctx context.Context, nodeName string) error {
+	i.l.Lock()
+	defer i.l.Unlock()
+
+	delete(i.status, nodeName)
+	return nil
+}
+
 type RedisSlowNodeMarker struct {
 	redis redis.UniversalClient
 }
@@ -91,10 +100,11 @@ func NewRedisSlowNodeMarker(redis redis.UniversalClient) *RedisSlowNodeMarker {
 	return &RedisSlowNodeMarker{redis: redis}
 }
 
-func (r RedisSlowNodeMarker) Mark(ctx context.Context, nodeName string) (int, error) {
-	val, err := r.redis.Get(ctx, fmt.Sprintf("component:%s:%s", "slow-node-marker", nodeName)).Int()
-	if err == redis.Nil {
-		return 0, nil
-	}
-	return val, err
+func (r RedisSlowNodeMarker) Mark(ctx context.Context, nodeName string) (int64, error) {
+	var key = fmt.Sprintf("component:%s:%s", "slow-node-marker", nodeName)
+	return r.redis.Incr(ctx, key).Result()
+}
+
+func (r RedisSlowNodeMarker) Delete(ctx context.Context, nodeName string) error {
+	return r.redis.Del(ctx, nodeName).Err()
 }
