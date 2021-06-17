@@ -93,7 +93,7 @@ func (c Controller) filterProcessedQueries(list trino.QueryList, lastExecution t
 			continue
 		}
 
-		if lastExecution.After(item.Session.Start) {
+		if lastExecution.After(item.QueryStats.CreateTime) {
 			continue
 		}
 

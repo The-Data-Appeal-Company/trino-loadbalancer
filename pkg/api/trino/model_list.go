@@ -43,39 +43,16 @@ type QueryListItem struct {
 		} `json:"preparedStatements"`
 		ProtocolName string `json:"protocolName"`
 	} `json:"session"`
-	ResourceGroupId []string `json:"resourceGroupId"`
-	State           string   `json:"state"`
-	MemoryPool      string   `json:"memoryPool"`
-	Scheduled       bool     `json:"scheduled"`
-	Self            string   `json:"self"`
-	Query           string   `json:"query"`
-	QueryStats      struct {
-		CreateTime                 time.Time     `json:"createTime"`
-		EndTime                    time.Time     `json:"endTime"`
-		QueuedTime                 string        `json:"queuedTime"`
-		ElapsedTime                string        `json:"elapsedTime"`
-		ExecutionTime              string        `json:"executionTime"`
-		TotalDrivers               int           `json:"totalDrivers"`
-		QueuedDrivers              int           `json:"queuedDrivers"`
-		RunningDrivers             int           `json:"runningDrivers"`
-		CompletedDrivers           int           `json:"completedDrivers"`
-		RawInputDataSize           string        `json:"rawInputDataSize"`
-		RawInputPositions          int           `json:"rawInputPositions"`
-		PhysicalInputDataSize      string        `json:"physicalInputDataSize"`
-		CumulativeUserMemory       interface{}   `json:"cumulativeUserMemory"`
-		UserMemoryReservation      string        `json:"userMemoryReservation"`
-		TotalMemoryReservation     string        `json:"totalMemoryReservation"`
-		PeakUserMemoryReservation  string        `json:"peakUserMemoryReservation"`
-		PeakTotalMemoryReservation string        `json:"peakTotalMemoryReservation"`
-		TotalCpuTime               string        `json:"totalCpuTime"`
-		TotalScheduledTime         string        `json:"totalScheduledTime"`
-		FullyBlocked               bool          `json:"fullyBlocked"`
-		BlockedReasons             []interface{} `json:"blockedReasons"`
-		ProgressPercentage         float64       `json:"progressPercentage"`
-	} `json:"queryStats"`
-	QueryType string `json:"queryType"`
-	ErrorType string `json:"errorType,omitempty"`
-	ErrorCode struct {
+	ResourceGroupId []string   `json:"resourceGroupId"`
+	State           string     `json:"state"`
+	MemoryPool      string     `json:"memoryPool"`
+	Scheduled       bool       `json:"scheduled"`
+	Self            string     `json:"self"`
+	Query           string     `json:"query"`
+	QueryStats      QueryStats `json:"queryStats"`
+	QueryType       string     `json:"queryType"`
+	ErrorType       string     `json:"errorType,omitempty"`
+	ErrorCode       struct {
 		Code int    `json:"code"`
 		Name string `json:"name"`
 		Type string `json:"type"`

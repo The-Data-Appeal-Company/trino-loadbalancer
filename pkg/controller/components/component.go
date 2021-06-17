@@ -13,7 +13,7 @@ type MultiQueryComponent struct {
 	Handlers []QueryHandler
 }
 
-func NewMultiQueryComponent(handlers ...QueryHandler) MultiQueryComponent {
+func NewMultiQueryHandler(handlers ...QueryHandler) MultiQueryComponent {
 	return MultiQueryComponent{Handlers: handlers}
 }
 

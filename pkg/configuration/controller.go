@@ -41,7 +41,7 @@ func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, co
 		handlers = append(handlers, slowWorkerHandler)
 	}
 
-	return components.NewMultiQueryComponent(handlers...), nil
+	return components.NewMultiQueryHandler(handlers...), nil
 }
 
 func createDrainSlowWorkerNodeHandler(redisClient redis.UniversalClient, logger logging.Logger, slowNodeDrainerConf SlowWorkerDrainerConf) (*components.SlowNodeDrainer, error) {

@@ -27,3 +27,30 @@ func (m MockStats) QueryDetail(coord models.Coordinator, queryID string) (QueryD
 func (m MockStats) QueryList(coord models.Coordinator) (QueryList, error) {
 	return nil, nil
 }
+
+type MockApi struct {
+	ClusterStatisticsFn func(models.Coordinator) (ClusterStatistics, error)
+	QueryDetailFn       func(coordinator models.Coordinator, queryID string) (QueryDetail, error)
+	QueryListFn         func(coordinator models.Coordinator) (QueryList, error)
+}
+
+func (m MockApi) ClusterStatistics(coordinator models.Coordinator) (ClusterStatistics, error) {
+	if m.ClusterStatisticsFn == nil {
+		return ClusterStatistics{}, nil
+	}
+	return m.ClusterStatisticsFn(coordinator)
+}
+
+func (m MockApi) QueryDetail(coordinator models.Coordinator, queryID string) (QueryDetail, error) {
+	if m.QueryDetailFn == nil {
+		return QueryDetail{}, nil
+	}
+	return m.QueryDetailFn(coordinator, queryID)
+}
+
+func (m MockApi) QueryList(coordinator models.Coordinator) (QueryList, error) {
+	if m.QueryListFn == nil {
+		return QueryList{}, nil
+	}
+	return m.QueryListFn(coordinator)
+}
