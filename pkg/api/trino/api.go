@@ -20,7 +20,8 @@ type ClusterApi struct {
 }
 
 var (
-	ErrAuthFailed = errors.New("trino ui auth failed")
+	ErrAuthFailed    = errors.New("trino ui auth failed")
+	ErrQueryNotFound = errors.New("query not found")
 )
 
 func NewClusterApi() *ClusterApi {
@@ -80,6 +81,9 @@ func (p *ClusterApi) QueryDetail(coord models.Coordinator, queryID string) (Quer
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusGone {
+			return QueryDetail{}, ErrQueryNotFound
+		}
 		return QueryDetail{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 	}
 

@@ -9,9 +9,9 @@ import (
 )
 
 type ControllerConf struct {
-		Features struct {
-			SlowWorkerDrainer SlowWorkerDrainerConf `json:"slow_worker_drainer" yaml:"slow_worker_drainer" mapstructure:"slow_worker_drainer"`
-		} `json:"features" yaml:"features" mapstructure:"features"`
+	Features struct {
+		SlowWorkerDrainer SlowWorkerDrainerConf `json:"slow_worker_drainer" yaml:"slow_worker_drainer" mapstructure:"slow_worker_drainer"`
+	} `json:"features" yaml:"features" mapstructure:"features"`
 }
 
 type SlowWorkerDrainerConf struct {
@@ -24,6 +24,9 @@ type SlowWorkerDrainerConf struct {
 		KubeConfig        string            `json:"config" yaml:"config" mapstructure:"config"`
 		NamespaceSelector map[string]string `json:"namespaceSelector" yaml:"namespaceSelector" mapstructure:"namespaceSelector"`
 	} `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+	Analyzer struct {
+		StdDeviationRation float64 `json:"std_deviation_ratio" yaml:"std_deviation_ratio" mapstructure:"std_deviation_ratio"`
+	} `json:"analyzer" yaml:"analyzer" mapstructure:"analyzer"`
 }
 
 func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, conf ControllerConf) (components.QueryHandler, error) {
@@ -43,7 +46,10 @@ func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, co
 }
 
 func createDrainSlowWorkerNodeHandler(redisClient redis.UniversalClient, logger logging.Logger, slowNodeDrainerConf SlowWorkerDrainerConf) (*components.SlowNodeDrainer, error) {
-	analyzer := components.NewTrinoSlowNodeAnalyzer()
+	analyzer := components.NewTrinoSlowNodeAnalyzer(components.TrinoSlowNodeAnalyzerConfig{
+		StdDeviationRatio: slowNodeDrainerConf.Analyzer.StdDeviationRation,
+	})
+
 	nodeDrainer, err := createNodeDrainer(slowNodeDrainerConf, logger)
 	if err != nil {
 		return nil, err

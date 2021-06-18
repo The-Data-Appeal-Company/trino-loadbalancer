@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-const StdDeviationRatio = 1.1
-
 type SlowNodeRef struct {
 	NodeID string
 }
@@ -16,11 +14,16 @@ type SlowNodeAnalyzer interface {
 	Analyze(trino.QueryDetail) ([]SlowNodeRef, error)
 }
 
-type TrinoSlowNodeAnalyzer struct {
+type TrinoSlowNodeAnalyzerConfig struct {
+	StdDeviationRatio float64
 }
 
-func NewTrinoSlowNodeAnalyzer() TrinoSlowNodeAnalyzer {
-	return TrinoSlowNodeAnalyzer{}
+type TrinoSlowNodeAnalyzer struct {
+	conf TrinoSlowNodeAnalyzerConfig
+}
+
+func NewTrinoSlowNodeAnalyzer(conf TrinoSlowNodeAnalyzerConfig) TrinoSlowNodeAnalyzer {
+	return TrinoSlowNodeAnalyzer{conf: conf}
 }
 
 func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNodeRef, error) {
@@ -56,7 +59,7 @@ func (a TrinoSlowNodeAnalyzer) Analyze(queryDetail trino.QueryDetail) ([]SlowNod
 	}
 
 	nodesToEvict := make([]SlowNodeRef, 0)
-	nodeEvictionThreshold := averageTime + stdDeviationTime*StdDeviationRatio
+	nodeEvictionThreshold := averageTime + stdDeviationTime*a.conf.StdDeviationRatio
 	for nodeId, duration := range taskMap {
 		if float64(duration.Milliseconds()) > nodeEvictionThreshold {
 			nodesToEvict = append(nodesToEvict, SlowNodeRef{NodeID: nodeId})

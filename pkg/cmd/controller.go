@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 func init() {
@@ -37,8 +38,12 @@ var controllerCmd = &cobra.Command{
 			handlers,
 			logger,
 		)
-		if err := ctrl.Run(context.Background()); err != nil {
-			log.Fatal(err)
+
+		for {
+			if err := ctrl.Run(context.Background()); err != nil {
+				log.Fatal(err)
+			}
+			time.Sleep(1 * time.Second)
 		}
 	},
 }

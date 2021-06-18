@@ -60,7 +60,7 @@ func TestController_RunUpdateState(t *testing.T) {
 	require.NoError(t, err)
 	run1, err := state.Get(ctx, coordinator0)
 	require.NoError(t, err)
-	require.NotEqual(t, run0, run1)
+	require.Equal(t, run0, run1)
 }
 
 func TestController_RunWithQueryHandler(t *testing.T) {
@@ -92,17 +92,22 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 				{
 					QueryId:    "query-00",
 					State:      trino.QueryFinished,
-					QueryStats: trino.QueryStats{CreateTime: queriesTs},
+					QueryStats: trino.QueryStats{CreateTime: queriesTs, TotalDrivers: 2},
 				},
 				{
 					QueryId:    "query-01",
 					State:      trino.QueryFinished,
-					QueryStats: trino.QueryStats{CreateTime: queriesTs},
+					QueryStats: trino.QueryStats{CreateTime: queriesTs, TotalDrivers: 2},
 				},
 				{
 					QueryId:    "query-02",
 					State:      "RUNNING",
-					QueryStats: trino.QueryStats{CreateTime: queriesTs},
+					QueryStats: trino.QueryStats{CreateTime: queriesTs, TotalDrivers: 2},
+				},
+				{
+					QueryId:    "query-03",
+					State:      trino.QueryFinished,
+					QueryStats: trino.QueryStats{CreateTime: queriesTs, TotalDrivers: 0},
 				},
 			}, nil
 		},
@@ -116,7 +121,7 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 		healthCheck:  healthcheck.NoOp(),
 		state:        state,
 		queryHandler: queryHandler,
-		logger: logging.Noop(),
+		logger:       logging.Noop(),
 	}
 
 	err := c.Run(ctx)

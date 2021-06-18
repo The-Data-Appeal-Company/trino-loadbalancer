@@ -49,7 +49,7 @@ func TestShouldDetectSingleSlowNode(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoSlowNodeAnalyzer{}
+	analyzer := NewTrinoSlowNodeAnalyzer(TrinoSlowNodeAnalyzerConfig{StdDeviationRatio: 1.1})
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 1)
@@ -107,7 +107,7 @@ func TestShouldDetectMultiplesSlowNode(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoSlowNodeAnalyzer{}
+	analyzer := NewTrinoSlowNodeAnalyzer(TrinoSlowNodeAnalyzerConfig{StdDeviationRatio: 1.1})
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 2)
@@ -158,7 +158,7 @@ func TestShouldDetectNoNodes(t *testing.T) {
 			},
 		},
 	}
-	analyzer := TrinoSlowNodeAnalyzer{}
+	analyzer := NewTrinoSlowNodeAnalyzer(TrinoSlowNodeAnalyzerConfig{StdDeviationRatio: 1.1})
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 0)
@@ -170,7 +170,7 @@ func TestShouldDetectNoNodesIfNoTaskAreAvailable(t *testing.T) {
 			SubStages: nil,
 		},
 	}
-	analyzer := TrinoSlowNodeAnalyzer{}
+	analyzer := NewTrinoSlowNodeAnalyzer(TrinoSlowNodeAnalyzerConfig{StdDeviationRatio: 1.1})
 	nodes, err := analyzer.Analyze(queryDetail)
 	require.NoError(t, err)
 	require.Len(t, nodes, 0)

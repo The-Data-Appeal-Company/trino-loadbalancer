@@ -80,6 +80,8 @@ controller:
       provider: k8s
       k8s:
         namespaceSelector: { }
+      analyzer:
+        std_deviation_ratio: 1.1
 
 session:
   store:

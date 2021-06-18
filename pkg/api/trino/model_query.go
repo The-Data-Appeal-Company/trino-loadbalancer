@@ -401,20 +401,20 @@ type OutputBuffers struct {
 	Buffers            []interface{} `json:"buffers"`
 }
 type QueuedTime struct {
-	Count float64 `json:"count"`
-	Total float64 `json:"total"`
-	P01   float64 `json:"p01"`
-	P05   float64 `json:"p05"`
-	P10   float64 `json:"p10"`
-	P25   float64 `json:"p25"`
-	P50   float64 `json:"p50"`
-	P75   float64 `json:"p75"`
-	P90   float64 `json:"p90"`
-	P95   float64 `json:"p95"`
-	P99   float64 `json:"p99"`
-	Min   float64 `json:"min"`
-	Max   float64 `json:"max"`
-	Avg   float64 `json:"avg"`
+	Count interface{} `json:"count"`
+	Total interface{} `json:"total"`
+	P01   interface{} `json:"p01"`
+	P05   interface{} `json:"p05"`
+	P10   interface{} `json:"p10"`
+	P25   interface{} `json:"p25"`
+	P50   interface{} `json:"p50"`
+	P75   interface{} `json:"p75"`
+	P90   interface{} `json:"p90"`
+	P95   interface{} `json:"p95"`
+	P99   interface{} `json:"p99"`
+	Min   interface{} `json:"min"`
+	Max   interface{} `json:"max"`
+	Avg   interface{} `json:"avg"`
 }
 type ElapsedTime struct {
 	Count float64     `json:"count"`

@@ -32,6 +32,7 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 	}
 
 	for _, node := range slowNodes {
+		s.logger.Info("%s marked as slowa", node)
 		isDrainable, err := s.markSlowNode(ctx, node)
 		if err != nil {
 			return err

@@ -65,6 +65,11 @@ func init() {
 
 	viper.SetDefault("discovery.enabled", false)
 
+	viper.SetDefault("controller.features.slow_worker_drainer.analyzer.std_deviation_ratio", 1.1)
+	viper.SetDefault("controller.features.slow_worker_drainer.gracePeriodSeconds", 300)
+	viper.SetDefault("controller.features.slow_worker_drainer.dryRun", true)
+	viper.SetDefault("controller.features.slow_worker_drainer.drainThreshold", 3)
+
 	cobra.OnInitialize(func() {
 		err := readConfig()
 		if err != nil {

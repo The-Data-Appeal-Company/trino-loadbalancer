@@ -48,7 +48,6 @@ func (c Controller) Run(ctx context.Context) error {
 }
 
 func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinator) error {
-	currentState := time.Now()
 	previousState, err := c.state.Get(ctx, cluster)
 	if err != nil {
 		return err
@@ -75,6 +74,9 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 	for _, query := range completedQueryList {
 		queryDetail, err := c.api.QueryDetail(cluster, query.QueryId)
 		if err != nil {
+			if err == trino.ErrQueryNotFound {
+				continue
+			}
 			return err
 		}
 
@@ -83,25 +85,43 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 		}
 	}
 
-	if err := c.state.Set(ctx, cluster, currentState); err != nil {
-		return err
+	if lastQueryTime := lastQueryTime(completedQueryList); !lastQueryTime.IsZero() {
+		if err := c.state.Set(ctx, cluster, lastQueryTime); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+func lastQueryTime(list trino.QueryList) time.Time {
+	var max time.Time
+	for _, q := range list {
+		if q.QueryStats.CreateTime.After(max) {
+			max = q.QueryStats.CreateTime
+		}
+	}
+	return max
+}
+
 func (c Controller) filterProcessedQueries(list trino.QueryList, lastExecution time.Time) trino.QueryList {
 	filterQueryList := make(trino.QueryList, 0)
+
 	for _, item := range list {
 		if item.State != trino.QueryFinished {
 			continue
 		}
 
-		if lastExecution.After(item.QueryStats.CreateTime) {
+		if item.QueryStats.TotalDrivers < 2 {
+			continue
+		}
+
+		if item.QueryStats.CreateTime.Before(lastExecution) || item.QueryStats.CreateTime.Equal(lastExecution) {
 			continue
 		}
 
 		filterQueryList = append(filterQueryList, item)
 	}
+
 	return filterQueryList
 }
