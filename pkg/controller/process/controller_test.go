@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/controller/components"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
@@ -20,6 +21,7 @@ func TestController_Run(t *testing.T) {
 		healthCheck:  healthcheck.NoOp(),
 		state:        NewInMemoryState(),
 		queryHandler: components.NewMultiQueryHandler(),
+		logger:       logging.Noop(),
 	}
 
 	err := c.Run(context.TODO())
@@ -43,6 +45,7 @@ func TestController_RunUpdateState(t *testing.T) {
 		healthCheck:  healthcheck.NoOp(),
 		state:        state,
 		queryHandler: components.NewMultiQueryHandler(),
+		logger:       logging.Noop(),
 	}
 
 	err := c.Run(ctx)
@@ -113,6 +116,7 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 		healthCheck:  healthcheck.NoOp(),
 		state:        state,
 		queryHandler: queryHandler,
+		logger: logging.Noop(),
 	}
 
 	err := c.Run(ctx)
