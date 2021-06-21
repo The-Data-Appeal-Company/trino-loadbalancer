@@ -8,10 +8,19 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 )
 
+var (
+	controllerDelay time.Duration
+)
+
 func init() {
+	rootCmd.Flags().DurationVar(&controllerDelay, "every", 10*time.Second, "delay between controller run")
 	rootCmd.AddCommand(controllerCmd)
 }
 
@@ -19,7 +28,6 @@ var controllerCmd = &cobra.Command{
 	Use:   "controller",
 	Short: "start trino cluster controller",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		var conf configuration.ControllerConf
 		if err := viper.UnmarshalKey("controller", &conf); err != nil {
 			log.Fatal(err)
@@ -39,11 +47,32 @@ var controllerCmd = &cobra.Command{
 			logger,
 		)
 
-		for {
-			if err := ctrl.Run(context.Background()); err != nil {
-				log.Fatal(err)
+		tick := time.NewTicker(controllerDelay)
+		ctx, cancel := context.WithCancel(context.Background())
+
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+		var wg = &sync.WaitGroup{}
+		wg.Add(1)
+
+		go func() {
+			for {
+				select {
+				case <-tick.C:
+					if err := ctrl.Run(ctx); err != nil {
+						log.Fatal(err)
+					}
+				case <-sigs:
+					cancel()
+				case <-ctx.Done():
+					tick.Stop()
+					wg.Done()
+					return
+				}
 			}
-			time.Sleep(1 * time.Second)
-		}
+		}()
+
+		wg.Wait()
 	},
 }

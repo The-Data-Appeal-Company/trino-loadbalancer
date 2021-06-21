@@ -95,7 +95,41 @@ func TestSlowNodeDrainerComponentNoActionOnEmptySlowNodes(t *testing.T) {
 	require.Empty(t, nodeDrainer.drained)
 }
 
+func TestSlowNodeDrainerComponentDontDrainNodeTwice(t *testing.T) {
+	const nodeToDrain = "node-00"
+
+	analyzer := newMockAnalyzer(func(detail trino.QueryDetail) ([]SlowNodeRef, error) {
+		return []SlowNodeRef{
+			{
+				NodeID: nodeToDrain,
+			},
+		}, nil
+	})
+
+	slowNodeMarker := NewInMemorySlowNodeMarker()
+	nodeDrainer := newMockDrainer(nil)
+	conf := SlowNodeDrainerConf{
+		DrainThreshold: 1,
+	}
+
+	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop(), notifier.Noop())
+
+	for i := 0; i < 5; i++ {
+		ctx := context.TODO()
+		err := drainer.Execute(ctx, trino.QueryDetail{})
+		require.NoError(t, err)
+	}
+
+	marked, present := nodeDrainer.drained[nodeToDrain]
+	require.True(t, present)
+	require.Equal(t, marked, 1)
+
+	require.Equal(t, 1, nodeDrainer.calls)
+
+}
+
 type mockNodeDrainer struct {
+	calls   int
 	drained map[string]int
 	l       *sync.Mutex
 	err     error
@@ -115,7 +149,7 @@ func (m *mockNodeDrainer) Drain(ctx context.Context, nodeID string) error {
 
 	val := m.drained[nodeID]
 	m.drained[nodeID] = val + 1
-
+	m.calls++
 	return m.err
 }
 
