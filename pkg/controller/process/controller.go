@@ -48,6 +48,8 @@ func (c Controller) Run(ctx context.Context) error {
 }
 
 func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinator) error {
+	c.logger.Info("controlling cluster: %s ( %s )", cluster.Name, cluster.URL.String())
+
 	previousState, err := c.state.Get(ctx, cluster)
 	if err != nil {
 		return err
@@ -59,6 +61,7 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 	}
 
 	if health.Status != healthcheck.StatusHealthy {
+		c.logger.Info("skipping unhealthy cluster: %s ( %s )", cluster.Name, cluster.URL.String())
 		return nil
 	}
 
