@@ -3,7 +3,9 @@ package notifier
 import "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier/slack"
 
 type Request struct {
-	Message string
+	Title    string
+	Message  string
+	Metadata map[string]string
 }
 
 type Notifier interface {
@@ -20,7 +22,7 @@ func Noop() NoopNotifier {
 
 type NoopNotifier struct{}
 
-func (n NoopNotifier) Notify(request Request) error {
+func (n NoopNotifier) Notify(Request) error {
 	return nil
 }
 
@@ -29,8 +31,14 @@ func NewSlackNotifier(slack slack.Slack) *SlackNotifier {
 }
 
 func (s SlackNotifier) Notify(request Request) error {
-	return s.slack.Send(slack.SlackMessage{
-		Message: request.Message,
+	return s.slack.Send(slack.Message{
+		Attachments: []slack.Attachment{{
+			Title:  request.Title,
+			Text:   request.Message,
+			Footer: "trino-controller",
+			Color:  slack.NotificationColor,
+			Fields: slack.FieldsFromMap(request.Metadata),
+		}},
 	})
 }
 

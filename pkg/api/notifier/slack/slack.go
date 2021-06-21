@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var NotificationColor = "#F35A00"
+var NotificationColor = "#F35500"
 var DefaultTimeout = 10 * time.Second
 
 type Slack struct {
@@ -16,30 +16,43 @@ type Slack struct {
 	Client  *http.Client
 }
 
-type SlackMessage struct {
+type Message struct {
 	Message     string       `json:"text"`
-	Attachments []attachment `json:"attachments"`
+	Attachments []Attachment `json:"attachments"`
 }
 
-type SlackField struct {
+type Field struct {
 	Title string `yaml:"title,omitempty" json:"title,omitempty"`
 	Value string `yaml:"value,omitempty" json:"value,omitempty"`
 	Short *bool  `yaml:"short,omitempty" json:"short,omitempty"`
 }
 
-type attachment struct {
-	Title      string       `json:"title,omitempty"`
-	TitleLink  string       `json:"title_link,omitempty"`
-	Pretext    string       `json:"pretext,omitempty"`
-	Text       string       `json:"text"`
-	Fallback   string       `json:"fallback"`
-	CallbackID string       `json:"callback_id"`
-	Fields     []SlackField `json:"fields,omitempty"`
-	ImageURL   string       `json:"image_url,omitempty"`
-	ThumbURL   string       `json:"thumb_url,omitempty"`
-	Footer     string       `json:"footer"`
-	Color      string       `json:"color,omitempty"`
-	MrkdwnIn   []string     `json:"mrkdwn_in,omitempty"`
+func FieldsFromMap(m map[string]string) []Field {
+	fields := make([]Field, 0)
+	for k, v := range m {
+		short := len(v) < 20
+		fields = append(fields, Field{
+			Title: k,
+			Value: v,
+			Short: &short,
+		})
+	}
+	return fields
+}
+
+type Attachment struct {
+	Title      string   `json:"title,omitempty"`
+	TitleLink  string   `json:"title_link,omitempty"`
+	Pretext    string   `json:"pretext,omitempty"`
+	Text       string   `json:"text"`
+	Fallback   string   `json:"fallback"`
+	CallbackID string   `json:"callback_id"`
+	Fields     []Field  `json:"fields,omitempty"`
+	ImageURL   string   `json:"image_url,omitempty"`
+	ThumbURL   string   `json:"thumb_url,omitempty"`
+	Footer     string   `json:"footer"`
+	Color      string   `json:"color,omitempty"`
+	MrkdwnIn   []string `json:"mrkdwn_in,omitempty"`
 }
 
 func NewSlack(webhook string) Slack {
@@ -49,7 +62,7 @@ func NewSlack(webhook string) Slack {
 	}
 }
 
-func (s Slack) Send(message SlackMessage) error {
+func (s Slack) Send(message Message) error {
 	messageBody, err := json.Marshal(message)
 	if err != nil {
 		return err

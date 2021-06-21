@@ -19,7 +19,7 @@ func TestSlackNotificationForTerminationStatusOk(t *testing.T) {
 	defer testServer.Close()
 
 	slack := NewSlack(testServer.URL + webhookPath)
-	err := slack.Send(SlackMessage{
+	err := slack.Send(Message{
 		Message: "test message",
 	})
 
@@ -37,8 +37,8 @@ func TestSlackNotificationForTerminationStatus500(t *testing.T) {
 	}))
 	defer testServer.Close()
 
- 	slack := NewSlack(testServer.URL + webhookPath)
-	err := slack.Send(SlackMessage{
+	slack := NewSlack(testServer.URL + webhookPath)
+	err := slack.Send(Message{
 		Message: "test message",
 	})
 

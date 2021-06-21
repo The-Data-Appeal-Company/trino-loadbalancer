@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier/slack"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/go-redis/redis/v8"
@@ -47,7 +46,14 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 
 		s.logger.Info("%s selected for drain", node)
 
-		if err := s.notifier.Notify(notifier.Request{Message: fmt.Sprintf("draining slow worker: %s", node)}); err != nil {
+		if err := s.notifier.Notify(notifier.Request{
+			Title:   "Slow worker node",
+			Message: "draining slow worker node",
+			Metadata: map[string]string{
+				"node":  node.NodeID,
+				"query": detail.QueryID,
+			},
+		}); err != nil {
 			s.logger.Warn("error notifying node drain: %s", err.Error())
 		}
 
@@ -117,16 +123,4 @@ func (r RedisSlowNodeMarker) Mark(ctx context.Context, nodeName string) (int64, 
 
 func (r RedisSlowNodeMarker) Delete(ctx context.Context, nodeName string) error {
 	return r.redis.Del(ctx, nodeName).Err()
-}
-
-type SlackSlowNodeDrainerNotifier interface {
-	NotifyNodeDrain(nodeName string)
-}
-
-type SlowNodeDrainerNotifier struct {
-	slack slack.Slack
-}
-
-func NewSlowNodeDrainerNotifier(slack slack.Slack) *SlowNodeDrainerNotifier {
-	return &SlowNodeDrainerNotifier{slack: slack}
 }

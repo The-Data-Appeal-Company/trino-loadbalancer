@@ -83,6 +83,10 @@ controller:
       analyzer:
         std_deviation_ratio: 1.1
 
+notifier:
+  slack:
+    webhook: ""
+
 session:
   store:
     redis:
