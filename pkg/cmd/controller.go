@@ -25,7 +25,7 @@ var controllerCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		handlers, err := configuration.CreateHandlers(redisClient, logger, conf)
+		handlers, err := configuration.CreateHandlers(redisClient, logger, notifiers, conf)
 		if err != nil {
 			log.Fatal(err)
 		}

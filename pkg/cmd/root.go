@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
@@ -28,6 +29,7 @@ var (
 	clusterHealthCheck healthcheck.HealthCheck
 	discover           discovery.Discovery
 	redisClient        redis.UniversalClient
+	notifiers          notifier.Notifier
 )
 
 func init() {
@@ -145,6 +147,14 @@ func init() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		var notifierConfig configuration.NotifierConfig
+		err = viper.UnmarshalKey("notifier", &notifierConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		notifiers = configuration.CreateNotifier(notifierConfig)
 
 	})
 }

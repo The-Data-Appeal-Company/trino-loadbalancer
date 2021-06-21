@@ -3,6 +3,7 @@ package components
 import (
 	"context"
 	"errors"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/stretchr/testify/require"
@@ -27,7 +28,7 @@ func TestSlowNodeDrainerComponent(t *testing.T) {
 		DrainThreshold: 1,
 	}
 
-	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop())
+	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop(), notifier.Noop())
 
 	ctx := context.TODO()
 	err := drainer.Execute(ctx, trino.QueryDetail{})
@@ -49,7 +50,7 @@ func TestSlowNodeDrainerComponentReturnErrOnAnalyzerError(t *testing.T) {
 	nodeDrainer := newMockDrainer(nil)
 	conf := SlowNodeDrainerConf{}
 
-	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop())
+	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop(), notifier.Noop())
 
 	ctx := context.TODO()
 	err := drainer.Execute(ctx, trino.QueryDetail{})
@@ -69,7 +70,7 @@ func TestSlowNodeDrainerComponentReturnErrOnDrainerError(t *testing.T) {
 	nodeDrainer := newMockDrainer(errors.New("node drain error"))
 	conf := SlowNodeDrainerConf{}
 
-	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop())
+	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop(), notifier.Noop())
 
 	ctx := context.TODO()
 	err := drainer.Execute(ctx, trino.QueryDetail{})
@@ -85,7 +86,7 @@ func TestSlowNodeDrainerComponentNoActionOnEmptySlowNodes(t *testing.T) {
 	nodeDrainer := newMockDrainer(nil)
 	conf := SlowNodeDrainerConf{}
 
-	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop())
+	drainer := NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, conf, logging.Noop(), notifier.Noop())
 
 	ctx := context.TODO()
 	err := drainer.Execute(ctx, trino.QueryDetail{})

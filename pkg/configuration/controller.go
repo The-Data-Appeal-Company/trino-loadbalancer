@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/controller/components"
 	"github.com/go-redis/redis/v8"
@@ -29,12 +30,12 @@ type SlowWorkerDrainerConf struct {
 	} `json:"analyzer" yaml:"analyzer" mapstructure:"analyzer"`
 }
 
-func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, conf ControllerConf) (components.QueryHandler, error) {
+func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, notifier notifier.Notifier, conf ControllerConf) (components.QueryHandler, error) {
 	handlers := make([]components.QueryHandler, 0)
 
 	slowNodeDrainerConf := conf.Features.SlowWorkerDrainer
 	if slowNodeDrainerConf.Enabled {
-		slowWorkerHandler, err := createDrainSlowWorkerNodeHandler(redisClient, logger, slowNodeDrainerConf)
+		slowWorkerHandler, err := createDrainSlowWorkerNodeHandler(redisClient, logger, notifier, slowNodeDrainerConf)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +46,7 @@ func CreateHandlers(redisClient redis.UniversalClient, logger logging.Logger, co
 	return components.NewMultiQueryHandler(handlers...), nil
 }
 
-func createDrainSlowWorkerNodeHandler(redisClient redis.UniversalClient, logger logging.Logger, slowNodeDrainerConf SlowWorkerDrainerConf) (*components.SlowNodeDrainer, error) {
+func createDrainSlowWorkerNodeHandler(redisClient redis.UniversalClient, logger logging.Logger, notifier notifier.Notifier, slowNodeDrainerConf SlowWorkerDrainerConf) (*components.SlowNodeDrainer, error) {
 	analyzer := components.NewTrinoSlowNodeAnalyzer(components.TrinoSlowNodeAnalyzerConfig{
 		StdDeviationRatio: slowNodeDrainerConf.Analyzer.StdDeviationRation,
 	})
@@ -55,7 +56,7 @@ func createDrainSlowWorkerNodeHandler(redisClient redis.UniversalClient, logger 
 		return nil, err
 	}
 	slowNodeMarker := components.NewRedisSlowNodeMarker(redisClient)
-	return components.NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, components.SlowNodeDrainerConf{DrainThreshold: slowNodeDrainerConf.DrainThreshold}, logger), nil
+	return components.NewSlowNodeDrainer(analyzer, nodeDrainer, slowNodeMarker, components.SlowNodeDrainerConf{DrainThreshold: slowNodeDrainerConf.DrainThreshold}, logger, notifier), nil
 }
 
 const ControllerK8sProvider = "k8s"

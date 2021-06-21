@@ -3,6 +3,8 @@ package components
 import (
 	"context"
 	"fmt"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier/slack"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/go-redis/redis/v8"
@@ -18,11 +20,12 @@ type SlowNodeDrainer struct {
 	nodeDrainer    NodeDrainer
 	slowNodeMarker SlowNodeMarker
 	conf           SlowNodeDrainerConf
+	notifier       notifier.Notifier
 	logger         logging.Logger
 }
 
-func NewSlowNodeDrainer(analyzer SlowNodeAnalyzer, nodeDrainer NodeDrainer, slowNodeMarker SlowNodeMarker, conf SlowNodeDrainerConf, logger logging.Logger) *SlowNodeDrainer {
-	return &SlowNodeDrainer{analyzer: analyzer, nodeDrainer: nodeDrainer, slowNodeMarker: slowNodeMarker, conf: conf, logger: logger}
+func NewSlowNodeDrainer(analyzer SlowNodeAnalyzer, nodeDrainer NodeDrainer, slowNodeMarker SlowNodeMarker, conf SlowNodeDrainerConf, logger logging.Logger, notifier notifier.Notifier) *SlowNodeDrainer {
+	return &SlowNodeDrainer{analyzer: analyzer, nodeDrainer: nodeDrainer, slowNodeMarker: slowNodeMarker, conf: conf, logger: logger, notifier: notifier}
 }
 
 func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) error {
@@ -32,7 +35,7 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 	}
 
 	for _, node := range slowNodes {
-		s.logger.Info("%s marked as slowa", node)
+		s.logger.Info("%s marked as slow", node)
 		isDrainable, err := s.markSlowNode(ctx, node)
 		if err != nil {
 			return err
@@ -110,4 +113,16 @@ func (r RedisSlowNodeMarker) Mark(ctx context.Context, nodeName string) (int64, 
 
 func (r RedisSlowNodeMarker) Delete(ctx context.Context, nodeName string) error {
 	return r.redis.Del(ctx, nodeName).Err()
+}
+
+type SlackSlowNodeDrainerNotifier interface {
+	NotifyNodeDrain(nodeName string)
+}
+
+type SlowNodeDrainerNotifier struct {
+	slack slack.Slack
+}
+
+func NewSlowNodeDrainerNotifier(slack slack.Slack) *SlowNodeDrainerNotifier {
+	return &SlowNodeDrainerNotifier{slack: slack}
 }
