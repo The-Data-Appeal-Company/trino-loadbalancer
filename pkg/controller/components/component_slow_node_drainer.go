@@ -47,6 +47,10 @@ func (s SlowNodeDrainer) Execute(ctx context.Context, detail trino.QueryDetail) 
 
 		s.logger.Info("%s selected for drain", node)
 
+		if err := s.notifier.Notify(notifier.Request{Message: fmt.Sprintf("draining slow worker: %s", node)}); err != nil {
+			s.logger.Warn("error notifying node drain: %s", err.Error())
+		}
+
 		// TODO Check if this is blocking
 		err = s.nodeDrainer.Drain(ctx, node.NodeID)
 		if err != nil {
