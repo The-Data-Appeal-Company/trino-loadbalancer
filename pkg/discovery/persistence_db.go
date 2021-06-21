@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"net/url"
 )
 

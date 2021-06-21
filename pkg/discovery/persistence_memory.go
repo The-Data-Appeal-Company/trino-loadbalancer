@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 )
 
 // this is just for single node usage / testing purpose DO NOT use in production

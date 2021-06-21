@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

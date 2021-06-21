@@ -70,6 +70,22 @@ discovery:
           component: 'coordinator'
           deployment: 'trino'
 
+controller:
+  features:
+    slow_worker_drainer:
+      enabled: true
+      gracePeriodSeconds: 300
+      dryRun: true
+      drainThreshold: 3
+      provider: k8s
+      k8s:
+        namespaceSelector: { }
+      analyzer:
+        std_deviation_ratio: 1.1
+
+notifier:
+  slack:
+    webhook: ""
 
 session:
   store:

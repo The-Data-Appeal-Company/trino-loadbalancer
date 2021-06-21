@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/notifier"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/factory"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/healthcheck"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/logging"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/session"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/statistics"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
+	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -23,9 +25,11 @@ var (
 	logger             logging.Logger = logging.Logrus()
 	discoveryStorage   discovery.Storage
 	sessionStorage     session.Storage
-	clusterStats       statistics.Retriever
+	clusterStats       trino.Api
 	clusterHealthCheck healthcheck.HealthCheck
 	discover           discovery.Discovery
+	redisClient        redis.UniversalClient
+	notifiers          notifier.Notifier
 )
 
 func init() {
@@ -63,13 +67,18 @@ func init() {
 
 	viper.SetDefault("discovery.enabled", false)
 
+	viper.SetDefault("controller.features.slow_worker_drainer.analyzer.std_deviation_ratio", 1.1)
+	viper.SetDefault("controller.features.slow_worker_drainer.gracePeriodSeconds", 300)
+	viper.SetDefault("controller.features.slow_worker_drainer.dryRun", true)
+	viper.SetDefault("controller.features.slow_worker_drainer.drainThreshold", 3)
+
 	cobra.OnInitialize(func() {
 		err := readConfig()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		discoveryStorage, err = factory.CreateDiscoveryStorage(factory.DiscoveryStorageConfiguration{
+		discoveryStorage, err = configuration.CreateDiscoveryStorage(configuration.DiscoveryStorageConfiguration{
 			Db:       viper.GetString("persistence.postgres.db"),
 			Host:     viper.GetString("persistence.postgres.host"),
 			Port:     viper.GetInt("persistence.postgres.port"),
@@ -82,38 +91,45 @@ func init() {
 			log.Fatal(err)
 		}
 
-		sessionStorage, err = factory.CreateSessionStorage(factory.SessionStorageConfiguration{
-			Standalone: factory.RedisSessionStorageConfiguration{
+		redisConfig := configuration.SessionStorageConfiguration{
+			Standalone: configuration.RedisSessionStorageConfiguration{
 				Enabled:  viper.GetBool("session.store.redis.standalone.enabled"),
 				Host:     viper.GetString("session.store.redis.standalone.host"),
 				DB:       viper.GetInt("session.store.redis.standalone.db"),
 				Password: viper.GetString("session.store.redis.standalone.password"),
 			},
-			Sentinel: factory.RedisSentinelSessionStorageConfiguration{
+			Sentinel: configuration.RedisSentinelSessionStorageConfiguration{
 				Enabled:    viper.GetBool("session.store.redis.sentinel.enabled"),
 				DB:         viper.GetInt("session.store.redis.sentinel.db"),
 				Password:   viper.GetString("session.store.redis.sentinel.password"),
 				MasterName: viper.GetString("session.store.redis.sentinel.master"),
 				Hosts:      viper.GetStringSlice("session.store.redis.sentinel.hosts"),
 			},
-			Opts: factory.RedisSessionStorageOpts{
+			Opts: configuration.RedisSessionStorageOpts{
 				Prefix: viper.GetString("session.store.redis.opts.prefix"),
 				MaxTTL: viper.GetDuration("session.store.redis.opts.max_ttl"),
 			},
-		})
+		}
+
+		redisClient, err = configuration.CreateRedisStorageClient(redisConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		sessionStorage, err = configuration.CreateSessionStorage(redisClient, redisConfig)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		clusterHealthCheck, err = factory.CreateHealthCheck(factory.HealthCheckConfiguration{
+		clusterHealthCheck, err = configuration.CreateHealthCheck(configuration.HealthCheckConfiguration{
 			Enabled: viper.GetBool("clusters.healthcheck.enabled"),
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		clusterStats, err = factory.CreateStatisticsRetriever(factory.StatisticsConfiguration{
+		clusterStats, err = configuration.CreateStatisticsRetriever(configuration.StatisticsConfiguration{
 			Enabled: viper.GetBool("clusters.statistics.enabled"),
 		})
 
@@ -121,16 +137,24 @@ func init() {
 			log.Fatal(err)
 		}
 
-		var conf []factory.DiscoveryConfiguration
+		var conf []configuration.DiscoveryConfiguration
 		err = viper.UnmarshalKey("discovery.providers", &conf)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		discover, err = factory.CreateCrossProviderDiscovery(conf)
+		discover, err = configuration.CreateCrossProviderDiscovery(conf)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		var notifierConfig configuration.NotifierConfig
+		err = viper.UnmarshalKey("notifier", &notifierConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		notifiers = configuration.CreateNotifier(notifierConfig)
 
 	})
 }

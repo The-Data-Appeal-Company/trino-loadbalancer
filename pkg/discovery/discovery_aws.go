@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/models"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
