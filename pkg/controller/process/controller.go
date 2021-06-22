@@ -48,8 +48,6 @@ func (c Controller) Run(ctx context.Context) error {
 }
 
 func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinator) error {
-	c.logger.Info("controlling cluster: %s ( %s )", cluster.Name, cluster.URL.String())
-
 	previousState, err := c.state.Get(ctx, cluster)
 	if err != nil {
 		return err
@@ -76,7 +74,7 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 		return nil
 	}
 
-	c.logger.Info("retrieved %d queries", len(completedQueryList))
+	c.logger.Info("%s: retrieved %d queries", cluster.Name, len(completedQueryList))
 
 	for _, query := range completedQueryList {
 		queryDetail, err := c.api.QueryDetail(cluster, query.QueryId)
