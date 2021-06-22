@@ -1,0 +1,13 @@
+<div class="stats-wrapper" *ngIf="data | async as data">
+
+  <app-stats-card class="stats-card" [value]=data.clusters.length unit="clusters" icon="dns"></app-stats-card>
+
+  <app-stats-card class="stats-card" [value]=data.stats.total_workers unit="total workers" icon="memory"></app-stats-card>
+
+  <app-stats-card class="stats-card" [value]="data.stats.running_queries" unit="running queries" icon="directions_run"></app-stats-card>
+
+  <app-stats-card class="stats-card" [value]=data.stats.blocked_queries unit="blocked queries" icon="block"></app-stats-card>
+
+  <app-stats-card class="stats-card" [value]=data.stats.queued_queries unit="queued queries" icon="reorder"></app-stats-card>
+
+</div>

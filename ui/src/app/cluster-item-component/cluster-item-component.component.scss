@@ -1,0 +1,48 @@
+
+.stats-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+
+  box-shadow: 0 0 6px 0 rgb(0 0 0 / 25%);
+  -webkit-box-shadow: 0 0 6px 0 rgb(0 0 0 / 25%);
+  -moz-box-shadow: 0 0 6px 0 rgba(0,0,0,.25);
+  -o-box-shadow: 0 0 6px 0 rgba(0,0,0,.25);
+  transition: all .2s ease-in-out;
+}
+
+mat-card-subtitle {
+  color: white
+}
+
+.status_off {
+  color: #d81b60;
+}
+
+.status_on {
+  color: #66bb6a;
+}
+
+.cluster-item-container{
+  display: flex;
+  align-items: center;
+}
+
+.cluster-name {
+  margin-left: 20px;
+}
+
+.cluster-name-text{
+  font-weight: bold;
+  font-size: medium;
+}
+
+.example-box.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.example-chip .cdk-drop-list-dragging {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+

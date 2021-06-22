@@ -1,0 +1,3 @@
+<div class="clusters-list" *ngIf="clusters | async as items">
+  <app-cluster-item-component class="cluster-list-item" *ngFor="let i of items" [item]=i></app-cluster-item-component>
+</div>
