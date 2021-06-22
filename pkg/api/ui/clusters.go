@@ -46,28 +46,19 @@ func (a Api) updateCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cluster, err := a.discoveryStorage.Get(ctx, vars["name"])
-
-	if err == discovery.ErrClusterNotFound {
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			a.logger.Error("error writing response: %w", err)
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	err = a.discoveryStorage.Update(ctx, vars["name"], discovery.UpdateRequest{
+		Enabled: &req.Enabled,
+	})
 
 	if err != nil {
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			a.logger.Error("error writing response: %w", err)
+		if err == discovery.ErrClusterNotFound {
+			if _, err := w.Write([]byte(err.Error())); err != nil {
+				a.logger.Error("error writing response: %w", err)
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
-	cluster.Enabled = req.Enabled
-	err = a.discoveryStorage.Add(ctx, cluster)
-
-	if err != nil {
 		if _, err := w.Write([]byte(err.Error())); err != nil {
 			a.logger.Error("error writing response: %w", err)
 		}

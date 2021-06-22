@@ -34,8 +34,7 @@ func (d DatabaseStorage) Remove(ctx context.Context, name string) error {
 func (d DatabaseStorage) Add(ctx context.Context, coordinator models.Coordinator) error {
 	query := fmt.Sprintf(`
 INSERT INTO %s (name, url, tags, enabled) VALUES ($1, $2, $3, $4) 
-ON CONFLICT (name) DO UPDATE 
-	SET tags = excluded.tags, enabled = excluded.enabled 
+ON CONFLICT (name) DO NOTHING
 `, d.table)
 
 	tags, err := json.Marshal(coordinator.Tags)
@@ -45,6 +44,31 @@ ON CONFLICT (name) DO UPDATE
 
 	_, err = d.db.ExecContext(ctx, query, coordinator.Name, coordinator.URL.String(), tags, coordinator.Enabled)
 
+	return err
+}
+
+func (d DatabaseStorage) Update(ctx context.Context, name string, req UpdateRequest) error {
+	coordinator, err := d.Get(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf(`UPDATE %s SET tags = $2, enabled = $3 WHERE name = $1`, d.table)
+
+	if req.Tags != nil {
+		coordinator.Tags = req.Tags
+	}
+
+	if req.Enabled != nil {
+		coordinator.Enabled = *req.Enabled
+	}
+
+	tags, err := json.Marshal(coordinator.Tags)
+	if err != nil {
+		return fmt.Errorf("error serializing tags: %w", err)
+	}
+
+	_, err = d.db.ExecContext(ctx, query, coordinator.Name, tags, coordinator.Enabled)
 	return err
 }
 

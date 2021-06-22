@@ -11,7 +11,6 @@ import (
 // To avoid spinning up multiple postgres containers there are as few tests are possible
 // we should use some library that allow setUp / tearDown for test suites
 func TestDbPersistence(t *testing.T) {
-
 	ctx := context.Background()
 	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
@@ -68,8 +67,7 @@ func TestDbPersistence(t *testing.T) {
 
 }
 
-func TestDbDoubleInsertUpdate(t *testing.T) {
-
+func TestDbDoubleInsertDoNothing(t *testing.T) {
 	ctx := context.Background()
 	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
 	require.NoError(t, err)
@@ -107,5 +105,89 @@ func TestDbDoubleInsertUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, all, 1)
-	require.Equal(t, all[0], updated)
+	require.NotEqual(t, all[0], updated)
+}
+
+func TestDbDoubleInsertNoUpdate(t *testing.T) {
+	ctx := context.Background()
+	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
+	require.NoError(t, err)
+
+	defer func() {
+		require.NoError(t, container.Terminate(ctx))
+	}()
+
+	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
+
+	err = storage.Add(ctx, models.Coordinator{
+		Name: "test-0",
+		URL:  tests.MustUrl("http://test.local:8889"),
+		Tags: map[string]string{
+			"test": "true",
+		},
+		Enabled: true,
+	})
+
+	require.NoError(t, err)
+
+	updated := models.Coordinator{
+		Name: "test-0",
+		URL:  tests.MustUrl("http://test.local:8889"),
+		Tags: map[string]string{
+			"test":    "true",
+			"updated": "true",
+		},
+		Enabled: false,
+	}
+	err = storage.Add(ctx, updated)
+	require.NoError(t, err)
+
+	all, err := storage.All(ctx)
+	require.NoError(t, err)
+
+	require.Len(t, all, 1)
+	require.NotEqual(t, all[0], updated)
+}
+
+func TestDbInsertUpdate(t *testing.T) {
+	ctx := context.Background()
+	container, db, err := tests.CreatePostgresDatabase(ctx, tests.WithInitScript("testdata/init.sql"))
+	require.NoError(t, err)
+
+	defer func() {
+		require.NoError(t, container.Terminate(ctx))
+	}()
+
+	storage := NewDatabaseStorage(db, DefaultDatabaseTableName)
+
+	err = storage.Add(ctx, models.Coordinator{
+		Name: "test-0",
+		URL:  tests.MustUrl("http://test.local:8889"),
+		Tags: map[string]string{
+			"test": "true",
+		},
+		Enabled: true,
+	})
+
+	require.NoError(t, err)
+
+	var enabled = false
+	err = storage.Update(ctx, "test-0", UpdateRequest{
+		Enabled: &enabled,
+		Tags: map[string]string{
+			"test":    "true",
+			"updated": "true",
+		},
+	})
+	require.NoError(t, err)
+
+	all, err := storage.All(ctx)
+	require.NoError(t, err)
+
+	require.Len(t, all, 1)
+	require.Equal(t, all[0].Enabled, false)
+	require.Equal(t, all[0].Tags, map[string]string{
+		"test":    "true",
+		"updated": "true",
+	})
 }

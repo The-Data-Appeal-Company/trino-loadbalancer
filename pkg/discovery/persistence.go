@@ -11,6 +11,12 @@ var ErrClusterNotFound = errors.New("cluster not found")
 type Storage interface {
 	Remove(context.Context, string) error
 	Add(context.Context, models.Coordinator) error
+	Update(ctx context.Context, name string, req UpdateRequest) error
 	Get(context.Context, string) (models.Coordinator, error)
 	All(context.Context) ([]models.Coordinator, error)
+}
+
+type UpdateRequest struct {
+	Enabled *bool
+	Tags    map[string]string
 }

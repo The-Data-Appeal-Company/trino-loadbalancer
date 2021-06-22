@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/spf13/cobra"
 	"log"
 	"time"
@@ -30,6 +31,14 @@ var discoverCmd = &cobra.Command{
 				if err := discoveryStorage.Add(cmd.Context(), cluster); err != nil {
 					log.Fatal(err)
 				}
+
+				if err := discoveryStorage.Update(cmd.Context(), cluster.Name, discovery.UpdateRequest{
+					Enabled: nil, // Enabled field shouldn't be updated by the discovery process
+					Tags:    cluster.Tags,
+				}); err != nil {
+					log.Fatal(err)
+				}
+
 				logger.Info("found cluster: %s ( %s )", cluster.Name, cluster.URL)
 			}
 
