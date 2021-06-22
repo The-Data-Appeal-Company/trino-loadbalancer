@@ -34,7 +34,7 @@ COPY --from=binary-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=binary-builder /app /app
 
 RUN mkdir -p /ui
-COPY --from=ui-builder /usr/src/app/dist /ui
+COPY --from=ui-builder /usr/src/app/dist/ui /ui
 
 COPY --from=binary-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 

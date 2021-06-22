@@ -23,7 +23,7 @@ var (
 func init() {
 	proxyCmd.Flags().StringVar(&profilingAddr, "profile-addr", ":6060", "profiling server addr")
 	proxyCmd.Flags().BoolVar(&enableProfiling, "profile", false, "enable profiling server")
-	proxyCmd.Flags().StringVar(&staticFilesPath, "static-files", "ui/dist", "static resources path (ui)")
+	proxyCmd.Flags().StringVar(&staticFilesPath, "static-files", "ui/dist/ui", "static resources path (ui)")
 	rootCmd.AddCommand(proxyCmd)
 }
 

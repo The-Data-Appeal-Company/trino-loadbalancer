@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Cluster, Stats, TrinoApiService} from "../service/api.service";
+import {Cluster, Stats, TrinoApiService} from "../services/api.service";
 import {combineLatest, interval, Observable} from "rxjs";
 import {flatMap} from "rxjs/internal/operators";
 import {map} from "rxjs/operators";
@@ -18,7 +18,7 @@ export class StatsOverviewComponentComponent implements OnInit {
   ngOnInit(): void {
     this.data = interval(2000).pipe(
       flatMap(_ => combineLatest([this.api.stats(), this.api.clusters()])),
-      map(([s, c]) => { 
+      map(([s, c]) => {
         return {stats: s, clusters: c}
       })
     );

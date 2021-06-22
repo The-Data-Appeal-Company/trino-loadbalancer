@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Cluster, TrinoApiService} from "../service/api.service";
+import {Cluster, TrinoApiService} from "../services/api.service";
 import {interval, Observable} from "rxjs";
 import {map} from "rxjs/operators";
 import {flatMap} from "rxjs/internal/operators";

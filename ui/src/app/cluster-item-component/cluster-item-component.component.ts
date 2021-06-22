@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Cluster, TrinoApiService} from "../service/api.service";
+import {Cluster, TrinoApiService} from "../services/api.service";
 import {MatSlideToggleChange} from "@angular/material/slide-toggle";
 
 @Component({

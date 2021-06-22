@@ -18,6 +18,7 @@ import {ClusterListComponentComponent} from './cluster-list-component/cluster-li
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatChipsModule} from "@angular/material/chips";
+import { OverviewComponent } from './overview-component/overview.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import {MatChipsModule} from "@angular/material/chips";
     StatsCardComponent,
     StatsOverviewComponentComponent,
     ClusterItemComponentComponent,
-    ClusterListComponentComponent
+    ClusterListComponentComponent,
+    OverviewComponent
   ],
   imports: [
     BrowserModule,
