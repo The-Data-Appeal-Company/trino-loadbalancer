@@ -1,50 +1,46 @@
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {ToastrModule} from 'ngx-toastr';
+import {BrowserModule} from '@angular/platform-browser';
 
-import {SidebarModule} from './sidebar/sidebar.module';
-import {FooterModule} from './shared/footer/footer.module';
-import {NavbarModule} from './shared/navbar/navbar.module';
-
+import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {AppRoutes} from './app.routing';
-
-import {AdminLayoutComponent} from './layouts/admin-layout/admin-layout.component';
-import {HttpClientModule} from '@angular/common/http';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatDialogModule} from '@angular/material/dialog';
-import {AddClusterComponent} from './add-cluster/add-cluster.component';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatIconModule} from "@angular/material/icon";
+import {MatButtonModule} from "@angular/material/button";
+import {MatSliderModule} from "@angular/material/slider";
+import {MatCardModule} from "@angular/material/card";
+import {StatsCardComponent} from './stats-card/stats-card.component';
+import {StatsOverviewComponentComponent} from './stats-overview-component/stats-overview-component.component';
+import {MatGridListModule} from "@angular/material/grid-list";
+import {HttpClientModule} from "@angular/common/http";
+import {ClusterItemComponentComponent} from './cluster-item-component/cluster-item-component.component';
+import {ClusterListComponentComponent} from './cluster-list-component/cluster-list-component.component';
+import {MatButtonToggleModule} from "@angular/material/button-toggle";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatChipsModule} from "@angular/material/chips";
 
 @NgModule({
   declarations: [
     AppComponent,
-    AdminLayoutComponent,
-    AddClusterComponent,
+    StatsCardComponent,
+    StatsOverviewComponentComponent,
+    ClusterItemComponentComponent,
+    ClusterListComponentComponent
   ],
   imports: [
+    BrowserModule,
+    AppRoutingModule,
     BrowserAnimationsModule,
-    RouterModule.forRoot(AppRoutes, {
-      useHash: true
-    }),
-    SidebarModule,
-    NavbarModule,
-    ToastrModule.forRoot(),
-    FooterModule,
-    HttpClientModule,
-    MatSlideToggleModule,
-    MatSnackBarModule,
-    MatButtonModule,
+    MatToolbarModule,
     MatIconModule,
-    MatDialogModule,
-    MatFormFieldModule,
+    MatButtonModule,
+    MatSliderModule,
+    MatCardModule,
+    MatGridListModule,
+    MatSlideToggleModule,
+    HttpClientModule,
   ],
   providers: [],
-  exports: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {

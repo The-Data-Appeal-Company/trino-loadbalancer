@@ -1,0 +1,18 @@
+<div *ngIf="item">
+
+  <mat-card class="stats-card">
+
+    <div class="cluster-item-container">
+      <mat-icon class="{{item.enabled ? 'status_on' : 'status_off'}}">{{item.enabled ? "radio_button_checked" : "radio_button_unchecked"}}</mat-icon>
+
+
+      <div class="cluster-name">
+        <div class="cluster-name-text">{{item.name}}</div>
+        <a href="{{item.host}}" target="_blank">{{item.host}}</a>
+      </div>
+    </div>
+
+    <mat-slide-toggle color="primary" [checked]="item.enabled" (change)="clusterStatusChange($event)"></mat-slide-toggle>
+  </mat-card>
+
+</div>
