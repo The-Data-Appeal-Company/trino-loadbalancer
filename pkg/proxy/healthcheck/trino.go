@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/trinodb/trino-go-client/trino"
@@ -11,28 +12,37 @@ import (
 	"time"
 )
 
+var (
+	defaultTimeout = 15 * time.Second
+)
+
 type ClusterHealth struct {
 	client *http.Client
 }
 
-func NewHttpHealth() ClusterHealth {
-	return ClusterHealth{
+func NewHttpHealth() *ClusterHealth {
+	return NewHttpHealthWithTimeout(defaultTimeout)
+}
+
+func NewHttpHealthWithTimeout(timeout time.Duration) *ClusterHealth {
+	return &ClusterHealth{
 		client: &http.Client{
+			Timeout: timeout,
 			Transport: &http.Transport{
-				IdleConnTimeout:       15 * time.Second,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
+				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
-					Timeout:   15 * time.Second,
-					KeepAlive: 15 * time.Second,
+					Timeout:   timeout,
+					KeepAlive: timeout,
 				}).DialContext,
+				IdleConnTimeout:       timeout,
+				TLSHandshakeTimeout:   timeout,
+				ExpectContinueTimeout: timeout,
 			},
-			Timeout: 10 * time.Second,
 		},
 	}
 }
 
-func (p ClusterHealth) Check(u *url.URL) (Health, error) {
+func (p *ClusterHealth) Check(u *url.URL) (Health, error) {
 	if err := trino.RegisterCustomClient("hc", p.client); err != nil {
 		return Health{}, err
 	}
@@ -40,33 +50,23 @@ func (p ClusterHealth) Check(u *url.URL) (Health, error) {
 	urlWithName := fmt.Sprintf("%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
 	db, err := sql.Open("trino", urlWithName)
 	if err != nil {
-		return Health{
-			Status:    StatusUnhealthy,
-			Message:   fmt.Sprintf("error connecting to cluster: %s", err.Error()),
-			Timestamp: time.Now(),
-		}, nil
+		return healthFromErr("error opening sql connection", err), nil
 	}
 
-	row, err := db.Query("select 1")
+	ctx, cancel := context.WithTimeout(context.Background(), p.client.Timeout)
+	defer cancel()
+
+	row, err := db.QueryContext(ctx, "select 1")
 	if err != nil {
-		return Health{
-			Status:    StatusUnhealthy,
-			Message:   fmt.Sprintf("error executing query: %s", err.Error()),
-			Timestamp: time.Now(),
-		}, nil
+		return healthFromErr("error executing query", err), nil
 	}
 
 	defer row.Close()
 
 	row.Next()
-
 	var r int
 	if err := row.Scan(&r); err != nil {
-		return Health{
-			Status:    StatusUnhealthy,
-			Message:   fmt.Sprintf("error reading query results: %s", err.Error()),
-			Timestamp: time.Now(),
-		}, nil
+		return healthFromErr("error reading query results", err), nil
 	}
 
 	return Health{
@@ -74,4 +74,13 @@ func (p ClusterHealth) Check(u *url.URL) (Health, error) {
 		Message:   "all checks passed",
 		Timestamp: time.Now(),
 	}, nil
+}
+
+func healthFromErr(message string, err error) Health {
+	return Health{
+		Status:    StatusUnhealthy,
+		Message:   fmt.Sprintf("%s: %s", message, err.Error()),
+		Error:     err,
+		Timestamp: time.Now(),
+	}
 }

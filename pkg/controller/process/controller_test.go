@@ -10,6 +10,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/discovery"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
 	"github.com/stretchr/testify/require"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -33,20 +34,14 @@ func TestController_RunUpdateState(t *testing.T) {
 
 	coordinator0 := models.Coordinator{
 		Name: "cluster-00",
+		URL:  mustUrl(t, "http://localhost:8080"),
 	}
 
 	state := NewInMemoryState()
 	storage := discovery.NewMemoryStorage()
 	require.NoError(t, storage.Add(ctx, coordinator0))
 
-	c := Controller{
-		api:          trino.MockApi{},
-		discovery:    storage,
-		healthCheck:  healthcheck.NoOp(),
-		state:        state,
-		queryHandler: components.NewMultiQueryHandler(),
-		logger:       logging.Noop(),
-	}
+	c := NewController(trino.MockApi{}, storage, healthcheck.NoOp(), state, components.NewMultiQueryHandler(), logging.Noop())
 
 	err := c.Run(ctx)
 
@@ -68,6 +63,7 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 
 	coordinator0 := models.Coordinator{
 		Name: "cluster-00",
+		URL:  mustUrl(t, "http://localhost:8080"),
 	}
 
 	state := NewInMemoryState()
@@ -142,4 +138,10 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 	err = c.Run(ctx)
 	require.NoError(t, err)
 	require.Len(t, queryHandler.Calls(), 2)
+}
+
+func mustUrl(t *testing.T, s string) *url.URL {
+	u, err := url.Parse(s)
+	require.NoError(t, err)
+	return u
 }

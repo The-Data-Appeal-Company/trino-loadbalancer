@@ -72,6 +72,10 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 
 	completedQueryList := c.filterProcessedQueries(queriesList, previousState)
 
+	if len(completedQueryList) == 0 {
+		return nil
+	}
+
 	c.logger.Info("retrieved %d queries", len(completedQueryList))
 
 	for _, query := range completedQueryList {

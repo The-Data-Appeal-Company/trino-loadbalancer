@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/require"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 )
 
 func TestTrinoClusterHealth_Check(t *testing.T) {
@@ -43,4 +47,45 @@ func TestTrinoClusterHealth_CheckDown(t *testing.T) {
 	require.NoError(t, err)
 
 	require.False(t, result.IsAvailable(), result.Message)
+}
+
+func TestHttpClient_TimeoutWithConnHang(t *testing.T) {
+	backendSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(1 * time.Second)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte("Internal Server Error"))
+		require.NoError(t, err)
+	}))
+	defer backendSrv.Close()
+
+	uri, err := url.Parse(backendSrv.URL)
+	require.NoError(t, err)
+	check := NewHttpHealthWithTimeout(300 * time.Millisecond)
+
+	_, err = check.client.Get(uri.String())
+
+	netErr, isNetErr := err.(net.Error)
+	require.Error(t, netErr)
+	require.True(t, isNetErr)
+}
+
+func TestTrinoClusterHealth_Check_FailOnConnectionHang(t *testing.T) {
+	backendSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(1000 * time.Millisecond)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte("Internal Server Error"))
+		require.NoError(t, err)
+
+	}))
+	defer backendSrv.Close()
+
+	uri, err := url.Parse(backendSrv.URL)
+	require.NoError(t, err)
+
+	check := NewHttpHealthWithTimeout(10 * time.Millisecond)
+
+	result, err := check.Check(uri)
+	require.NoError(t, err)
+	require.False(t, result.IsAvailable())
+	backendSrv.Close()
 }
