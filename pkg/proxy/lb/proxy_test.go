@@ -43,7 +43,7 @@ func TestProxyRouting(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -89,7 +89,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -119,7 +119,7 @@ func TestProxyWithUnhealthyBackend(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -148,7 +148,7 @@ func TestProxyWithHealthyUnreachableBackend(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, NoOpSync{}, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -173,7 +173,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)
 
-	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(http.HandlerFunc(proxy.Handle))
 	defer srv.Close()
@@ -198,7 +198,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 	pool := NewPool(PoolConfigTest(), sessStore, hc, stats, logger)
 	poolStateSync := NewPoolStateSync(stateStore, logger)
 
-	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, poolStateSync, sessStore, router, RequestReWriters(), logger)
 
 	srv := httptest.NewServer(proxy.Router())
 	defer srv.Close()

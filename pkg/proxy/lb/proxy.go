@@ -16,24 +16,26 @@ type ProxyConf struct {
 }
 
 type Proxy struct {
-	conf          ProxyConf
-	logger        logging.Logger
-	pool          *Pool
-	sessionReader session.Reader
-	router        routing.Router
-	poolSync      PoolSync
-	termSync      chan bool
+	conf            ProxyConf
+	logger          logging.Logger
+	pool            *Pool
+	sessionReader   session.Reader
+	router          routing.Router
+	poolSync        PoolSync
+	termSync        chan bool
+	requestRewriter RequestRewriter
 }
 
-func NewProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, logger logging.Logger) *Proxy {
+func NewProxy(conf ProxyConf, pool *Pool, sync PoolSync, sessReader session.Reader, router routing.Router, requestRewriter RequestRewriter, logger logging.Logger) *Proxy {
 	return &Proxy{
-		conf:          conf,
-		poolSync:      sync,
-		router:        router,
-		logger:        logger,
-		pool:          pool,
-		sessionReader: sessReader,
-		termSync:      make(chan bool),
+		conf:            conf,
+		poolSync:        sync,
+		router:          router,
+		logger:          logger,
+		pool:            pool,
+		sessionReader:   sessReader,
+		termSync:        make(chan bool),
+		requestRewriter: requestRewriter,
 	}
 }
 
@@ -94,6 +96,11 @@ func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (CoordinatorR
 	// the request is not query related OR the request is a query submission
 	// we can apply the user selected request routing algorithm
 	if !isStatementRequest(request.URL) || isStatementRequest(request.URL) && request.Method == http.MethodPost {
+		request, err := p.requestRewriter.Rewrite(request)
+		if err != nil {
+			return CoordinatorRef{}, err
+		}
+
 		healthyCoordinators := p.pool.Fetch(FetchRequest{
 			Health: healthcheck.StatusHealthy,
 		})
