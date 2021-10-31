@@ -87,7 +87,7 @@ func TestIntegration(t *testing.T) {
 	err = poolSync.Sync(pool)
 	require.NoError(t, err)
 
-	proxy := NewProxy(proxyConfig, pool, poolSync, sessStore, router, logger)
+	proxy := NewProxy(proxyConfig, pool, poolSync, sessStore, router, RequestReWriters(), logger)
 
 	go func() {
 		require.NoError(t, proxy.Init())
