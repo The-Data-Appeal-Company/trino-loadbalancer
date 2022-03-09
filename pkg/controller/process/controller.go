@@ -63,7 +63,7 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 		return nil
 	}
 
-	queriesList, err := c.api.QueryList(cluster)
+	queriesList, err := c.api.QueryList(cluster.URL)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (c Controller) controlCluster(ctx context.Context, cluster models.Coordinat
 	c.logger.Info("%s: retrieved %d queries", cluster.Name, len(completedQueryList))
 
 	for _, query := range completedQueryList {
-		queryDetail, err := c.api.QueryDetail(cluster, query.QueryId)
+		queryDetail, err := c.api.QueryDetail(cluster.URL, query.QueryId)
 		if err != nil {
 			if err == trino.ErrQueryNotFound {
 				continue

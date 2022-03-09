@@ -73,7 +73,7 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 	queriesTs := time.Now()
 
 	api := trino.MockApi{
-		QueryDetailFn: func(coordinator models.Coordinator, queryID string) (trino.QueryDetail, error) {
+		QueryDetailFn: func(coordinator *url.URL, queryID string) (trino.QueryDetail, error) {
 			switch queryID {
 			case "query-00":
 				return trino.QueryDetail{QueryID: "query-00"}, nil
@@ -83,7 +83,7 @@ func TestController_RunWithQueryHandler(t *testing.T) {
 				return trino.QueryDetail{}, errors.New("query not found")
 			}
 		},
-		QueryListFn: func(coordinator models.Coordinator) (trino.QueryList, error) {
+		QueryListFn: func(coordinator *url.URL) (trino.QueryList, error) {
 			return trino.QueryList{
 				{
 					QueryId:    "query-00",

@@ -34,7 +34,7 @@ func (a Api) statistics(writer http.ResponseWriter, request *http.Request) {
 			continue
 		}
 
-		stats, err := a.statsRetriever.ClusterStatistics(cluster)
+		stats, err := a.statsRetriever.ClusterStatistics(cluster.URL)
 		if err != nil {
 			a.logger.Warn("unable to get stats from %s", cluster.Name)
 			continue
