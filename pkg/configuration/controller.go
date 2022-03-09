@@ -18,11 +18,11 @@ type ControllerConf struct {
 type AutoscalerConf struct {
 	Enabled    bool `yaml:"enabled" json:"enabled"`
 	Kubernetes []struct {
-		CoordinatorUri string        `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty" json:"coordinatorUri,omitempty"`
-		Namespace      string        `yaml:"namespace" json:"namespace,omitempty" json:"namespace,omitempty"`
-		Deployment     string        `json:"deployment,omitempty" yaml:"deployment,omitempty" json:"deployment,omitempty"`
-		Min            int           `json:"min,omitempty" yaml:"min,omitempty" json:"min,omitempty"`
-		Max            int           `json:"max,omitempty" yaml:"max,omitempty" json:"max,omitempty"`
+		CoordinatorUri string        `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
+		Namespace      string        `yaml:"namespace" json:"namespace,omitempty"`
+		Deployment     string        `json:"deployment,omitempty" yaml:"deployment,omitempty"`
+		Min            int           `json:"min,omitempty" yaml:"min,omitempty"`
+		Max            int           `json:"max,omitempty" yaml:"max,omitempty"`
 		ScaleAfter     time.Duration `json:"scaleAfter" yaml:"scaleAfter"`
 	} `yaml:"kubernetes" json:"kubernetes"`
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"k8s.io/client-go/kubernetes"
-	"net/url"
 	"reflect"
 	"testing"
 	"time"
@@ -253,22 +252,4 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockTrinoApi struct {
-	clusterStatistics func(url *url.URL) (trino.ClusterStatistics, error)
-	queryDetail       func(url *url.URL, queryID string) (trino.QueryDetail, error)
-	queryList         func(url *url.URL) (trino.QueryList, error)
-}
-
-func (m mockTrinoApi) ClusterStatistics(url *url.URL) (trino.ClusterStatistics, error) {
-	return m.clusterStatistics(url)
-}
-
-func (m mockTrinoApi) QueryDetail(url *url.URL, queryID string) (trino.QueryDetail, error) {
-	return m.queryDetail(url, queryID)
-}
-
-func (m mockTrinoApi) QueryList(url *url.URL) (trino.QueryList, error) {
-	return m.queryList(url)
 }
