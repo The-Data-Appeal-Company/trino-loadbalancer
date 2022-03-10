@@ -50,7 +50,7 @@ func (p *TrinoQueryClusterHealth) Check(u *url.URL) (Health, error) {
 	urlWithName := fmt.Sprintf("%s://hc@%s?custom_client=hc", u.Scheme, u.Host)
 	db, err := sql.Open("trino", urlWithName)
 	if err != nil {
-		return healthFromErr(fmt.Errorf("error opening sql connection: %v", err)), nil
+		return healthFromErr(fmt.Errorf("error opening sql connection: %w", err)), nil
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), p.client.Timeout)
@@ -58,7 +58,7 @@ func (p *TrinoQueryClusterHealth) Check(u *url.URL) (Health, error) {
 
 	row, err := db.QueryContext(ctx, "select 1")
 	if err != nil {
-		return healthFromErr(fmt.Errorf("error executing query: %v", err)), nil
+		return healthFromErr(fmt.Errorf("error executing query: %w", err)), nil
 	}
 
 	defer row.Close()
@@ -66,7 +66,7 @@ func (p *TrinoQueryClusterHealth) Check(u *url.URL) (Health, error) {
 	row.Next()
 	var r int
 	if err := row.Scan(&r); err != nil {
-		return healthFromErr(fmt.Errorf("error reading query results: %v", err)), nil
+		return healthFromErr(fmt.Errorf("error reading query results: %w", err)), nil
 	}
 
 	return Health{

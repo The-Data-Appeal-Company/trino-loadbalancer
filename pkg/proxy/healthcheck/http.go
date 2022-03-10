@@ -44,12 +44,12 @@ func (p *HttpClusterHealth) Check(u *url.URL) (Health, error) {
 	statusUrl := fmt.Sprintf("%s://%s/%s", u.Scheme, u.Host, "v1/status")
 	req, err := http.NewRequest(http.MethodGet, statusUrl, nil)
 	if err != nil {
-		return healthFromErr(fmt.Errorf("error creating http request: %v", err)), nil
+		return healthFromErr(fmt.Errorf("error creating http request: %w", err)), nil
 	}
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return healthFromErr(fmt.Errorf("error executing http request: %v", err)), nil
+		return healthFromErr(fmt.Errorf("error executing http request: %w", err)), nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
