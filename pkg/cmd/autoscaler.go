@@ -41,7 +41,7 @@ var autoscalerCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		autoscalerController := autoscaler.NewKubeClientAutoscaler(k8sClient, trino.NewClusterApi(), autoscaler.MemoryState())
+		autoscalerController := autoscaler.NewKubeClientAutoscaler(k8sClient, trino.NewClusterApi(), autoscaler.MemoryState(), logger)
 
 		var wg = &sync.WaitGroup{}
 		wg.Add(1)

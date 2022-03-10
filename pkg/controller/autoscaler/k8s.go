@@ -3,6 +3,7 @@ package autoscaler
 import (
 	"context"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -32,10 +33,11 @@ type KubeClientAutoscaler struct {
 	client   kubernetes.Interface
 	trinoApi trino.Api
 	state    State
+	logger   logging.Logger
 }
 
-func NewKubeClientAutoscaler(client kubernetes.Interface, trinoApi trino.Api, state State) *KubeClientAutoscaler {
-	return &KubeClientAutoscaler{client: client, trinoApi: trinoApi, state: state}
+func NewKubeClientAutoscaler(client kubernetes.Interface, trinoApi trino.Api, state State, logger logging.Logger) *KubeClientAutoscaler {
+	return &KubeClientAutoscaler{client: client, trinoApi: trinoApi, state: state, logger: logger}
 }
 
 func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
@@ -46,6 +48,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 
 	needScaleUp := hasQueriesInState(queries, StateWaitingForResources)
 	if needScaleUp {
+		k.logger.Info("found at least one query in waiting, trigger scale up to %d", request.Max)
 		return k.scaleCluster(request.Namespace, request.Deployment, request.Max)
 	}
 
@@ -55,6 +58,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 	}
 
 	if needScaleDown {
+		k.logger.Info("elapsed %s from last query, trigger scale down to %d", request.Min)
 		return k.scaleCluster(request.Namespace, request.Deployment, request.Min)
 	}
 
@@ -90,6 +94,7 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 		return false, err
 	}
 
+	k.logger.Info("time pass since last query %s, need to scale down: %t", time.Since(lastQueryTime), time.Since(lastQueryTime) > req.ScaleAfter)
 	return time.Since(lastQueryTime) > req.ScaleAfter, nil
 }
 

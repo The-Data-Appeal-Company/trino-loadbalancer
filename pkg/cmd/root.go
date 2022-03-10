@@ -16,8 +16,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "github.com/The-Data-Appeal-Company/trino-loadbalancer",
-	Short: "github.com/The-Data-Appeal-Company/trino-loadbalancer is a fast, high available loadbalancer for trino",
+	Use:   "trino-loadbalancer",
+	Short: "trino-loadbalancer is a fast, high available loadbalancer for trino",
 }
 
 var (
