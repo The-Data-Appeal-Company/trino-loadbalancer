@@ -10,7 +10,7 @@ var (
 )
 
 func init() {
-	controllerCmd.Flags().DurationVar(&controllerDelay, "every", 10*time.Second, "delay between controller run")
+	controllerCmd.PersistentFlags().DurationVar(&controllerDelay, "every", 10*time.Second, "delay between controller run")
 	rootCmd.AddCommand(controllerCmd)
 }
 
