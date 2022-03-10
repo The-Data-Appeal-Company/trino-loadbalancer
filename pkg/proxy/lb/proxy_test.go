@@ -104,7 +104,7 @@ func TestProxyRoutingMultiCoordinator(t *testing.T) {
 func TestProxyWithUnhealthyBackend(t *testing.T) {
 
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewHttpHealth()
+	hc := healthcheck.NewTrinoQueryHealth()
 	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
@@ -163,7 +163,7 @@ func TestProxyWithNoBackends(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewHttpHealth()
+	hc := healthcheck.NewTrinoQueryHealth()
 	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})
@@ -188,7 +188,7 @@ func TestProxyHealthEndpoint(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewHttpHealth()
+	hc := healthcheck.NewTrinoQueryHealth()
 	stats := trino.Noop()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RandomRouter{})

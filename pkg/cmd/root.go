@@ -56,6 +56,7 @@ func init() {
 
 	viper.SetDefault("clusters.statistics.enabled", true)
 	viper.SetDefault("clusters.healthcheck.enabled", true)
+	viper.SetDefault("clusters.healthcheck.type", "http")
 
 	viper.SetDefault("proxy.port", 8998)
 
@@ -124,6 +125,7 @@ func init() {
 
 		clusterHealthCheck, err = configuration.CreateHealthCheck(configuration.HealthCheckConfiguration{
 			Enabled: viper.GetBool("clusters.healthcheck.enabled"),
+			Type:    viper.GetString("clusters.healthcheck.type"),
 		})
 		if err != nil {
 			log.Fatal(err)

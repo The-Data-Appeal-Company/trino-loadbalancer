@@ -13,19 +13,19 @@ import (
 )
 
 var (
-	defaultTimeout = 15 * time.Second
+	queryDefaultTimeout = 15 * time.Second
 )
 
-type ClusterHealth struct {
+type TrinoQueryClusterHealth struct {
 	client *http.Client
 }
 
-func NewHttpHealth() *ClusterHealth {
-	return NewHttpHealthWithTimeout(defaultTimeout)
+func NewTrinoQueryHealth() *TrinoQueryClusterHealth {
+	return NewTrinoQueryHealthWithTimeout(queryDefaultTimeout)
 }
 
-func NewHttpHealthWithTimeout(timeout time.Duration) *ClusterHealth {
-	return &ClusterHealth{
+func NewTrinoQueryHealthWithTimeout(timeout time.Duration) *TrinoQueryClusterHealth {
+	return &TrinoQueryClusterHealth{
 		client: &http.Client{
 			Timeout: timeout,
 			Transport: &http.Transport{
@@ -42,7 +42,7 @@ func NewHttpHealthWithTimeout(timeout time.Duration) *ClusterHealth {
 	}
 }
 
-func (p *ClusterHealth) Check(u *url.URL) (Health, error) {
+func (p *TrinoQueryClusterHealth) Check(u *url.URL) (Health, error) {
 	if err := trino.RegisterCustomClient("hc", p.client); err != nil {
 		return Health{}, err
 	}
@@ -74,13 +74,4 @@ func (p *ClusterHealth) Check(u *url.URL) (Health, error) {
 		Message:   "all checks passed",
 		Timestamp: time.Now(),
 	}, nil
-}
-
-func healthFromErr(message string, err error) Health {
-	return Health{
-		Status:    StatusUnhealthy,
-		Message:   fmt.Sprintf("%s: %s", message, err.Error()),
-		Error:     err,
-		Timestamp: time.Now(),
-	}
 }

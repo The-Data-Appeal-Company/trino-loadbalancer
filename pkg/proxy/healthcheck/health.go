@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"fmt"
 	"net/url"
 	"time"
 )
@@ -30,4 +31,13 @@ type Health struct {
 
 func (s Health) IsAvailable() bool {
 	return s.Status == StatusHealthy
+}
+
+func healthFromErr(message string, err error) Health {
+	return Health{
+		Status:    StatusUnhealthy,
+		Message:   fmt.Sprintf("%s: %s", message, err.Error()),
+		Error:     err,
+		Timestamp: time.Now(),
+	}
 }
