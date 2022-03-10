@@ -42,19 +42,18 @@ func NewHttpHealthWithTimeout(timeout time.Duration) *HttpClusterHealth {
 func (p *HttpClusterHealth) Check(u *url.URL) (Health, error) {
 
 	statusUrl := fmt.Sprintf("%s://%s/%s", u.Scheme, u.Host, "v1/status")
-	req, err := http.NewRequest("GET", statusUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, statusUrl, nil)
 	if err != nil {
-		return healthFromErr("error creating http request", err), nil
+		return healthFromErr(fmt.Errorf("error creating http request: %v", err)), nil
 	}
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return healthFromErr("error executing http request", err), nil
+		return healthFromErr(fmt.Errorf("error executing http request: %v", err)), nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		errorMsg := fmt.Sprintf("http request return %d status code", resp.StatusCode)
-		return healthFromErr(errorMsg, fmt.Errorf(errorMsg)), nil
+		return healthFromErr(fmt.Errorf("http request return %d status code", resp.StatusCode)), nil
 	}
 
 	return Health{
