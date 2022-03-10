@@ -27,7 +27,13 @@ var (
 func NewClusterApi() *ClusterApi {
 	return &ClusterApi{
 		client: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 15 * time.Second,
+			Transport: &http.Transport{
+				TLSHandshakeTimeout:   15 * time.Second,
+				IdleConnTimeout:       15 * time.Second,
+				ResponseHeaderTimeout: 15 * time.Second,
+				ExpectContinueTimeout: 15 * time.Second,
+			},
 			CheckRedirect: func(*http.Request, []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
