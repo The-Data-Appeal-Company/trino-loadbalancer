@@ -2,6 +2,7 @@ package autoscaler
 
 import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
@@ -241,6 +242,7 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 				client:   tt.fields.client,
 				trinoApi: tt.fields.trinoApi,
 				state:    tt.fields.state,
+				logger:   logging.Noop(),
 			}
 			got, err := k.needScaleDown(tt.args.req, tt.args.queries)
 			if (err != nil) != tt.wantErr {
