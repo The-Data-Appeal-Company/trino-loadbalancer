@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -63,11 +62,7 @@ func TestApiRetrieverTrino(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	stats, err := retriever.ClusterStatistics(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	})
+	stats, err := retriever.ClusterStatistics(tests.MustUrl(apiSrv.URL))
 	require.NoError(t, err)
 
 	require.Equal(t, stats.RunningQueries, int32(1))
@@ -89,11 +84,7 @@ func TestApiRetrieverFailOn404(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	_, err := retriever.ClusterStatistics(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	})
+	_, err := retriever.ClusterStatistics(tests.MustUrl(apiSrv.URL))
 	require.Error(t, err)
 }
 
@@ -105,11 +96,7 @@ func TestApiRetrieverFailOnMultipleUnathorized(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	_, err := retriever.ClusterStatistics(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	})
+	_, err := retriever.ClusterStatistics(tests.MustUrl(apiSrv.URL))
 	require.True(t, errors.Is(err, ErrAuthFailed))
 }
 
@@ -132,11 +119,7 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	_, err := retriever.ClusterStatistics(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	})
+	_, err := retriever.ClusterStatistics(tests.MustUrl(apiSrv.URL))
 
 	require.Error(t, err)
 
@@ -183,11 +166,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	stats, err := retriever.QueryDetail(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	}, queryID)
+	stats, err := retriever.QueryDetail(tests.MustUrl(apiSrv.URL), queryID)
 	require.NoError(t, err)
 
 	var expected QueryDetail
@@ -236,11 +215,7 @@ func TestQueryList(t *testing.T) {
 
 	retriever := NewClusterApi()
 
-	stats, err := retriever.QueryList(models.Coordinator{
-		Name:    "test",
-		URL:     tests.MustUrl(apiSrv.URL),
-		Enabled: true,
-	})
+	stats, err := retriever.QueryList(tests.MustUrl(apiSrv.URL))
 	require.NoError(t, err)
 
 	var expected QueryList

@@ -1,11 +1,11 @@
 package trino
 
 import (
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"net/url"
 )
 
 type Api interface {
-	ClusterStatistics(models.Coordinator) (ClusterStatistics, error)
-	QueryDetail(coordinator models.Coordinator, queryID string) (QueryDetail, error)
-	QueryList(coordinator models.Coordinator) (QueryList, error)
+	ClusterStatistics(url *url.URL) (ClusterStatistics, error)
+	QueryDetail(url *url.URL, queryID string) (QueryDetail, error)
+	QueryList(url *url.URL) (QueryList, error)
 }

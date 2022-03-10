@@ -259,7 +259,7 @@ func (p *Pool) updateBackendStatistics(b *coordinatorConnection) {
 		return
 	}
 
-	stats, err := p.statisticRetriever.ClusterStatistics(b.coordinator)
+	stats, err := p.statisticRetriever.ClusterStatistics(b.coordinator.URL)
 	if err != nil {
 		p.logger.Warn("no statistics available for %s: %s", b.coordinator.Name, err.Error())
 		return

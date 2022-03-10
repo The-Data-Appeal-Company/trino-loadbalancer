@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -39,14 +39,14 @@ func NewClusterApi() *ClusterApi {
 	}
 }
 
-func (p *ClusterApi) QueryList(coord models.Coordinator) (QueryList, error) {
-	queryStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/")
+func (p *ClusterApi) QueryList(url *url.URL) (QueryList, error) {
+	queryStatsUrl := fmt.Sprintf("%s://%s%s", url.Scheme, url.Host, "/ui/api/query/")
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := p.authenticatedRequest(coord, req)
+	resp, err := p.authenticatedRequest(url, req)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (p *ClusterApi) QueryList(coord models.Coordinator) (QueryList, error) {
 
 }
 
-func (p *ClusterApi) QueryDetail(coord models.Coordinator, queryID string) (QueryDetail, error) {
-	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/query/", queryID)
+func (p *ClusterApi) QueryDetail(coord *url.URL, queryID string) (QueryDetail, error) {
+	queryStatsUrl := fmt.Sprintf("%s://%s%s%s", coord.Scheme, coord.Host, "/ui/api/query/", queryID)
 	req, err := http.NewRequest("GET", queryStatsUrl, nil)
 	if err != nil {
 		return QueryDetail{}, err
@@ -100,8 +100,8 @@ func (p *ClusterApi) QueryDetail(coord models.Coordinator, queryID string) (Quer
 
 }
 
-func (p *ClusterApi) ClusterStatistics(coord models.Coordinator) (ClusterStatistics, error) {
-	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/api/stats")
+func (p *ClusterApi) ClusterStatistics(coord *url.URL) (ClusterStatistics, error) {
+	apiStatsUrl := fmt.Sprintf("%s://%s%s", coord.Scheme, coord.Host, "/ui/api/stats")
 	req, err := http.NewRequest("GET", apiStatsUrl, nil)
 	if err != nil {
 		return ClusterStatistics{}, err
@@ -132,10 +132,10 @@ func (p *ClusterApi) ClusterStatistics(coord models.Coordinator) (ClusterStatist
 	return response, nil
 }
 
-func (p *ClusterApi) authenticatedRequest(coordinator models.Coordinator, req *http.Request) (*http.Response, error) {
+func (p *ClusterApi) authenticatedRequest(coordinatorUrl *url.URL, req *http.Request) (*http.Response, error) {
 	const maxRetries = 3
 	for i := 0; i < maxRetries; i++ {
-		auth, _ := p.trinoAuthState.GetAuth(coordinator.Name)
+		auth, _ := p.trinoAuthState.GetAuth(coordinatorUrl.String())
 
 		req.Header.Set("Cookie", auth)
 		resp, err := p.client.Do(req)
@@ -144,7 +144,7 @@ func (p *ClusterApi) authenticatedRequest(coordinator models.Coordinator, req *h
 		}
 
 		if resp.StatusCode == http.StatusUnauthorized {
-			_, err = p.performLogin(coordinator, true)
+			_, err = p.performLogin(coordinatorUrl, true)
 			if err != nil {
 				return nil, err
 			}
@@ -157,23 +157,24 @@ func (p *ClusterApi) authenticatedRequest(coordinator models.Coordinator, req *h
 	return nil, ErrAuthFailed
 }
 
-func (p *ClusterApi) performLogin(coord models.Coordinator, force bool) (string, error) {
-	auth, hasAuth := p.trinoAuthState.GetAuth(coord.Name)
+func (p *ClusterApi) performLogin(coordinatoUrl *url.URL, force bool) (string, error) {
+	coordinatorID := coordinatoUrl.String()
+	auth, hasAuth := p.trinoAuthState.GetAuth(coordinatorID)
 	if !hasAuth || force {
-		login, err := p.login(coord)
+		login, err := p.login(coordinatoUrl)
 
 		if err != nil {
 			return "", err
 		}
 
 		auth = login
-		p.trinoAuthState.SetAuth(coord.Name, login)
+		p.trinoAuthState.SetAuth(coordinatorID, login)
 	}
 	return auth, nil
 }
 
-func (p *ClusterApi) login(coord models.Coordinator) (string, error) {
-	loginUrl := fmt.Sprintf("%s://%s%s", coord.URL.Scheme, coord.URL.Host, "/ui/login")
+func (p *ClusterApi) login(coord *url.URL) (string, error) {
+	loginUrl := fmt.Sprintf("%s://%s%s", coord.Scheme, coord.Host, "/ui/login")
 	const contentType = "application/x-www-form-urlencoded"
 
 	body := bytes.NewBuffer([]byte(fmt.Sprintf("username=%s&password=&redirectPath=", userName)))

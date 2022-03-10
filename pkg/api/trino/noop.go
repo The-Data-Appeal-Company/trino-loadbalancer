@@ -1,7 +1,7 @@
 package trino
 
 import (
-	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/models"
+	"net/url"
 )
 
 func Noop() NoOp {
@@ -11,13 +11,13 @@ func Noop() NoOp {
 type NoOp struct {
 }
 
-func (n NoOp) ClusterStatistics(models.Coordinator) (ClusterStatistics, error) {
+func (n NoOp) ClusterStatistics(*url.URL) (ClusterStatistics, error) {
 	return ClusterStatistics{}, nil
 }
 
-func (n NoOp) QueryDetail(coord models.Coordinator, queryID string) (QueryDetail, error) {
+func (n NoOp) QueryDetail(coord *url.URL, queryID string) (QueryDetail, error) {
 	return QueryDetail{}, nil
 }
-func (n NoOp) QueryList(coord models.Coordinator) (QueryList, error) {
+func (n NoOp) QueryList(coord *url.URL) (QueryList, error) {
 	return nil, nil
 }
