@@ -33,8 +33,8 @@ func (d DatabaseStorage) Remove(ctx context.Context, name string) error {
 
 func (d DatabaseStorage) Add(ctx context.Context, coordinator models.Coordinator) error {
 	query := fmt.Sprintf(`
-INSERT INTO %s (name, url, tags, enabled) VALUES ($1, $2, $3, $4) 
-ON CONFLICT (name) DO NOTHING
+INSERT INTO %[1]s (name, url, tags, enabled) VALUES ($1, $2, $3, $4) 
+ON CONFLICT (name) DO UPDATE SET tags = excluded.tags
 `, d.table)
 
 	tags, err := json.Marshal(coordinator.Tags)
