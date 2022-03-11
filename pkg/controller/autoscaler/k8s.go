@@ -58,7 +58,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 	}
 
 	if needScaleDown {
-		k.logger.Info("elapsed at least %s from last query, trigger scale down to %d", request.ScaleAfter, request.Min)
+		k.logger.Info("elapsed %s from last query, trigger scale down to %d", request.Min)
 		return k.scaleCluster(request.Namespace, request.Deployment, request.Min)
 	}
 
