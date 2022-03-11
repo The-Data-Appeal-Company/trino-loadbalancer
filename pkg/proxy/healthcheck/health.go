@@ -31,3 +31,12 @@ type Health struct {
 func (s Health) IsAvailable() bool {
 	return s.Status == StatusHealthy
 }
+
+func healthFromErr(err error) Health {
+	return Health{
+		Status:    StatusUnhealthy,
+		Message:   err.Error(),
+		Error:     err,
+		Timestamp: time.Now(),
+	}
+}

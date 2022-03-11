@@ -45,7 +45,7 @@ func TestIntegration(t *testing.T) {
 
 	stateStore := discovery.NewMemoryStorage()
 	sessStore := session.NewMemoryStorage()
-	hc := healthcheck.NewHttpHealth()
+	hc := healthcheck.NewTrinoQueryHealth()
 	stats := trino.NewClusterApi()
 
 	router := routing.New(routing.NewUserAwareRouter(routing.UserAwareRoutingConf{}), routing.RoundRobin())
