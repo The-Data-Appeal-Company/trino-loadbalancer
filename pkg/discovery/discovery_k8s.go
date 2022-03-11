@@ -27,7 +27,6 @@ func NewK8sClusterProvider(k8sClient k8s.Interface, selectorTags map[string]stri
 }
 
 func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator, error) {
-
 	coordinators := make([]models.Coordinator, 0)
 	namespaces, err := k.k8sClient.CoreV1().Namespaces().List(ctx, v1.ListOptions{})
 
@@ -61,7 +60,7 @@ func (k *K8sClusterProvider) Discover(ctx context.Context) ([]models.Coordinator
 			coordinators = append(coordinators, models.Coordinator{
 				Name:    fmt.Sprintf("%s-%s", svc.Namespace, svc.Name),
 				URL:     svcUrl,
-				Tags:    k.SelectorTags,
+				Tags:    mergeMaps(svc.GetLabels(), svc.GetAnnotations(), k.SelectorTags),
 				Enabled: true,
 			})
 		}
@@ -79,4 +78,14 @@ func portByName(ports []v12.ServicePort, name string) (v12.ServicePort, error) {
 	}
 
 	return v12.ServicePort{}, fmt.Errorf("no port with name %s found", name)
+}
+
+func mergeMaps(maps ...map[string]string) map[string]string {
+	var result = make(map[string]string)
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
 }

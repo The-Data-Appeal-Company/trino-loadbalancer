@@ -30,7 +30,7 @@ func Test_lastQueryExecution(t *testing.T) {
 				queries: []trino.QueryListItem{
 					{
 						QueryStats: trino.QueryStats{
-							EndTime: time.Now(),
+							EndTime: time.Unix(1735956820, 0),
 						},
 					},
 					{
@@ -45,7 +45,7 @@ func Test_lastQueryExecution(t *testing.T) {
 					},
 				},
 			},
-			want: time.Unix(1635956820, 0),
+			want: time.Unix(1735956820, 0),
 		},
 	}
 	for _, tt := range tests {
