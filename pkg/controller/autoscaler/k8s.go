@@ -139,7 +139,7 @@ func lastQueryExecution(queries trino.QueryList) time.Time {
 			continue
 		}
 
-		if last.IsZero() || endTime.Before(last) {
+		if last.IsZero() || endTime.After(last) {
 			last = endTime
 		}
 	}
