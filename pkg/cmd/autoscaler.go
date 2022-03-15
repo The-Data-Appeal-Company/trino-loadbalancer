@@ -58,12 +58,12 @@ var autoscalerCmd = &cobra.Command{
 						}
 
 						err = autoscalerController.Execute(autoscaler.KubeRequest{
-							Coordinator: coordUri,
-							Namespace:   cluster.Namespace,
-							Deployment:  cluster.Deployment,
-							Min:         cluster.Min,
-							Max:         cluster.Max,
-							ScaleAfter:  cluster.ScaleAfter,
+							Coordinator:     coordUri,
+							Namespace:       cluster.Namespace,
+							Deployment:      cluster.Deployment,
+							Min:             cluster.Min,
+							ScaleUpStrategy: cluster.ScaleUpStrategy,
+							ScaleAfter:      cluster.ScaleAfter,
 						})
 
 						if err != nil {

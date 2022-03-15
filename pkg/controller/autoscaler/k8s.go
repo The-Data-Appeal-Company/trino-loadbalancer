@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -21,12 +22,12 @@ type KubeAutoscaler interface {
 }
 
 type KubeRequest struct {
-	Coordinator *url.URL
-	Namespace   string
-	Deployment  string
-	Min         int
-	Max         int
-	ScaleAfter  time.Duration
+	Coordinator     *url.URL
+	Namespace       string
+	Deployment      string
+	Min             int
+	ScaleUpStrategy configuration.AutoscalerScaleUpStrategy
+	ScaleAfter      time.Duration
 }
 
 type KubeClientAutoscaler struct {
@@ -46,10 +47,22 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 		return err
 	}
 
-	needScaleUp := hasQueriesInState(queries, StateWaitingForResources)
+	currentWorker, err := k.state.CurrentWorker(request.Coordinator.String())
+	if err != nil {
+		return err
+	}
+
+	activeUser := distinctUserRunningQuery(queries)
+
+	needScaleUp := hasQueriesInState(queries, StateWaitingForResources) || hasQueriesInState(queries, StateRunning)
 	if needScaleUp {
-		k.logger.Info("found at least one query in waiting, trigger scale up to %d", request.Max)
-		return k.scaleCluster(request.Namespace, request.Deployment, request.Max)
+		worker, err := calculateScaleUpWorker(currentWorker, activeUser, request.ScaleUpStrategy)
+		if err != nil {
+			return err
+		}
+
+		k.logger.Info("found at least one query in waiting, trigger scale up to %d", worker)
+		return k.scaleCluster(request.Namespace, request.Deployment, worker)
 	}
 
 	needScaleDown, err := k.needScaleDown(request, queries)
@@ -144,4 +157,14 @@ func lastQueryExecution(queries trino.QueryList) time.Time {
 		}
 	}
 	return last
+}
+
+func distinctUserRunningQuery(queries trino.QueryList) int {
+	set := make(map[string]bool)
+	for _, query := range queries {
+		if query.State == StateRunning {
+			set[query.Session.User] = true
+		}
+	}
+	return len(set)
 }

@@ -18,13 +18,19 @@ type ControllerConf struct {
 type AutoscalerConf struct {
 	Enabled    bool `yaml:"enabled" json:"enabled"`
 	Kubernetes []struct {
-		CoordinatorUri string        `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
-		Namespace      string        `yaml:"namespace" json:"namespace,omitempty"`
-		Deployment     string        `json:"deployment,omitempty" yaml:"deployment,omitempty"`
-		Min            int           `json:"min,omitempty" yaml:"min,omitempty"`
-		Max            int           `json:"max,omitempty" yaml:"max,omitempty"`
-		ScaleAfter     time.Duration `json:"scaleAfter" yaml:"scaleAfter"`
+		CoordinatorUri  string                    `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
+		Namespace       string                    `yaml:"namespace" json:"namespace,omitempty"`
+		Deployment      string                    `json:"deployment,omitempty" yaml:"deployment,omitempty"`
+		Min             int                       `json:"min,omitempty" yaml:"min,omitempty"`
+		ScaleAfter      time.Duration             `json:"scaleAfter" yaml:"scaleAfter"`
+		ScaleUpStrategy AutoscalerScaleUpStrategy `json:"scaleUpStrategy" yaml:"scaleUpStrategy"`
 	} `yaml:"kubernetes" json:"kubernetes"`
+}
+
+type AutoscalerScaleUpStrategy struct {
+	Type          string `json:"type" yaml:"type"`
+	Max           int    `json:"max,omitempty" yaml:"max,omitempty"`
+	WorkerPerUser int    `json:"workerPerUser,omitempty" yaml:"workerPerUser,omitempty"`
 }
 
 type SlowWorkerDrainerConf struct {
