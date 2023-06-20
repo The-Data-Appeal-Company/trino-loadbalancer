@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/require"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
@@ -92,5 +91,5 @@ func mustUrl(raw string) *url.URL {
 }
 
 func bodyReadCloser(val string) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewBuffer([]byte(val)))
+	return io.NopCloser(bytes.NewBuffer([]byte(val)))
 }

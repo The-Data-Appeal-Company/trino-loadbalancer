@@ -7,9 +7,10 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -43,7 +44,7 @@ func TestApiRetrieverTrino(t *testing.T) {
 		}
 
 		if request.URL.Path == "/ui/login" {
-			body, err := ioutil.ReadAll(request.Body)
+			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
 
@@ -128,7 +129,7 @@ func TestApiRetrieverFailOnMalformedJson(t *testing.T) {
 func TestQueryStatsRetriever(t *testing.T) {
 	var queryID = "abc-defg-123-hi"
 
-	respBody, err := ioutil.ReadFile("testdata/query-stats.json")
+	respBody, err := os.ReadFile("testdata/query-stats.json")
 	require.NoError(t, err)
 
 	apiSrv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -147,7 +148,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 		}
 
 		if request.URL.Path == "/ui/login" {
-			body, err := ioutil.ReadAll(request.Body)
+			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
 
@@ -177,7 +178,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 }
 
 func TestQueryList(t *testing.T) {
-	respBody, err := ioutil.ReadFile("testdata/query-list.json")
+	respBody, err := os.ReadFile("testdata/query-list.json")
 	require.NoError(t, err)
 
 	apiSrv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -196,7 +197,7 @@ func TestQueryList(t *testing.T) {
 		}
 
 		if request.URL.Path == "/ui/login" {
-			body, err := ioutil.ReadAll(request.Body)
+			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
 

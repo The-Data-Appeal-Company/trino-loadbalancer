@@ -2,9 +2,10 @@ package serving
 
 import (
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -19,10 +20,10 @@ func TestServeStaticFile(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, w.Result().StatusCode)
 
-	responseBody, err := ioutil.ReadAll(w.Result().Body)
+	responseBody, err := io.ReadAll(w.Result().Body)
 	require.NoError(t, err)
 
-	expectedBody, err := ioutil.ReadFile("testdata/script.js")
+	expectedBody, err := os.ReadFile("testdata/script.js")
 	require.NoError(t, err)
 
 	require.Equal(t, string(expectedBody), string(responseBody))

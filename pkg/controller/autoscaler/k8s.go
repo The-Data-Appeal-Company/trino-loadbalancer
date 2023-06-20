@@ -3,7 +3,6 @@ package autoscaler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
@@ -141,7 +140,7 @@ func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.Qu
 	for _, rule := range request.DynamicScale.Rules {
 		r, err := regexp.Compile(rule.Regexp)
 		if err != nil {
-			fmt.Errorf("cannot parse regexp '%s' of dynamic rule", rule.Regexp)
+			k.logger.Warn("cannot parse regexp '%s' of dynamic rule", rule.Regexp)
 			break
 		}
 		for _, query := range queries {
@@ -178,7 +177,10 @@ func (k *KubeClientAutoscaler) scaleCluster(request KubeRequest, replicas int) e
 		return err
 	}
 
-	k.state.SetClusterInstances(request.Coordinator.String(), int32(replicas))
+	err = k.state.SetClusterInstances(request.Coordinator.String(), int32(replicas))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
