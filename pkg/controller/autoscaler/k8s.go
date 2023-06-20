@@ -50,20 +50,16 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 		return err
 	}
 
-	if !request.DynamicScale.Enabled {
-		needScaleUp := hasQueriesInState(queries, StateWaitingForResources)
-		if needScaleUp {
-			k.logger.Info("found at least one query in waiting, trigger scale up to %d", request.Max)
-			return k.scaleCluster(request, request.Max)
-		}
-	} else {
-		needScaleUp, instances, err := k.needScaleUp(request, queries)
-		if err != nil {
-			return err
-		}
-		if needScaleUp {
-			return k.scaleCluster(request, instances)
-		}
+	currentInstances, err := k.currentInstances(request)
+	if err != nil {
+		return err
+	}
+	instances, err := k.needScaleUp(request, queries)
+	if err != nil {
+		return err
+	}
+	if instances > currentInstances {
+		return k.scaleCluster(request, instances)
 	}
 
 	needScaleDown, err := k.needScaleDown(request, queries)
@@ -112,29 +108,19 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 	return time.Since(lastQueryTime) > req.ScaleAfter, nil
 }
 
-func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.QueryList) (bool, int, error) {
-	runningQuery := filterByState(queries, StateRunning)
+func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.QueryList) (int, error) {
 	waitingQuery := filterByState(queries, StateWaitingForResources)
+	if !request.DynamicScale.Enabled && len(waitingQuery) > 0 {
+		return request.Max, nil
+	}
+
+	runningQuery := filterByState(queries, StateRunning)
 
 	allQueries := append(runningQuery, waitingQuery...)
 	if len(allQueries) == 0 {
-		return false, 0, nil
+		return 0, nil
 	}
 
-	lastInstances, err := k.state.GetClusterInstances(request.Coordinator.String())
-	if err != nil {
-		return false, 0, err
-	}
-	if err != nil {
-		if errors.Is(err, NoInstancesInStateError) {
-			lastInstances, err = k.getDeploymentInstances(request.Namespace, request.Deployment)
-			if err != nil {
-				return false, 0, err
-			}
-		} else {
-			return false, 0, err
-		}
-	}
 	scaleInstances := request.DynamicScale.Default
 
 	for _, rule := range request.DynamicScale.Rules {
@@ -143,7 +129,7 @@ func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.Qu
 			k.logger.Warn("cannot parse regexp '%s' of dynamic rule", rule.Regexp)
 			break
 		}
-		for _, query := range queries {
+		for _, query := range allQueries {
 			if r.MatchString(query.Session.User) {
 				scaleInstances = maxInt(scaleInstances, rule.Instances)
 				break
@@ -151,9 +137,25 @@ func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.Qu
 		}
 	}
 
-	return lastInstances < int32(scaleInstances),
-		scaleInstances,
-		nil
+	return scaleInstances, nil
+}
+
+func (k *KubeClientAutoscaler) currentInstances(req KubeRequest) (int, error) {
+	lastInstances, err := k.state.GetClusterInstances(req.Coordinator.String())
+	if err != nil {
+		return 0, err
+	}
+	if err != nil {
+		if errors.Is(err, NoInstancesInStateError) {
+			lastInstances, err = k.getDeploymentInstances(req.Namespace, req.Deployment)
+			if err != nil {
+				return 0, err
+			}
+		} else {
+			return 0, err
+		}
+	}
+	return int(lastInstances), nil
 }
 
 func (k *KubeClientAutoscaler) scaleCluster(request KubeRequest, replicas int) error {
