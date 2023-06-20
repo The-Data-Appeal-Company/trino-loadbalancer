@@ -268,13 +268,83 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 		queries trino.QueryList
 	}
 	tests := []struct {
-		name          string
-		fields        fields
-		args          args
-		want          bool
-		instancesWant int
-		wantErr       bool
+		name    string
+		fields  fields
+		args    args
+		want    int
+		wantErr bool
 	}{
+		{
+			name:   "no scale no dynamic enabled",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: nil,
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name:   "scale no dynamic enabled (waiting query)",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateWaitingForResources,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name:   "no scale no dynamic enabled (running query)",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    0,
+			wantErr: false,
+		},
 		{
 			name:   "don't scale up when no queries and no state are present",
 			fields: fields{state: MemoryState()},
@@ -295,9 +365,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: nil,
 			},
-			want:          false,
-			instancesWant: 0,
-			wantErr:       false,
+			want:    0,
+			wantErr: false,
 		},
 		{
 			name: "don't scale up when no queries but default bigger than state",
@@ -323,12 +392,11 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: nil,
 			},
-			want:          false,
-			instancesWant: 0,
-			wantErr:       false,
+			want:    0,
+			wantErr: false,
 		},
 		{
-			name: "scale up when queries not trigger rule but default bigger than state",
+			name: "scale up when queries not trigger rule but default",
 			fields: fields{state: mockState{
 				getInstances: func(clusterID string) (int32, error) {
 					return 0, nil
@@ -361,12 +429,11 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 					},
 				},
 			},
-			want:          true,
-			instancesWant: 5,
-			wantErr:       false,
+			want:    5,
+			wantErr: false,
 		},
 		{
-			name: "scale up when queries trigger one rule greater than state",
+			name: "scale up when queries trigger one rule ",
 			fields: fields{state: mockState{
 				getInstances: func(clusterID string) (int32, error) {
 					return 0, nil
@@ -399,9 +466,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 					},
 				},
 			},
-			want:          true,
-			instancesWant: 8,
-			wantErr:       false,
+			want:    8,
+			wantErr: false,
 		},
 		{
 			name: "scale up when queries trigger one rule and one default get greater (rules)",
@@ -446,9 +512,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 					},
 				},
 			},
-			want:          true,
-			instancesWant: 8,
-			wantErr:       false,
+			want:    8,
+			wantErr: false,
 		},
 		{
 			name: "scale up when queries trigger one rule and one default get greater(default)",
@@ -493,9 +558,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 					},
 				},
 			},
-			want:          true,
-			instancesWant: 5,
-			wantErr:       false,
+			want:    5,
+			wantErr: false,
 		},
 		{
 			name: "scale up to default no query trigger rule",
@@ -540,9 +604,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 					},
 				},
 			},
-			want:          true,
-			instancesWant: 5,
-			wantErr:       false,
+			want:    5,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -553,16 +616,13 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				state:    tt.fields.state,
 				logger:   logging.Noop(),
 			}
-			got, inst, err := k.needScaleUp(tt.args.req, tt.args.queries)
+			got, err := k.needScaleUp(tt.args.req, tt.args.queries)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("needScaleDown() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
 				t.Errorf("needScaleUp() got = %v, want %v", got, tt.want)
-			}
-			if got && inst != tt.instancesWant {
-				t.Errorf("needScaleDown() instances = %v, instancesWant %v", inst, tt.instancesWant)
 			}
 		})
 	}

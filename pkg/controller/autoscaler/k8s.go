@@ -110,8 +110,12 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 
 func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.QueryList) (int, error) {
 	waitingQuery := filterByState(queries, StateWaitingForResources)
-	if !request.DynamicScale.Enabled && len(waitingQuery) > 0 {
-		return request.Max, nil
+	if !request.DynamicScale.Enabled {
+		if len(waitingQuery) > 0 {
+			return request.Max, nil
+		} else {
+			return 0, nil
+		}
 	}
 
 	runningQuery := filterByState(queries, StateRunning)
