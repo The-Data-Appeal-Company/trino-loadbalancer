@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	trinoImage = "trinodb/trino:353"
+	trinoImage = "trinodb/trino:419"
 	trinoPort  = 8080
 )
 

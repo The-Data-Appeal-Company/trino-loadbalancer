@@ -1,40 +1,72 @@
 package autoscaler
 
 import (
+	"errors"
 	"time"
 )
 
 type State interface {
 	LastQueryExecution(clusterID string) (time.Time, error)
 	SetLastQueryExecution(clusterID string, t time.Time) error
+	GetClusterInstances(clusterID string) (int32, error)
+	SetClusterInstances(clusterID string, i int32) error
 }
 
 type InMemory struct {
-	state map[string]time.Time
+	stateTime      map[string]time.Time
+	stateInstances map[string]int32
 }
 
 func MemoryState() *InMemory {
-	return &InMemory{state: make(map[string]time.Time)}
+	return &InMemory{
+		stateTime:      make(map[string]time.Time),
+		stateInstances: make(map[string]int32),
+	}
 }
 
+var NoInstancesInStateError = errors.New("no instances state")
+
 func (i *InMemory) LastQueryExecution(clusterID string) (time.Time, error) {
-	return i.state[clusterID], nil
+	return i.stateTime[clusterID], nil
 }
 
 func (i *InMemory) SetLastQueryExecution(clusterID string, t time.Time) error {
-	i.state[clusterID] = t
+	i.stateTime[clusterID] = t
+	return nil
+}
+
+func (i *InMemory) GetClusterInstances(clusterID string) (int32, error) {
+	value, ok := i.stateInstances[clusterID]
+	if !ok {
+		return 0, NoInstancesInStateError
+	}
+	return value, nil
+}
+
+func (i *InMemory) SetClusterInstances(clusterID string, instances int32) error {
+	i.stateInstances[clusterID] = instances
 	return nil
 }
 
 type mockState struct {
-	set func(clusterID string, t time.Time) error
-	get func(clusterID string) (time.Time, error)
+	setTime      func(clusterID string, t time.Time) error
+	getTime      func(clusterID string) (time.Time, error)
+	setInstances func(clusterID string, i int32) error
+	getInstances func(clusterID string) (int32, error)
 }
 
 func (m mockState) LastQueryExecution(clusterID string) (time.Time, error) {
-	return m.get(clusterID)
+	return m.getTime(clusterID)
 }
 
 func (m mockState) SetLastQueryExecution(clusterID string, t time.Time) error {
-	return m.set(clusterID, t)
+	return m.setTime(clusterID, t)
+}
+
+func (m mockState) GetClusterInstances(clusterID string) (int32, error) {
+	return m.getInstances(clusterID)
+}
+
+func (m mockState) SetClusterInstances(clusterID string, i int32) error {
+	return m.setInstances(clusterID, i)
 }
