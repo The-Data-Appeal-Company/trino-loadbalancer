@@ -4,6 +4,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
+	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
 	"testing"
@@ -218,10 +219,10 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "scale down when no queries are returned but state is present",
 			fields: fields{state: mockState{
-				set: func(clusterID string, t time.Time) error {
+				setTime: func(clusterID string, t time.Time) error {
 					return nil
 				},
-				get: func(clusterID string) (time.Time, error) {
+				getTime: func(clusterID string) (time.Time, error) {
 					return time.Now().Add(-1 * time.Hour), nil
 				},
 			}},
@@ -251,6 +252,377 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("needScaleDown() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
+	type fields struct {
+		client   kubernetes.Interface
+		trinoApi trino.Api
+		state    State
+	}
+	type args struct {
+		req     KubeRequest
+		queries trino.QueryList
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name:   "no scale no dynamic enabled",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: nil,
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name:   "scale no dynamic enabled (waiting query)",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateWaitingForResources,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name:   "no scale no dynamic enabled (running query)",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					Max:         5,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: false,
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name:   "don't scale up when no queries and no state are present",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 8,
+							},
+						},
+					},
+				},
+				queries: nil,
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name: "don't scale up when no queries but default bigger than state",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 8,
+							},
+						},
+					},
+				},
+				queries: nil,
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name: "scale up when queries not trigger rule but default",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 8,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name: "scale up when queries trigger one rule ",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 8,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "etl-aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    8,
+			wantErr: false,
+		},
+		{
+			name: "scale up when queries trigger one rule and one default get greater (rules)",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 8,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "etl-aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateWaitingForResources,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    8,
+			wantErr: false,
+		},
+		{
+			name: "scale up when queries trigger one rule and one default get greater(default)",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 2,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "etl-aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateWaitingForResources,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name: "scale up to default no query trigger rule",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-*",
+								Instances: 3,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State: StateRunning,
+						Session: trino.QueryItemSession{
+							User: "aaaaa",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateWaitingForResources,
+						Session: trino.QueryItemSession{
+							User: "bbbb",
+						},
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    5,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := &KubeClientAutoscaler{
+				client:   tt.fields.client,
+				trinoApi: tt.fields.trinoApi,
+				state:    tt.fields.state,
+				logger:   logging.Noop(),
+			}
+			got, err := k.needScaleUp(tt.args.req, tt.args.queries)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("needScaleDown() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("needScaleUp() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

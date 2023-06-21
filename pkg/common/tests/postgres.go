@@ -7,8 +7,8 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -83,7 +83,7 @@ func WithInitScript(filePath string) InitScript {
 
 func (i InitScript) Init(db *sql.DB) error {
 
-	script, err := ioutil.ReadFile(i.script)
+	script, err := os.ReadFile(i.script)
 
 	if err != nil {
 		return err

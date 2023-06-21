@@ -71,6 +71,15 @@ discovery:
           deployment: 'trino'
 
 controller:
+  autoscaler:
+    enabled: true
+    kubernetes:
+      coordinatorUri: "http://trino-etl.trino-etl.svc.cluster.local:8080"
+      namespace: "trino-etl"
+      deployment: "trino-etl-worker"
+      min: "0"
+      max: "5"
+      scaleAfter: "10m"
   features:
     slow_worker_drainer:
       enabled: true

@@ -18,13 +18,25 @@ type ControllerConf struct {
 type AutoscalerConf struct {
 	Enabled    bool `yaml:"enabled" json:"enabled"`
 	Kubernetes []struct {
-		CoordinatorUri string        `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
-		Namespace      string        `yaml:"namespace" json:"namespace,omitempty"`
-		Deployment     string        `json:"deployment,omitempty" yaml:"deployment,omitempty"`
-		Min            int           `json:"min,omitempty" yaml:"min,omitempty"`
-		Max            int           `json:"max,omitempty" yaml:"max,omitempty"`
-		ScaleAfter     time.Duration `json:"scaleAfter" yaml:"scaleAfter"`
+		CoordinatorUri string                 `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
+		Namespace      string                 `yaml:"namespace" json:"namespace,omitempty"`
+		Deployment     string                 `json:"deployment,omitempty" yaml:"deployment,omitempty"`
+		Min            int                    `json:"min,omitempty" yaml:"min,omitempty"`
+		Max            int                    `json:"max,omitempty" yaml:"max,omitempty"`
+		ScaleAfter     time.Duration          `json:"scaleAfter" yaml:"scaleAfter"`
+		DynamicScale   AutoscalerDynamicScale `yaml:"dynamicScale" json:"dynamicScale"`
 	} `yaml:"kubernetes" json:"kubernetes"`
+}
+
+type AutoscalerDynamicScale struct {
+	Enabled bool                         `yaml:"enabled" json:"enabled"`
+	Default int                          `yaml:"default" json:"default"`
+	Rules   []AutoscalerDynamicScaleRule `yaml:"rules" json:"rules"`
+}
+
+type AutoscalerDynamicScaleRule struct {
+	Regexp    string `json:"regexp,omitempty" yaml:"regexp,omitempty"`
+	Instances int    `json:"instances,omitempty" yaml:"regexp,omitempty"`
 }
 
 type SlowWorkerDrainerConf struct {

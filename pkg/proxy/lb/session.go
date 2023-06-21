@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/session"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -93,7 +93,7 @@ func QueryInfoFromResponse(req *http.Request, res *http.Response) (trino.QueryIn
 }
 
 func queryStateFromResponse(res *http.Response) (trino.QueryState, error) {
-	resp, err := ioutil.ReadAll(res.Body)
+	resp, err := io.ReadAll(res.Body)
 	if err != nil {
 		return trino.QueryState{}, err
 	}
@@ -105,7 +105,7 @@ func queryStateFromResponse(res *http.Response) (trino.QueryState, error) {
 			return trino.QueryState{}, err
 		}
 
-		jsonBody, err = ioutil.ReadAll(reader)
+		jsonBody, err = io.ReadAll(reader)
 		if err != nil {
 			return trino.QueryState{}, err
 		}
@@ -118,7 +118,7 @@ func queryStateFromResponse(res *http.Response) (trino.QueryState, error) {
 
 	// Reset response Body ReadCloser to be read again, this should be transparent but we may need
 	// to do further checks or better way to reset a ReadCloser
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(resp))
+	res.Body = io.NopCloser(bytes.NewBuffer(resp))
 	return queryState, nil
 }
 
