@@ -54,7 +54,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 	if err != nil {
 		return err
 	}
-	instances, err := k.needScaleUp(request, queries)
+	instances, err := k.desiredInstances(request, queries)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 	return time.Since(lastQueryTime) > req.ScaleAfter, nil
 }
 
-func (k *KubeClientAutoscaler) needScaleUp(request KubeRequest, queries trino.QueryList) (int, error) {
+func (k *KubeClientAutoscaler) desiredInstances(request KubeRequest, queries trino.QueryList) (int, error) {
 	waitingQuery := filterByState(queries, StateWaitingForResources)
 	if !request.DynamicScale.Enabled {
 		if len(waitingQuery) > 0 {

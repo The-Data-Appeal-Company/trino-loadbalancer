@@ -616,13 +616,13 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				state:    tt.fields.state,
 				logger:   logging.Noop(),
 			}
-			got, err := k.needScaleUp(tt.args.req, tt.args.queries)
+			got, err := k.desiredInstances(tt.args.req, tt.args.queries)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("needScaleDown() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("needScaleUp() got = %v, want %v", got, tt.want)
+				t.Errorf("desiredInstances() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
