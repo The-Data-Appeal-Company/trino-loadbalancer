@@ -306,10 +306,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateWaitingForResources,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateWaitingForResources,
+						SessionUser: "test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -333,10 +331,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -420,10 +416,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "aaaaa",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -457,10 +451,8 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "etl-aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "etl-test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -494,19 +486,15 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "etl-aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "etl-test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
 					},
 					{
-						State: StateWaitingForResources,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateWaitingForResources,
+						SessionUser: "test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -540,19 +528,15 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "etl-aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "etl-test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
 					},
 					{
-						State: StateWaitingForResources,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateWaitingForResources,
+						SessionUser: "test",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
@@ -586,19 +570,15 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				},
 				queries: trino.QueryList{
 					{
-						State: StateRunning,
-						Session: trino.QueryItemSession{
-							User: "aaaaa",
-						},
+						State:       StateRunning,
+						SessionUser: "test 1",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},
 					},
 					{
-						State: StateWaitingForResources,
-						Session: trino.QueryItemSession{
-							User: "bbbb",
-						},
+						State:       StateWaitingForResources,
+						SessionUser: "test 2",
 						QueryStats: trino.QueryStats{
 							EndTime: time.Now().Add(-1 * time.Hour),
 						},

@@ -59,6 +59,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 		return err
 	}
 	if instances > currentInstances {
+		k.logger.Info("requested instances %d scale up from %d", instances, currentInstances)
 		return k.scaleCluster(request, instances)
 	}
 
@@ -134,7 +135,7 @@ func (k *KubeClientAutoscaler) desiredInstances(request KubeRequest, queries tri
 			break
 		}
 		for _, query := range allQueries {
-			if r.MatchString(query.Session.User) {
+			if r.MatchString(query.SessionUser) {
 				scaleInstances = maxInt(scaleInstances, rule.Instances)
 				break
 			}
