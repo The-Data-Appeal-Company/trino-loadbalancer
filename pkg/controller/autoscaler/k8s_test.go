@@ -1,6 +1,7 @@
 package autoscaler
 
 import (
+	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/api/trino"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
@@ -622,6 +623,75 @@ func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
 				t.Errorf("desiredInstances() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			if got != tt.want {
+				t.Errorf("desiredInstances() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestKubeClientAutoscaler_currentInstances(t *testing.T) {
+	type fields struct {
+		client   kubernetes.Interface
+		trinoApi trino.Api
+		state    State
+	}
+	type args struct {
+		req KubeRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "state to 0 return state",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+				},
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name: "state err",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, fmt.Errorf("error on state")
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := &KubeClientAutoscaler{
+				client:   tt.fields.client,
+				trinoApi: tt.fields.trinoApi,
+				state:    tt.fields.state,
+				logger:   logging.Noop(),
+			}
+
+			got, err := k.currentInstances(tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("desiredInstances() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
 			if got != tt.want {
 				t.Errorf("desiredInstances() got = %v, want %v", got, tt.want)
 			}

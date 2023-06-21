@@ -147,9 +147,6 @@ func (k *KubeClientAutoscaler) desiredInstances(request KubeRequest, queries tri
 func (k *KubeClientAutoscaler) currentInstances(req KubeRequest) (int, error) {
 	lastInstances, err := k.state.GetClusterInstances(req.Coordinator.String())
 	if err != nil {
-		return 0, err
-	}
-	if err != nil {
 		if errors.Is(err, NoInstancesInStateError) {
 			lastInstances, err = k.getDeploymentInstances(req.Namespace, req.Deployment)
 			if err != nil {
