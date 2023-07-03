@@ -6,6 +6,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
+	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
 	"testing"
@@ -62,7 +63,7 @@ func Test_lastQueryExecution(t *testing.T) {
 func Test_hasQueriesInState(t *testing.T) {
 	type args struct {
 		queries trino.QueryList
-		state   string
+		states  []string
 	}
 	tests := []struct {
 		name string
@@ -85,7 +86,7 @@ func Test_hasQueriesInState(t *testing.T) {
 						State: StateWaitingForResources,
 					},
 				},
-				state: StateRunning,
+				states: []string{StateRunning},
 			},
 			want: true,
 		},
@@ -100,7 +101,7 @@ func Test_hasQueriesInState(t *testing.T) {
 						State: StateWaitingForResources,
 					},
 				},
-				state: StateWaitingForResources,
+				states: []string{StateWaitingForResources},
 			},
 			want: true,
 		},
@@ -115,7 +116,7 @@ func Test_hasQueriesInState(t *testing.T) {
 						State: StateWaitingForResources,
 					},
 				},
-				state: StateRunning,
+				states: []string{StateRunning},
 			},
 			want: false,
 		},
@@ -130,14 +131,44 @@ func Test_hasQueriesInState(t *testing.T) {
 						State: StateRunning,
 					},
 				},
-				state: StateRunning,
+				states: []string{StateRunning},
 			},
 			want: true,
+		},
+		{
+			name: "test return true when all queries are in one of the multiple state",
+			args: args{
+				queries: []trino.QueryListItem{
+					{
+						State: StateRunning,
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				states: []string{StateWaitingForResources, StateRunning},
+			},
+			want: true,
+		},
+		{
+			name: "test return false when all queries are in no-one of the multiple state",
+			args: args{
+				queries: []trino.QueryListItem{
+					{
+						State: StateRunning,
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				states: []string{"COMPLETED", "FAILED"},
+			},
+			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := hasQueriesInState(tt.args.queries, tt.args.state); got != tt.want {
+			if got := hasQueriesInStates(tt.args.queries, tt.args.states); got != tt.want {
 				t.Errorf("hasQueriesInState() = %v, want %v", got, tt.want)
 			}
 		})
@@ -677,4 +708,72 @@ func TestKubeClientAutoscaler_currentInstances(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestKubeClientAutoscaler_execute(t *testing.T) {
+	type fields struct {
+		client   kubernetes.Interface
+		trinoApi trino.Api
+		state    State
+	}
+	req := KubeRequest{
+		Coordinator: testUtil.MustUrl("http://coordinator.local"),
+		Min:         0,
+		Max:         5,
+	}
+	instance := int32(0)
+
+	MS := mockState{
+		setInstances: func(clusterID string, i int32) error {
+			instance = i
+			return nil
+		},
+		getInstances: func(clusterID string) (int32, error) {
+			return instance, nil
+		},
+		setTime: func(clusterID string, t time.Time) error {
+			return nil
+		},
+		getTime: func(clusterID string) (time.Time, error) {
+			return time.Now().Add(-11 * time.Minute), nil
+		},
+	}
+
+	k := &KubeClientAutoscaler{
+		client:   nil,
+		trinoApi: nil,
+		state:    MS,
+		logger:   logging.Noop(),
+	}
+
+	queries := trino.QueryList{
+		{
+			State: StateWaitingForResources,
+			QueryStats: trino.QueryStats{
+				EndTime: time.Unix(0, 0),
+			},
+		},
+	}
+
+	cInstances, err := k.currentInstances(req)
+	require.NoError(t, err)
+	rInstances, err := k.desiredInstances(req, queries)
+	require.NoError(t, err)
+
+	require.NotEqual(t, cInstances, rInstances)
+
+	instance = int32(req.Max)
+
+	cInstances, err = k.currentInstances(req)
+	require.NoError(t, err)
+	rInstances, err = k.desiredInstances(req, queries)
+	require.NoError(t, err)
+
+	require.Equal(t, cInstances, rInstances)
+
+	down, err := k.needScaleDown(req, queries)
+	require.NoError(t, err)
+
+	require.False(t, down)
+
 }

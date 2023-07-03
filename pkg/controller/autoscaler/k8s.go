@@ -77,7 +77,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 }
 
 func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.QueryList) (bool, error) {
-	hasRunningQueries := hasQueriesInState(queries, StateRunning)
+	hasRunningQueries := hasQueriesInStates(queries, []string{StateWaitingForResources, StateRunning})
 	if hasRunningQueries {
 		return false, nil
 	}
@@ -217,10 +217,12 @@ func filterByState(queries trino.QueryList, state string) trino.QueryList {
 	return results
 }
 
-func hasQueriesInState(queries trino.QueryList, state string) bool {
+func hasQueriesInStates(queries trino.QueryList, states []string) bool {
 	for _, query := range queries {
-		if query.State == state {
-			return true
+		for _, state := range states {
+			if query.State == state {
+				return true
+			}
 		}
 	}
 	return false
