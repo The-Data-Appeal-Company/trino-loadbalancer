@@ -711,11 +711,6 @@ func TestKubeClientAutoscaler_currentInstances(t *testing.T) {
 }
 
 func TestKubeClientAutoscaler_execute(t *testing.T) {
-	type fields struct {
-		client   kubernetes.Interface
-		trinoApi trino.Api
-		state    State
-	}
 	req := KubeRequest{
 		Coordinator: testUtil.MustUrl("http://coordinator.local"),
 		Min:         0,
