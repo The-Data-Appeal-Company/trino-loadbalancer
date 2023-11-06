@@ -113,7 +113,7 @@ func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (CoordinatorR
 		targetCoordinator, err := p.router.Route(routingRequest(healthyCoordinators, request))
 		if err != nil {
 			if errors.Is(err, routing.ErrRouteNotFound) {
-				return CoordinatorRef{}, fmt.Errorf("%w: %w", err, ErrNoBackendsAvailable)
+				return CoordinatorRef{}, fmt.Errorf("%s: %w", err.Error(), ErrNoBackendsAvailable)
 			}
 			return CoordinatorRef{}, err
 		}
