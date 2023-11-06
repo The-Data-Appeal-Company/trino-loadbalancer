@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrForbiddenRouting = errors.New("no route match for user")
+	ErrRoutingNotFound  = errors.New("no routable cluster")
 )
 
 type NoMatchBehaviour string
