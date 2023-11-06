@@ -44,7 +44,7 @@ func (r Router) Route(req Request) (models.Coordinator, error) {
 	}
 
 	if len(req.Coordinators) == 0 {
-		return models.Coordinator{}, ErrRoutingNotFound
+		return models.Coordinator{}, ErrRouteNotFound
 	}
 
 	return r.Rule.Route(req)
