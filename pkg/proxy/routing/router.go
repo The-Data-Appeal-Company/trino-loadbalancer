@@ -42,7 +42,7 @@ func (r Router) Route(req Request) (models.Coordinator, error) {
 	if err != nil {
 		return models.Coordinator{}, fmt.Errorf("error routing request: %w", err)
 	}
-	 
+
 	if len(req.Coordinators) == 0 {
 		return models.Coordinator{}, ErrRoutingNotFound
 	}
