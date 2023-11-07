@@ -1,6 +1,7 @@
 package lb
 
 import (
+	"errors"
 	"fmt"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/proxy/healthcheck"
@@ -70,7 +71,7 @@ func (p *Proxy) Serve(addr string) error {
 
 func (p *Proxy) Handle(writer http.ResponseWriter, request *http.Request) {
 	coordinator, err := p.selectCoordinatorForRequest(request)
-	if err == ErrNoBackendsAvailable {
+	if errors.Is(err, ErrNoBackendsAvailable) {
 		p.logger.Warn("no available backends for request %s", request.URL)
 		writer.WriteHeader(http.StatusServiceUnavailable)
 		if _, err := writer.Write([]byte(err.Error())); err != nil {
@@ -111,6 +112,9 @@ func (p *Proxy) selectCoordinatorForRequest(request *http.Request) (CoordinatorR
 
 		targetCoordinator, err := p.router.Route(routingRequest(healthyCoordinators, request))
 		if err != nil {
+			if errors.Is(err, routing.ErrRouteNotFound) {
+				return CoordinatorRef{}, fmt.Errorf("%s: %w", err.Error(), ErrNoBackendsAvailable)
+			}
 			return CoordinatorRef{}, err
 		}
 
