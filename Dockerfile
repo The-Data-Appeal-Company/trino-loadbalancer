@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 go build \
 FROM node:14.20.1-alpine AS ui-builder
 WORKDIR /usr/src/app
 COPY ui/ .
-RUN npm install -g @angular/cli
+RUN npm install -g @angular/cli@15.0.0
 RUN npm install
 RUN ng build --prod --base-href /ui/
 
