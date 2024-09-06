@@ -64,8 +64,8 @@ func (u UserAwareRouter) Route(req Request) (Request, error) {
 
 	// filter request's coordinator using the rule configuration
 	coordinators := filterByRule(rule, req.Coordinators)
-
-	if (coordinators == nil || len(coordinators) == 0) && rule.UseDefaultIfUnhealthy {
+	// if no available coordinator is found we check if the rule have the failover on default  if unhealthy value set to true and eventually retrieve default coordinator info
+	if len(coordinators) == 0 && rule.UseDefaultIfUnhealthy {
 		coordinators = filterByRule(u.conf.Default.Cluster, req.Coordinators)
 	}
 

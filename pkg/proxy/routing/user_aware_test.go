@@ -297,6 +297,131 @@ func TestUserAwareRoutingSelectAllCoordinatorsWhenFallbackOnEmptyDefault(t *test
 	require.Len(t, coords.Coordinators, 2)
 }
 
+func TestUserAwareRouterButTargetCoordinatorUnhealthyAndNoUseDefaultIfUnhealthySet(t *testing.T) {
+	uar := NewUserAwareRouter(UserAwareRoutingConf{
+		Default: UserAwareDefault{
+			Behaviour: NoMatchBehaviourDefault,
+			Cluster: UserAwareClusterMatchRule{
+				Name: mustRegex(t, "cluster-00"),
+				Tags: map[string]string{
+					"test": "true",
+				},
+			},
+		},
+		Rules: []UserAwareRoutingRule{
+			{
+				User: mustRegex(t, "test-app-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-01"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				User: mustRegex(t, "test-user-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-02"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+		},
+	})
+
+	request := Request{
+		User: "test-user-00",
+		Coordinators: []CoordinatorWithStatistics{
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-00",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-01",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+		},
+	}
+	coords, err := uar.Route(request)
+
+	require.NoError(t, err)
+
+	require.Equal(t, coords.User, request.User)
+	require.Len(t, coords.Coordinators, 0)
+}
+func TestUserAwareRouterButTargetCoordinatorUnhealthyAndUseDefaultIfUnhealthySet(t *testing.T) {
+	uar := NewUserAwareRouter(UserAwareRoutingConf{
+		Default: UserAwareDefault{
+			Behaviour: NoMatchBehaviourDefault,
+			Cluster: UserAwareClusterMatchRule{
+				Name: mustRegex(t, "cluster-00"),
+				Tags: map[string]string{
+					"test": "true",
+				},
+			},
+		},
+		Rules: []UserAwareRoutingRule{
+			{
+				User: mustRegex(t, "test-app-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-01"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				User: mustRegex(t, "test-user-(.+)"),
+				Cluster: UserAwareClusterMatchRule{
+					Name: mustRegex(t, "cluster-02"),
+					Tags: map[string]string{
+						"test": "true",
+					},
+					UseDefaultIfUnhealthy: true,
+				},
+			},
+		},
+	})
+
+	request := Request{
+		User: "test-user-00",
+		Coordinators: []CoordinatorWithStatistics{
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-00",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+			{
+				Coordinator: models.Coordinator{
+					Name: "cluster-01",
+					Tags: map[string]string{
+						"test": "true",
+					},
+				},
+			},
+		},
+	}
+	coords, err := uar.Route(request)
+
+	require.NoError(t, err)
+
+	require.Equal(t, coords.User, request.User)
+	require.Equal(t, coords.Coordinators[0], request.Coordinators[0])
+	require.Len(t, coords.Coordinators, 1)
+}
+
 func mustRegex(t *testing.T, raw string) *regexp.Regexp {
 	re, err := regexp.Compile(raw)
 	require.NoError(t, err)
