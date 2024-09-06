@@ -33,8 +33,9 @@ type UserAwareDefault struct {
 }
 
 type UserAwareClusterMatchRule struct {
-	Name *regexp.Regexp
-	Tags map[string]string
+	Name                  *regexp.Regexp
+	Tags                  map[string]string
+	UseDefaultIfUnhealthy bool
 }
 
 func NewUserAwareRouter(conf UserAwareRoutingConf) UserAwareRouter {
@@ -62,7 +63,13 @@ func (u UserAwareRouter) Route(req Request) (Request, error) {
 	}
 
 	// filter request's coordinator using the rule configuration
-	req.Coordinators = filterByRule(rule, req.Coordinators)
+	coordinators := filterByRule(rule, req.Coordinators)
+	// if no available coordinator is found we check if the rule have the failover on default  if unhealthy value set to true and eventually retrieve default coordinator info
+	if len(coordinators) == 0 && rule.UseDefaultIfUnhealthy {
+		coordinators = filterByRule(u.conf.Default.Cluster, req.Coordinators)
+	}
+
+	req.Coordinators = coordinators
 	return req, nil
 }
 

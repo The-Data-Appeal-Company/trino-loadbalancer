@@ -17,8 +17,9 @@ type RoutingUsersConf struct {
 		} `json:"cluster" yaml:"cluster" mapstructure:"cluster"`
 	} `json:"default" yaml:"default" mapstructure:"default"`
 	Rules []struct {
-		User    string `json:"user" yaml:"user" mapstructure:"user"`
-		Cluster struct {
+		User                  string `json:"user" yaml:"user" mapstructure:"user"`
+		UseDefaultIfUnhealthy bool   `json:"use_default_if_unhealthy" yaml:"use_default_if_unhealthy" mapstructure:"use_default_if_unhealthy"`
+		Cluster               struct {
 			Name string            `json:"name" yaml:"name" mapstructure:"name"`
 			Tags map[string]string `json:"tags" yaml:"tags" mapstructure:"tags"`
 		} `json:"cluster" yaml:"cluster" mapstructure:"cluster"`
@@ -83,8 +84,9 @@ func createUserAwareRouter(users RoutingUsersConf) (routing.UserAwareRouter, err
 		rules[i] = routing.UserAwareRoutingRule{
 			User: userRe,
 			Cluster: routing.UserAwareClusterMatchRule{
-				Name: clusterNameRe,
-				Tags: r.Cluster.Tags,
+				Name:                  clusterNameRe,
+				Tags:                  r.Cluster.Tags,
+				UseDefaultIfUnhealthy: r.UseDefaultIfUnhealthy,
 			},
 		}
 	}
