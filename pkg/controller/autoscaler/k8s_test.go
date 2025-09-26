@@ -6,6 +6,7 @@ import (
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/logging"
 	testUtil "github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/common/tests"
 	"github.com/The-Data-Appeal-Company/trino-loadbalancer/pkg/configuration"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
@@ -175,7 +176,7 @@ func Test_hasQueriesInState(t *testing.T) {
 	}
 }
 
-func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
+func TestKubeClientAutoscaler_needScaleToZero(t *testing.T) {
 	type fields struct {
 		client   kubernetes.Interface
 		trinoApi trino.Api
@@ -277,14 +278,244 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 				state:    tt.fields.state,
 				logger:   logging.Noop(),
 			}
-			got, err := k.needScaleDown(tt.args.req, tt.args.queries)
+			got, err := k.needScaleToZero(tt.args.req, tt.args.queries)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("needScaleDown() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("needScaleToZero() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("needScaleDown() got = %v, want %v", got, tt.want)
+				t.Errorf("needScaleToZero() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
+	type fields struct {
+		client   kubernetes.Interface
+		trinoApi trino.Api
+		state    State
+	}
+	type args struct {
+		req     KubeRequest
+		queries trino.QueryList
+		current int
+		wanted  int
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		args      args
+		wantScale bool
+		wantInst  int
+		wantErr   bool
+	}{
+		{
+			name:   "don't scale down when no queries are running",
+			fields: fields{state: MemoryState()},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+				},
+				queries: nil,
+			},
+			wantScale: false,
+			wantInst:  0,
+			wantErr:   false,
+		},
+		{
+			name: "don't scale down when queries are running but not state",
+			fields: fields{state: mockState{
+				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+					assert.Equal(t, int32(20), i)
+					return nil
+				},
+				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+					return 0, time.Now(), NoLastScaleUpStateError
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+				},
+				queries: trino.QueryList{
+					{
+						State: "COMPLETED",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				current: 20,
+				wanted:  10,
+			},
+			wantScale: false,
+			wantInst:  0,
+			wantErr:   false,
+		},
+		{
+			name: "Scale same instances update state",
+			fields: fields{state: mockState{
+				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+					assert.Equal(t, int32(10), i)
+					return nil
+				},
+				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+					assert.Fail(t, "should not be called")
+					return 0, time.Now(), NoLastScaleUpStateError
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+				},
+				queries: trino.QueryList{
+					{
+						State: "COMPLETED",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				current: 10,
+				wanted:  10,
+			},
+			wantScale: false,
+			wantInst:  0,
+			wantErr:   false,
+		},
+		{
+			name: "don't scale down instaces on state is different from current",
+			fields: fields{state: mockState{
+				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+					assert.Equal(t, int32(20), i)
+					return nil
+				},
+				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+					return 10, time.Now(), nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+				},
+				queries: trino.QueryList{
+					{
+						State: "COMPLETED",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				current: 20,
+				wanted:  10,
+			},
+			wantScale: false,
+			wantInst:  0,
+			wantErr:   false,
+		},
+		{
+			name: "Scale down to less instances elapsed more than ScaleAfter from last scale up",
+			fields: fields{state: mockState{
+				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+					assert.Fail(t, "should not be called")
+					return nil
+				},
+				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+					return 20, time.Now().Add(-2 * time.Hour), nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+				},
+				queries: trino.QueryList{
+					{
+						State: "COMPLETED",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				current: 20,
+				wanted:  10,
+			},
+			wantScale: true,
+			wantInst:  10,
+			wantErr:   false,
+		},
+		{
+			name: "don't scale down to less instances not elapsed more than ScaleAfter from last scale up",
+			fields: fields{state: mockState{
+				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+					assert.Fail(t, "should not be called")
+					return nil
+				},
+				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+					return 20, time.Now().Add(-1 * time.Hour), nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  5 * time.Hour,
+				},
+				queries: trino.QueryList{
+					{
+						State: "COMPLETED",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+					{
+						State: StateRunning,
+					},
+				},
+				current: 20,
+				wanted:  10,
+			},
+			wantScale: false,
+			wantInst:  0,
+			wantErr:   false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := &KubeClientAutoscaler{
+				client:   tt.fields.client,
+				trinoApi: tt.fields.trinoApi,
+				state:    tt.fields.state,
+				logger:   logging.Noop(),
+			}
+			scale, inst, err := k.needScaleDown(tt.args.req, tt.args.queries, tt.args.current, tt.args.wanted)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("needScaleToZero() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if scale != tt.wantScale {
+				t.Errorf("needScaleToZero() scale = %v, wantScale %v", scale, tt.wantScale)
+			}
+			if tt.wantScale && inst != tt.wantInst {
+				t.Errorf("needScaleToZero() inst = %v, wantInst %v", inst, tt.wantInst)
+			}
+
 		})
 	}
 }
@@ -717,6 +948,7 @@ func TestKubeClientAutoscaler_execute(t *testing.T) {
 		Max:         5,
 	}
 	instance := int32(0)
+	instanceLast := int32(0)
 
 	MS := mockState{
 		setInstances: func(clusterID string, i int32) error {
@@ -731,6 +963,13 @@ func TestKubeClientAutoscaler_execute(t *testing.T) {
 		},
 		getTime: func(clusterID string) (time.Time, error) {
 			return time.Now().Add(-11 * time.Minute), nil
+		},
+		setLastScaleUp: func(clusterID string, i int32, t time.Time) error {
+			instanceLast = i
+			return nil
+		},
+		getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+			return instanceLast, time.Now().Add(-11 * time.Minute), nil
 		},
 	}
 
@@ -766,9 +1005,15 @@ func TestKubeClientAutoscaler_execute(t *testing.T) {
 
 	require.Equal(t, cInstances, rInstances)
 
-	down, err := k.needScaleDown(req, queries)
+	down, err := k.needScaleToZero(req, queries)
 	require.NoError(t, err)
 
 	require.False(t, down)
+
+	down, i, err := k.needScaleDown(req, queries, cInstances, rInstances)
+	require.NoError(t, err)
+
+	require.False(t, down)
+	require.Equal(t, 0, i)
 
 }

@@ -18,13 +18,14 @@ type ControllerConf struct {
 type AutoscalerConf struct {
 	Enabled    bool `yaml:"enabled" json:"enabled"`
 	Kubernetes []struct {
-		CoordinatorUri string                 `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
-		Namespace      string                 `yaml:"namespace" json:"namespace,omitempty"`
-		Deployment     string                 `json:"deployment,omitempty" yaml:"deployment,omitempty"`
-		Min            int                    `json:"min,omitempty" yaml:"min,omitempty"`
-		Max            int                    `json:"max,omitempty" yaml:"max,omitempty"`
-		ScaleAfter     time.Duration          `json:"scaleAfter" yaml:"scaleAfter"`
-		DynamicScale   AutoscalerDynamicScale `yaml:"dynamicScale" json:"dynamicScale"`
+		CoordinatorUri            string                 `json:"coordinatorUri,omitempty" yaml:"coordinatorUri,omitempty"`
+		Namespace                 string                 `yaml:"namespace" json:"namespace,omitempty"`
+		Deployment                string                 `json:"deployment,omitempty" yaml:"deployment,omitempty"`
+		Min                       int                    `json:"min,omitempty" yaml:"min,omitempty"`
+		Max                       int                    `json:"max,omitempty" yaml:"max,omitempty"`
+		ScaleAfter                time.Duration          `json:"scaleAfter" yaml:"scaleAfter"`
+		DynamicScale              AutoscalerDynamicScale `yaml:"dynamicScale" json:"dynamicScale"`
+		ScaleDownWithRunningQuery bool                   `yaml:"scaleDownWithRunningQuery" json:"scaleDownWithRunningQuery"`
 	} `yaml:"kubernetes" json:"kubernetes"`
 }
 
