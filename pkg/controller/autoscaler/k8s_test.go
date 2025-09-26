@@ -278,13 +278,13 @@ func TestKubeClientAutoscaler_needScaleToZero(t *testing.T) {
 				state:    tt.fields.state,
 				logger:   logging.Noop(),
 			}
-			got, err := k.needScaleToZero(tt.args.req, tt.args.queries)
+			got, err := k.needScaleToMin(tt.args.req, tt.args.queries)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("needScaleToZero() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("needScaleToMin() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("needScaleToZero() got = %v, want %v", got, tt.want)
+				t.Errorf("needScaleToMin() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -327,12 +327,12 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "don't scale down when queries are running but not state",
 			fields: fields{state: mockState{
-				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+				setLastScale: func(clusterID string, i int32, tim time.Time) error {
 					assert.Equal(t, int32(20), i)
 					return nil
 				},
-				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
-					return 0, time.Now(), NoLastScaleUpStateError
+				getLastScale: func(clusterID string) (int32, time.Time, error) {
+					return 0, time.Now(), NoLastScaleStateError
 				},
 			}},
 			args: args{
@@ -361,13 +361,13 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "Scale same instances update state",
 			fields: fields{state: mockState{
-				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+				setLastScale: func(clusterID string, i int32, tim time.Time) error {
 					assert.Equal(t, int32(10), i)
 					return nil
 				},
-				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+				getLastScale: func(clusterID string) (int32, time.Time, error) {
 					assert.Fail(t, "should not be called")
-					return 0, time.Now(), NoLastScaleUpStateError
+					return 0, time.Now(), NoLastScaleStateError
 				},
 			}},
 			args: args{
@@ -396,11 +396,11 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "don't scale down instaces on state is different from current",
 			fields: fields{state: mockState{
-				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+				setLastScale: func(clusterID string, i int32, tim time.Time) error {
 					assert.Equal(t, int32(20), i)
 					return nil
 				},
-				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+				getLastScale: func(clusterID string) (int32, time.Time, error) {
 					return 10, time.Now(), nil
 				},
 			}},
@@ -430,11 +430,11 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "Scale down to less instances elapsed more than ScaleAfter from last scale up",
 			fields: fields{state: mockState{
-				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+				setLastScale: func(clusterID string, i int32, tim time.Time) error {
 					assert.Fail(t, "should not be called")
 					return nil
 				},
-				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+				getLastScale: func(clusterID string) (int32, time.Time, error) {
 					return 20, time.Now().Add(-2 * time.Hour), nil
 				},
 			}},
@@ -464,11 +464,11 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 		{
 			name: "don't scale down to less instances not elapsed more than ScaleAfter from last scale up",
 			fields: fields{state: mockState{
-				setLastScaleUp: func(clusterID string, i int32, tim time.Time) error {
+				setLastScale: func(clusterID string, i int32, tim time.Time) error {
 					assert.Fail(t, "should not be called")
 					return nil
 				},
-				getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+				getLastScale: func(clusterID string) (int32, time.Time, error) {
 					return 20, time.Now().Add(-1 * time.Hour), nil
 				},
 			}},
@@ -506,21 +506,21 @@ func TestKubeClientAutoscaler_needScaleDown(t *testing.T) {
 			}
 			scale, inst, err := k.needScaleDown(tt.args.req, tt.args.queries, tt.args.current, tt.args.wanted)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("needScaleToZero() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("needScaleToMin() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if scale != tt.wantScale {
-				t.Errorf("needScaleToZero() scale = %v, wantScale %v", scale, tt.wantScale)
+				t.Errorf("needScaleToMin() scale = %v, wantScale %v", scale, tt.wantScale)
 			}
 			if tt.wantScale && inst != tt.wantInst {
-				t.Errorf("needScaleToZero() inst = %v, wantInst %v", inst, tt.wantInst)
+				t.Errorf("needScaleToMin() inst = %v, wantInst %v", inst, tt.wantInst)
 			}
 
 		})
 	}
 }
 
-func TestKubeClientAutoscaler_needScaleUp(t *testing.T) {
+func TestKubeClientAutoscaler_needScale(t *testing.T) {
 	type fields struct {
 		client   kubernetes.Interface
 		trinoApi trino.Api
@@ -964,11 +964,11 @@ func TestKubeClientAutoscaler_execute(t *testing.T) {
 		getTime: func(clusterID string) (time.Time, error) {
 			return time.Now().Add(-11 * time.Minute), nil
 		},
-		setLastScaleUp: func(clusterID string, i int32, t time.Time) error {
+		setLastScale: func(clusterID string, i int32, t time.Time) error {
 			instanceLast = i
 			return nil
 		},
-		getLastScaleUp: func(clusterID string) (int32, time.Time, error) {
+		getLastScale: func(clusterID string) (int32, time.Time, error) {
 			return instanceLast, time.Now().Add(-11 * time.Minute), nil
 		},
 	}
@@ -1005,7 +1005,7 @@ func TestKubeClientAutoscaler_execute(t *testing.T) {
 
 	require.Equal(t, cInstances, rInstances)
 
-	down, err := k.needScaleToZero(req, queries)
+	down, err := k.needScaleToMin(req, queries)
 	require.NoError(t, err)
 
 	require.False(t, down)

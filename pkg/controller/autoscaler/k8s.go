@@ -62,20 +62,17 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 	// If more instances is needed than current we scale up the cluster
 	if instances > currentInstances {
 		k.logger.Info("requested instances %d scale up from %d", instances, currentInstances)
-		if err := k.state.SetLastScaleUp(request.Coordinator.String(), int32(instances), time.Now()); err != nil {
-			return err
-		}
 		return k.scaleCluster(request, instances)
 	}
 
 	// If no more queries is running we check the time since last query finish
-	//and if is elapsed we scale to zero
-	needScaleToZero, err := k.needScaleToZero(request, queries)
+	//and if is elapsed we scale to request.Min
+	needScaleToMin, err := k.needScaleToMin(request, queries)
 	if err != nil {
 		return err
 	}
-	if needScaleToZero {
-		k.logger.Info("elapsed at least %s from last query, trigger scale down to %d", request.ScaleAfter, request.Min)
+	if needScaleToMin {
+		k.logger.Info("elapsed at least %s from last query, trigger scale down to min(%d)", request.ScaleAfter, request.Min)
 		return k.scaleCluster(request, request.Min)
 	}
 
@@ -90,10 +87,6 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 		}
 
 		if needScaleDown {
-			if err := k.state.SetLastScaleUp(request.Coordinator.String(), int32(i), time.Now()); err != nil {
-				return err
-			}
-
 			k.logger.Info("elapsed at least %s from last query with current instance, trigger scale down to %d", request.ScaleAfter, i)
 			return k.scaleCluster(request, i)
 		}
@@ -105,7 +98,7 @@ func (k *KubeClientAutoscaler) Execute(request KubeRequest) error {
 func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.QueryList, current, wanted int) (bool, int, error) {
 
 	if wanted == current {
-		if err := k.state.SetLastScaleUp(req.Coordinator.String(), int32(current), time.Now()); err != nil {
+		if err := k.state.SetLastScale(req.Coordinator.String(), int32(current), time.Now()); err != nil {
 			return false, 0, err
 		}
 		return false, 0, nil
@@ -116,13 +109,13 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 		return false, 0, nil
 	}
 
-	lastInstances, lastQueryTime, err := k.state.GetLastScaleUp(req.Coordinator.String())
+	lastInstances, lastQueryTime, err := k.state.GetLastScale(req.Coordinator.String())
 	if err != nil {
-		if !errors.Is(err, NoLastScaleUpStateError) {
+		if !errors.Is(err, NoLastScaleStateError) {
 			return false, 0, err
 		}
 
-		if err := k.state.SetLastScaleUp(req.Coordinator.String(), int32(current), time.Now()); err != nil {
+		if err := k.state.SetLastScale(req.Coordinator.String(), int32(current), time.Now()); err != nil {
 			return false, 0, err
 		}
 
@@ -130,7 +123,7 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 	}
 
 	if lastInstances != int32(current) {
-		if err := k.state.SetLastScaleUp(req.Coordinator.String(), int32(current), time.Now()); err != nil {
+		if err := k.state.SetLastScale(req.Coordinator.String(), int32(current), time.Now()); err != nil {
 			return false, 0, err
 		}
 	}
@@ -139,7 +132,7 @@ func (k *KubeClientAutoscaler) needScaleDown(req KubeRequest, queries trino.Quer
 	return time.Since(lastQueryTime) > req.ScaleAfter, wanted, nil
 }
 
-func (k *KubeClientAutoscaler) needScaleToZero(req KubeRequest, queries trino.QueryList) (bool, error) {
+func (k *KubeClientAutoscaler) needScaleToMin(req KubeRequest, queries trino.QueryList) (bool, error) {
 	hasRunningQueries := hasQueriesInStates(queries, []string{StateWaitingForResources, StateRunning})
 	if hasRunningQueries {
 		return false, nil
