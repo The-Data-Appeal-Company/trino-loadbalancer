@@ -80,6 +80,7 @@ controller:
       min: "0"
       max: "5"
       scaleAfter: "10m"
+      scaleDownWithRunningQuery: true
   features:
     slow_worker_drainer:
       enabled: true
