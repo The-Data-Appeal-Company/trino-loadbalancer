@@ -32,7 +32,7 @@ func TestApiRetrieverTrino(t *testing.T) {
 		const trinoUser = "trinolb"
 		const trinoAuthCookie = "test"
 
-		if request.URL.Path != "/ui/login" && request.Header.Get("Cookie") != trinoAuthCookie {
+		if request.URL.Path != "/ui/legacy/login" && request.Header.Get("Cookie") != trinoAuthCookie {
 			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -43,7 +43,7 @@ func TestApiRetrieverTrino(t *testing.T) {
 			return
 		}
 
-		if request.URL.Path == "/ui/login" {
+		if request.URL.Path == "/ui/legacy/login" {
 			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
@@ -136,7 +136,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 		const trinoUser = "trinolb"
 		const trinoAuthCookie = "test"
 
-		if request.URL.Path != "/ui/login" && request.Header.Get("Cookie") != trinoAuthCookie {
+		if request.URL.Path != "/ui/legacy/login" && request.Header.Get("Cookie") != trinoAuthCookie {
 			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -147,7 +147,7 @@ func TestQueryStatsRetriever(t *testing.T) {
 			return
 		}
 
-		if request.URL.Path == "/ui/login" {
+		if request.URL.Path == "/ui/legacy/login" {
 			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
@@ -185,7 +185,7 @@ func TestQueryList(t *testing.T) {
 		const trinoUser = "trinolb"
 		const trinoAuthCookie = "test"
 
-		if request.URL.Path != "/ui/login" && request.Header.Get("Cookie") != trinoAuthCookie {
+		if request.URL.Path != "/ui/legacy/login" && request.Header.Get("Cookie") != trinoAuthCookie {
 			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -196,7 +196,7 @@ func TestQueryList(t *testing.T) {
 			return
 		}
 
-		if request.URL.Path == "/ui/login" {
+		if request.URL.Path == "/ui/legacy/login" {
 			body, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			defer request.Body.Close()
