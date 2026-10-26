@@ -850,6 +850,41 @@ func TestKubeClientAutoscaler_needScale(t *testing.T) {
 			want:    5,
 			wantErr: false,
 		},
+		{
+			name: "scale up to rule with complex regex",
+			fields: fields{state: mockState{
+				getInstances: func(clusterID string) (int32, error) {
+					return 0, nil
+				},
+			}},
+			args: args{
+				req: KubeRequest{
+					Coordinator: testUtil.MustUrl("http://coordinator.local"),
+					ScaleAfter:  10 * time.Second,
+					DynamicScale: configuration.AutoscalerDynamicScale{
+						Enabled: true,
+						Default: 5,
+						Rules: []configuration.AutoscalerDynamicScaleRule{
+							{
+								Regexp:    "etl-double(-.*)?",
+								Instances: 10,
+							},
+						},
+					},
+				},
+				queries: trino.QueryList{
+					{
+						State:       StateRunning,
+						SessionUser: "etl-double-datapack",
+						QueryStats: trino.QueryStats{
+							EndTime: time.Now().Add(-1 * time.Hour),
+						},
+					},
+				},
+			},
+			want:    10,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

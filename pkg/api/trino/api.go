@@ -180,7 +180,7 @@ func (p *ClusterApi) performLogin(coordinatoUrl *url.URL, force bool) (string, e
 }
 
 func (p *ClusterApi) login(coord *url.URL) (string, error) {
-	loginUrl := fmt.Sprintf("%s://%s%s", coord.Scheme, coord.Host, "/ui/login")
+	loginUrl := fmt.Sprintf("%s://%s%s", coord.Scheme, coord.Host, "/ui/legacy/login")
 	const contentType = "application/x-www-form-urlencoded"
 
 	body := bytes.NewBuffer([]byte(fmt.Sprintf("username=%s&password=&redirectPath=", userName)))
